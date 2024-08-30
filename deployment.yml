@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy
+  namespacenamespace: arcanetable2
+  labels:
+    app: caddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caddy
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: caddy
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable:latest
+          name: caddy
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_URL
+              value: "signaling"
+
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+  selector:
+    app: caddy
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: caddy
+  namespace: arcanetable
+spec:
+  rules:
+    - host: "arcanetable.app"
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: caddy
+              port:
+                number: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: signaling
+  namespace: arcanetable
+  labels:
+    app: signaling
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: signaling
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: signaling
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable/signaling:latest
+          name: signaling
+          ports:
+            - containerPort: 4444
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: signaling
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+  selector:
+    app: signaling
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: signaling # Name of the ingress object
+  namespace: arcanetable
+spec:
+  rules:
+  - host: "signaling.arcanetable.app"  # Your hostname
+    http:
+      paths:
+      # Path-based routing settings:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: signaling  # The name of the service
+            port:
+              number: 80 # Service Portnumber

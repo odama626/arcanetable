@@ -1,0 +1,35 @@
+{
+	debug
+	auto_https off
+}
+
+:80 {
+	root * /dist
+	# encode zstd gzip
+
+
+	handle /api/* {
+		reverse_proxy {$API_URL} {
+			header_up Host {upstream_hostport}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	handle /admin {
+		redir * /api/_
+	}
+
+	@notext `path_regexp('/[^.]+$')`
+	@hasextension `path('*.*')`
+
+	handle @notext {
+		try_files {path}/index.html index.html
+	}
+
+	handle @hasextension {
+		try_files {path} {file} =404
+	}
+	file_server {
+		precompressed br gzip
+	}
+}

@@ -1,0 +1,31 @@
+.App {
+  text-align: center;
+  position: fixed;
+  width: 100%;
+  pointer-events: none;
+}
+
+.topRight {
+  right: 0;
+  position: fixed;
+}
+
+.cardActions {
+  pointer-events: initial;
+  top: var(--y);
+  left: var(--x);
+  position: fixed;
+  display: flex;
+  gap: 0.5rem;
+}
+
+
+.mainMenu {
+  pointer-events: initial;
+  position: fixed;
+  bottom: 130px;
+  left: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+} 

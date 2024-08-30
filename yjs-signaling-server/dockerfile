@@ -1,0 +1,6 @@
+FROM node:current-alpine3.18
+
+COPY node_modules node_modules
+COPY dist dist
+EXPOSE 4444/tcp
+CMD node dist/main.js

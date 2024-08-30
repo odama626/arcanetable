@@ -1,0 +1,16 @@
+.peekActions {
+  pointer-events: initial;
+  top: var(--y);
+  left: var(--x);
+  position: fixed;
+  display: flex;
+  gap: 0.5rem;
+  transform: translateY(-100%);
+}
+
+.search {
+  pointer-events: initial;
+  margin-left: 9rem;
+  width: 80ch;
+  margin-top: 4rem;
+}
