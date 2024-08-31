@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
-import { Card, cloneCard, createCardGeometry, getSearchLine } from './card';
+import { Card, cloneCard, createCardGeometry, getSearchLine, renderModifiers } from './card';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Deck, loadDeckList } from './deck';
@@ -98,7 +98,7 @@ export class PlayArea {
         card.mesh.userData.isInteractive = true;
         card.mesh.userData.location = 'tokenSearch';
         card.mesh.userData.clientId = provider.awareness.clientID;
-        card.detail.search = getSearchLine(card.detail)
+        card.detail.search = getSearchLine(card.detail);
         cardsById.set(card.id, card);
         return card;
       })
@@ -109,6 +109,15 @@ export class PlayArea {
         this.tokenSearchZone.addCard(availableCards[i]);
       }, i * 50);
     }
+  }
+
+  modifyCard(card: Card, update = x => x) {
+    card.mesh.userData.modifiers = update(
+      card.mesh.userData.modifiers ?? { power: 0, toughness: 0, counters: {} }
+    );
+    this.emitEvent('modifyCard', { userData: card.mesh.userData });
+
+    renderModifiers(card);
   }
 
   draw() {

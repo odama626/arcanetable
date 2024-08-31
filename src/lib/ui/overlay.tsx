@@ -9,6 +9,7 @@ import PeekMenu from './peekMenu';
 import RevealMenu from './revealMenu';
 import { Menubar, MenubarMenu, MenubarTrigger } from '../../components/ui/menubar';
 import TokenSearchMenu from './tokenMenu';
+import CounterDialog from './counterDialog';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -21,7 +22,11 @@ const Overlay: Component = () => {
   const playArea = () => playAreas.get(provider?.awareness?.clientID)!;
 
   return (
-    <div class={styles.App}>
+    <div
+      class={styles.App}
+      onClick={e => {
+        e.stopImmediatePropagation();
+      }}>
       <div class={styles.topRight}>
         <Show when={isPublic() || (isOwner() && ['battlefield', 'peek'].includes(location()))}>
           <img style='height: 50vh;' src={getCardImage(cardMesh()?.userData?.card)}></img>
@@ -55,6 +60,7 @@ const Overlay: Component = () => {
       <PeekMenu />
       <RevealMenu />
       <TokenSearchMenu />
+      <CounterDialog />
     </div>
   );
 };

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: caddy
-  namespacenamespace: arcanetable2
+  namespace: arcanetable
   labels:
     app: caddy
 spec:
@@ -95,7 +95,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 3000
+      targetPort: 4444
   type: ClusterIP
   selector:
     app: signaling

@@ -43,6 +43,7 @@ export let textureLoader: TextureLoader;
 export let renderer: WebGLRenderer;
 export let scene: Scene;
 export let camera: PerspectiveCamera;
+export let detailCamera: PerspectiveCamera;
 export let [hoverSignal, setHoverSignal] = createSignal();
 export let cardsById = new Map<string, Card>();
 export let zonesById = new Map<string, CardZone>();
@@ -53,6 +54,7 @@ export let table: Object3D;
 export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
+export let [deckIndex, setDeckIndex] = createSignal();
 
 export const [scrollTarget, setScrollTarget] = createSignal();
 
@@ -64,7 +66,7 @@ export function lerp(a: number, b: number, t: number) {
 
 export function init({ gameId }) {
   provider = new WebrtcProvider(gameId, ydoc, {
-    signaling: ['ws://localhost:4444'],
+    signaling: ['wss://signaling.arcanetable.app'],
   });
 
   clock = new Clock();

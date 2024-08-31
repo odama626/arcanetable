@@ -1,20 +1,34 @@
-import { Component } from 'solid-js';
-import { PlayArea } from '../playArea';
+import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { Mesh } from 'three';
 import {
   Menubar,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
 } from '~/components/ui/menubar';
-import { Mesh } from 'three';
-import { setHoverSignal } from '../globals';
+import { cardsById, setHoverSignal } from '../globals';
+import { PlayArea } from '../playArea';
+import { Button } from '~/components/ui/button';
+import { counters, setIsCounterDialogOpen } from './counterDialog';
 import { TextField, TextFieldInput } from '~/components/ui/text-field';
+import {
+  NumberField,
+  NumberFieldDecrementTrigger,
+  NumberFieldIncrementTrigger,
+  NumberFieldInput,
+} from '~/components/ui/number-field';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
+  createEffect(() => {
+    console.log(counters());
+  });
+
   return (
     <Menubar>
       <MenubarMenu>
@@ -43,9 +57,51 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
           <MenubarSub>
             <MenubarSubTrigger>Counters</MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem>+1/+1</MenubarItem>
-              <MenubarItem>-1/-1</MenubarItem>
-              <MenubarItem>New</MenubarItem>
+              <MenubarItem closeOnSelect={false} style='font-family: monospace;'>
+                <CoreCounters {...props} />
+              </MenubarItem>
+
+              <Show when={counters().length}>
+                <MenubarSeparator />
+              </Show>
+              <For each={counters()}>
+                {counter => {
+                  return (
+                    <MenubarItem closeOnSelect={false}>
+                      <div
+                        style={`--color: ${counter.color}; width: 1rem; height: 1rem; background: var(--color); margin: 0 0.25rem;`}></div>
+                      <div style='margin: 0 0.25rem;'>{counter.name}</div>
+                      <MenubarShortcut>
+                        <NumberField
+                          defaultValue={
+                            props.cardMesh?.userData.modifiers?.counters?.[counter.id] ?? 0
+                          }
+                          style='width: 6rem'
+                          onChange={value => {
+                            let card = cardsById.get(props.cardMesh?.userData.id)!;
+                            props.playArea.modifyCard(card, modifiers => ({
+                              ...modifiers,
+                              counters: {
+                                ...modifiers.counters,
+                                [counter.id]: parseInt(value, 10),
+                              },
+                            }));
+                          }}>
+                          <div class='relative'>
+                            <NumberFieldInput />
+                            <NumberFieldIncrementTrigger />
+                            <NumberFieldDecrementTrigger />
+                          </div>
+                        </NumberField>
+                      </MenubarShortcut>
+                    </MenubarItem>
+                  );
+                }}
+              </For>
+              <MenubarSeparator />
+              <MenubarItem closeOnSelect={false} onClick={() => setIsCounterDialogOpen(true)}>
+                New
+              </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarItem
@@ -57,6 +113,105 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
+  );
+};
+
+const CoreCounters: Component = props => {
+  let [power, setPower] = createSignal(props.cardMesh?.userData.modifiers?.power ?? 0);
+  let [toughness, setToughness] = createSignal(props.cardMesh?.userData?.modifiers?.toughness ?? 0);
+
+  return (
+    <>
+      <NumberField
+        value={power()}
+        style='width: 6rem'
+        onChange={rawValue => {
+          let card = cardsById.get(props.cardMesh?.userData.id)!;
+          let value = parseInt(rawValue, 10);
+          setPower(rawValue);
+          props.playArea.modifyCard(card, modifiers => ({
+            ...modifiers,
+            power: value,
+          }));
+        }}>
+        <div class='relative'>
+          <NumberFieldInput />
+          <NumberFieldIncrementTrigger />
+          <NumberFieldDecrementTrigger />
+        </div>
+      </NumberField>
+
+      <div style='display: flex; flex-direction: column;'>
+        <Button
+          variant='ghost'
+          style='width: 1rem; height:  1rem; padding: 0; margin: 0 0.5rem'
+          onClick={() => {
+            let card = cardsById.get(props.cardMesh?.userData.id)!;
+            setPower(power => parseInt(power.toString(), 10) + 1);
+            setToughness(toughness => parseInt(toughness.toString(), 10) + 1);
+            props.playArea.modifyCard(card, modifiers => ({
+              ...modifiers,
+              power: (modifiers.power ?? 0) + 1,
+              toughness: (modifiers.toughness ?? 0) + 1,
+            }));
+          }}>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+            class='size-4'>
+            <path d='M6 15l6 -6l6 6'></path>
+          </svg>
+        </Button>
+        <Button
+          variant='ghost'
+          style='width: 1rem; height:  1rem; padding: 0; margin: 0 0.5rem'
+          onClick={() => {
+            let card = cardsById.get(props.cardMesh?.userData.id)!;
+            setPower(power => parseInt(power.toString(), 10) - 1);
+            setToughness(toughness => parseInt(toughness.toString(), 10) - 1);
+            props.playArea.modifyCard(card, modifiers => ({
+              ...modifiers,
+              power: (modifiers.power ?? 0) - 1,
+              toughness: (modifiers.toughness ?? 0) - 1,
+            }));
+          }}>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+            class='size-4'>
+            <path d='M6 9l6 6l6 -6'></path>
+          </svg>
+        </Button>
+      </div>
+      <NumberField
+        value={toughness()}
+        style='width: 6rem'
+        onChange={rawValue => {
+          let card = cardsById.get(props.cardMesh?.userData.id)!;
+          let value = parseInt(rawValue, 10);
+          setToughness(rawValue);
+          props.playArea.modifyCard(card, modifiers => ({
+            ...modifiers,
+            toughness: value,
+          }));
+        }}>
+        <div class='relative'>
+          <NumberFieldInput />
+          <NumberFieldIncrementTrigger />
+          <NumberFieldDecrementTrigger />
+        </div>
+      </NumberField>
+    </>
   );
 };
 

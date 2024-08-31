@@ -22,6 +22,7 @@ import {
   scrollTarget,
   sendEvent,
   setAnimating,
+  setDeckIndex,
   setHoverSignal,
   setPlayers,
   table,
@@ -29,7 +30,7 @@ import {
 } from './lib/globals';
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
-
+import { setCounters } from './lib/ui/counterDialog';
 
 var container;
 
@@ -160,13 +161,18 @@ export async function localInit(gameOptions: GameOptions) {
 export async function loadDeckAndJoin(deckIndex: number) {
   let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
 
-  let deckText = decks?.decks[deckIndex].cardList;
+  setDeckIndex(deckIndex);
 
-  playArea = await PlayArea.FromCardList(provider.awareness.clientID, deckText);
+  let deck = decks?.decks[deckIndex];
+  let counters = deck?.counters ?? [];
+
+  playArea = await PlayArea.FromCardList(provider.awareness.clientID, deck.cardList);
   playAreas.set(provider.awareness.clientID, playArea);
+  setCounters(existing => [...counters, ...existing]);
 
   playArea.subscribeEvents(sendEvent);
   sendEvent({ type: 'join', payload: playArea.getLocalState() });
+  counters.forEach(counter => sendEvent({ type: 'createCounter', counter }));
 
   hand = playArea.hand;
 
@@ -193,6 +199,13 @@ const EVENTS = {
       playArea.peekZone.removeCard(card.mesh);
     }
     playArea.addToHand(card);
+  },
+  modifyCard(event: Event, playArea: PlayArea, card: Card) {
+    card.mesh.userData.modifiers = event.payload.userData.modifiers;
+    playArea.modifyCard(card);
+  },
+  createCounter(event: Event) {
+    setCounters(counters => [...counters, event.counter]);
   },
   addCardBottomDeck(event: Event, playArea: PlayArea, card: Card) {
     if (card.mesh.userData.location === 'peek') {
@@ -379,7 +392,11 @@ function onDocumentDrop(event) {
 
   dragTargets?.forEach(target => {
     target.userData.isDragging = false;
-    let intersection = intersects.find(i => i.object.userData.id !== target.userData.id)!;
+    let intersection = intersects.find(
+      i =>
+        i.object.userData.id !== target.userData.id &&
+        (i.object.userData.isInteractive || i.object.userData.zone)
+    )!;
     let toZoneId = intersection.object.userData.zoneId;
     let fromZoneId = target.userData.zoneId;
     let fromZone = zonesById.get(fromZoneId);
