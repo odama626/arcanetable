@@ -1,9 +1,9 @@
-import { Match, Show, Switch, type Component } from 'solid-js';
+import { createEffect, createSignal, Match, Show, Switch, type Component } from 'solid-js';
 
 import styles from './overlay.module.css';
 import { getCardImage } from '../card';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
-import { hoverSignal, playAreas, provider } from '../globals';
+import { focusRenderer, hoverSignal, playAreas, provider } from '../globals';
 import DeckMenu from './deckMenu';
 import PeekMenu from './peekMenu';
 import RevealMenu from './revealMenu';
@@ -21,6 +21,14 @@ const Overlay: Component = () => {
   const tether = () => hoverSignal()?.tether;
   const playArea = () => playAreas.get(provider?.awareness?.clientID)!;
 
+  let [container, setContainer] = createSignal();
+
+  createEffect(() => {
+    let parent = container() as HTMLDivElement;
+    if (!parent) return;
+    parent.appendChild(focusRenderer.domElement);
+  });
+
   return (
     <div
       class={styles.App}
@@ -29,7 +37,8 @@ const Overlay: Component = () => {
       }}>
       <div class={styles.topRight}>
         <Show when={isPublic() || (isOwner() && ['battlefield', 'peek'].includes(location()))}>
-          <img style='height: 50vh;' src={getCardImage(cardMesh()?.userData?.card)}></img>
+          {/* <img style='height: 50vh;' src={getCardImage(cardMesh()?.userData?.card)}></img> */}
+          <div ref={setContainer} />
         </Show>
       </div>
       <Show when={tether() && cardMesh()?.userData?.clientId === provider.awareness.clientID}>

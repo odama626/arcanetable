@@ -3,15 +3,28 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { Card, cloneCard, createCardGeometry, getCardMeshTetherPoint } from './lib/card';
+import {
+  Card,
+  CARD_WIDTH,
+  cloneCard,
+  createCardGeometry,
+  getCardMeshTetherPoint,
+} from './lib/card';
 import {
   animateObject,
   animating,
+  arrowHelper,
   camera,
+  cancelAnimation,
   cardsById,
   clock,
   expect,
+  focusCamera,
+  focusRayCaster,
+  focusRenderer,
   gameLog,
+  getGlobalRotation,
+  hoverSignal,
   init,
   playAreas,
   players,
@@ -26,6 +39,7 @@ import {
   setHoverSignal,
   setPlayers,
   table,
+  updateFocusCamera,
   zonesById,
 } from './lib/globals';
 import { Hand } from './lib/hand';
@@ -321,6 +335,7 @@ function onDocumentClick(event) {
   } else if (target.userData.location === 'battlefield') {
     playArea.tap(target).then(() => {
       setHoverSignal(signal => {
+        focusOn(target);
         const tether = getCardMeshTetherPoint(target);
         return {
           ...signal,
@@ -457,6 +472,7 @@ function onDocumentDrop(event) {
     target.userData.location = toLocation;
 
     setHoverSignal(signal => {
+      focusOn(signal.mesh);
       const tether = getCardMeshTetherPoint(signal.mesh);
       return {
         ...signal,
@@ -498,12 +514,15 @@ function onDocumentMouseMove(event) {
         let quarternion = new THREE.Quaternion().setFromEuler(hand.mesh.rotation).invert();
         target.rotation.setFromQuaternion(quarternion);
       } else if (target.userData.location === 'battlefield') {
-        playArea.battlefieldZone.mesh.worldToLocal(pointTarget);
+        let zone = zonesById.get(target.userData.zoneId)!;
+        zone.mesh.worldToLocal(pointTarget);
       }
 
       target.position.set(pointTarget.x, pointTarget.y, pointTarget.z);
     }
+
     setHoverSignal(signal => {
+      focusOn(signal.mesh);
       const tether = getCardMeshTetherPoint(signal.mesh);
       return {
         ...signal,
@@ -566,6 +585,7 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
 
     hover = { object: next, colors: [] };
     setHoverSignal({ mesh: next, tether });
+
     hover.object.dispatchEvent({ type: 'mousein', mesh: hover.object });
     if (next.userData.location === 'deck') {
       hover.object.material?.forEach((mat: THREE.MeshStandardMaterial, i) => {
@@ -573,8 +593,18 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
         mat.color.set(0xffa0a0);
       });
     }
+
+    focusOn(next);
+
     outlinePass.selectedObjects = [hover.object];
   }
+}
+
+function focusOn(target: THREE.Object3D) {
+  if (focusCamera.userData.target !== target.uuid) {
+    cancelAnimation(focusCamera);
+  }
+  focusCamera.userData.target = target.uuid;
 }
 
 function render3d() {
@@ -588,4 +618,29 @@ function render3d() {
 
   camera.lookAt(scene.position);
   composer.render();
+  if (hoverSignal()?.mesh) {
+    let mesh = hoverSignal().mesh as THREE.Mesh;
+    updateFocusCamera(mesh);
+
+    focusRayCaster.set(
+      focusCamera.position,
+      mesh.localToWorld(new THREE.Vector3()).sub(focusCamera.position).normalize()
+    );
+    let intersections = focusRayCaster.intersectObject(scene);
+    let targetDistance;
+    let materials = intersections
+      .map(({ object, distance }) => {
+        if (object.uuid === mesh.uuid) {
+          targetDistance = distance;
+          return [];
+        }
+        if (targetDistance && distance > targetDistance) return [];
+        return Array.isArray(object.material) ? object.material : [object.material];
+      })
+      .flat();
+
+    materials.forEach(mat => (mat.wireframe = true));
+    focusRenderer.render(scene, focusCamera);
+    materials.forEach(mat => (mat.wireframe = false));
+  }
 }

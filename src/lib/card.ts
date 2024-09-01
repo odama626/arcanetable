@@ -131,26 +131,28 @@ export function cleanupCard(card: card) {
 }
 
 const textCanvas = document.createElement('canvas');
-textCanvas.height = 34;
+textCanvas.height = 55;
 
 function createLabel(text, color?: string) {
   const ctx = textCanvas.getContext('2d')!;
-  const font = '24px grobold';
+  const font = '48px grobold';
+  const textWidth = ctx.measureText(text).width;
 
   ctx.font = font;
-  textCanvas.width = Math.ceil(ctx.measureText(text).width + 16);
+  textCanvas.width = Math.ceil(textWidth + 24);
 
   ctx.font = font;
   ctx.lineJoin = 'miter';
   ctx.miterLimit = 3;
   ctx.fillStyle = 'white';
-  ctx.fillText(text, 8, 26);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, textCanvas.width / 2 - textWidth / 2, textCanvas.height / 2);
 
   const texture = new Texture(ctx.getImageData(0, 0, textCanvas.width, textCanvas.height));
   texture.minFilter = LinearFilter;
   texture.generateMipmaps = false;
   texture.needsUpdate = true;
-  return { texture, width: textCanvas.width };
+  return { texture, width: textCanvas.width / 30 };
 }
 
 function updateCounter(card, counterId: string, index: number) {
@@ -160,15 +162,12 @@ function updateCounter(card, counterId: string, index: number) {
   if (!card.modifiers[counterId]) {
     let geometry = new BoxGeometry(1, 1, 1);
     let mat = new MeshStandardMaterial({ color: new Color(counter.color) });
-    card.modifiers[counter.id] = new Mesh(geometry, mat);
-    card.modifiers[counter.id].scale.set(7, 3, CARD_THICKNESS);
-    card.mesh.add(card.modifiers[counter.id]);
-    card.modifiers[counter.id].transparent = true;
-    card.modifiers[counter.id].position.set(
-      CARD_WIDTH / 2 + 3,
-      CARD_HEIGHT / 2 - (index + 1) * 5,
-      CARD_THICKNESS
-    );
+    let mesh = new Mesh(geometry, mat);
+    mesh.scale.set(7, 3, CARD_THICKNESS);
+    card.mesh.add(mesh);
+    mesh.transparent = true;
+    mesh.position.set(CARD_WIDTH / 2 + 3, CARD_HEIGHT / 2 - (index + 1) * 5, CARD_THICKNESS);
+    card.modifiers[counter.id] = mesh;
   }
   if (counterValue !== 0) {
     if (!card.mesh.children.includes(card.modifiers[counterId])) {
@@ -176,12 +175,10 @@ function updateCounter(card, counterId: string, index: number) {
     }
     let mesh: Mesh = card.modifiers[counter.id];
     let label = createLabel(`${counterValue} ${counter.name}`, counter.color);
-    let width = label.width / 15;
     mesh.material.map = label.texture;
-    mesh.scale.setX(width);
-    // mesh.scale.setZ(Math.min(35, counterValue) * CARD_THICKNESS);
-    // mesh.position.setZ((Math.min(35, counterValue) * CARD_THICKNESS) / 2);
-    mesh.position.setX(CARD_WIDTH / 2 + width / 2 - 2);
+    mesh.scale.setX(label.width);
+    mesh.position.setY(CARD_HEIGHT / 2 - index * 3.25 - 2.5);
+    mesh.position.setX(CARD_WIDTH / 2 + label.width / 2 - 0.5);
     mesh.material.needsUpdate = true;
   } else {
     card.mesh.remove(card.modifiers[counter.id]);
@@ -192,33 +189,37 @@ export function renderModifiers(card) {
   card.modifiers = card.modifiers ?? {};
 
   let modifiers = card.mesh.userData.modifiers;
-  let { power, toughness, ...rest } = modifiers;
+  let { power, toughness } = modifiers;
 
   if (power !== 0 || toughness !== 0) {
     if (!card.modifiers.pt) {
       let geometry = new BoxGeometry(1, 1, 1);
       let mat = new MeshStandardMaterial({});
-      card.modifiers.pt = new Mesh(geometry, mat);
-      card.modifiers.pt.scale.set(7, 3, CARD_THICKNESS);
-      card.mesh.add(card.modifiers.pt);
-      card.modifiers.pt.transparent = true;
-      card.modifiers.pt.position.set(0, -CARD_HEIGHT / 2 + 1, CARD_THICKNESS);
+      let mesh = new Mesh(geometry, mat);
+      mesh.scale.set(7, 3, CARD_THICKNESS);
+      card.mesh.add(mesh);
+      mesh.transparent = true;
+      mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, CARD_THICKNESS);
+      card.modifiers.pt = mesh;
     }
-    if (!card.mesh.children.includes(card.modifiers.pt)) {
-      card.mesh.add(card.modifiers.pt);
+    let mesh = card.modifiers.pt as Mesh;
+    if (!card.mesh.children.includes(mesh)) {
+      card.mesh.add(mesh);
     }
     let label = createLabel(
       `${power > 0 ? '+' : ''}${power} / ${toughness > 0 ? '+' : ''}${toughness}`
     );
-    let width = label.width / 15;
-    card.modifiers.pt.material.map = label.texture;
-    card.modifiers.pt.scale.setX(width);
-    card.modifiers.pt.material.needsUpdate = true;
+    mesh.material.map = label.texture;
+    mesh.scale.setX(label.width);
+    mesh.position.setX(CARD_WIDTH / 2 - label.width / 2);
+    mesh.material.needsUpdate = true;
   } else if (card.modifiers.pt) {
     card.mesh.remove(card.modifiers.pt);
   }
 
-  Object.keys(card.mesh.userData.modifiers.counters).forEach((counterId, index) => {
-    updateCounter(card, counterId, index);
-  });
+  Object.keys(card.mesh.userData.modifiers.counters)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((counterId, index) => {
+      updateCounter(card, counterId, index);
+    });
 }

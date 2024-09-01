@@ -1,7 +1,9 @@
 import { createSignal } from 'solid-js';
 import {
+  ArrowHelper,
   Box3,
   BoxGeometry,
+  CameraHelper,
   CatmullRomCurve3,
   Clock,
   Euler,
@@ -12,6 +14,7 @@ import {
   Object3D,
   PerspectiveCamera,
   Quaternion,
+  Raycaster,
   Scene,
   TextureLoader,
   Vector3,
@@ -21,7 +24,7 @@ import { WebrtcProvider } from 'y-webrtc';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { cleanMaterial } from '~/main3d';
-import { Card } from './card';
+import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
@@ -32,6 +35,7 @@ export function expect(test: boolean, message: string, ...supplemental: any) {
 }
 
 export interface CardZone {
+  mesh: Object3D;
   removeCard?(cardMesh: Mesh): void;
   addCard(card: Card, opts?: { skipAnimation?: boolean; position?: Vector3 }): void;
   getSerializable(): { id: string };
@@ -43,7 +47,8 @@ export let textureLoader: TextureLoader;
 export let renderer: WebGLRenderer;
 export let scene: Scene;
 export let camera: PerspectiveCamera;
-export let detailCamera: PerspectiveCamera;
+export let focusRenderer: WebGLRenderer;
+export let focusCamera: PerspectiveCamera;
 export let [hoverSignal, setHoverSignal] = createSignal();
 export let cardsById = new Map<string, Card>();
 export let zonesById = new Map<string, CardZone>();
@@ -55,6 +60,9 @@ export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
 export let [deckIndex, setDeckIndex] = createSignal();
+export let focusRayCaster: Raycaster;
+
+export let arrowHelper = new ArrowHelper();
 
 export const [scrollTarget, setScrollTarget] = createSignal();
 
@@ -87,7 +95,23 @@ export function init({ gameId }) {
   // renderer.setClearColor(0x9d9eae)
   renderer.setClearColor(0x05050e);
 
+  let focusWidth = 750;
+  let focusHeight = 700;
+  focusRenderer = new WebGLRenderer();
+  focusRenderer.setPixelRatio(window.devicePixelRatio);
+  focusRenderer.setSize(focusWidth, focusHeight);
+
+  focusCamera = new PerspectiveCamera(50, focusWidth / focusHeight, 1, 2000);
+
+  // let helper = new CameraHelper(focusCamera);
+
   scene = new Scene();
+
+  scene.add(arrowHelper);
+
+  focusRayCaster = new Raycaster();
+
+  // scene.add(helper);
 
   const tableGeometry = new BoxGeometry(200, 200, 5);
   const tableMaterial = new MeshStandardMaterial({ color: 0xdeb887 });
@@ -105,6 +129,39 @@ export function sendEvent(event) {
   gameLog.push([event]);
 }
 
+export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
+  let distance = 30;
+  let targetWorldPosition = target.localToWorld(offset);
+  let worldDirection = target.getWorldDirection(new Vector3());
+  let worldRotation = getGlobalRotation(target);
+
+  if (!target.userData.isPublic) {
+    worldDirection.multiply(new Vector3(-1, -1, -1));
+    worldRotation.y += Math.PI;
+  }
+
+  let position = targetWorldPosition.add(
+    worldDirection.multiply(new Vector3(distance, distance, distance))
+  );
+
+  // focusCamera.lookAt(target.getWorldPosition(new Vector3()));
+  return {
+    position,
+    rotation: worldRotation,
+  };
+  // focusCamera.rotation.copy(worldRotation);}
+}
+
+export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
+  if (focusCamera.userData.isAnimating) return;
+
+  let { position, rotation } = getFocusCameraPositionRelativeTo(target, offset);
+
+  focusCamera.position.copy(position);
+
+  focusCamera.lookAt(target.getWorldPosition(new Vector3()));
+  focusCamera.rotation.copy(rotation);
+}
 function fitCameraToObject(camera, object, offset) {
   offset = offset || 1.5;
 
@@ -224,6 +281,13 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
   animatingObjects.add(animation);
 }
 
+export function cancelAnimation(obj: Object3D) {
+  const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
+  animationMap.delete(obj.uuid);
+  animatingObjects.delete(obj.uuid);
+  obj.userData.isAnimating = false;
+}
+
 export function renderAnimations(time: number) {
   expect(animationGroupQueue.length > 0, `animationGroupQueue empty!`);
   const { animatingObjects } = animationGroupQueue[0];
@@ -281,7 +345,6 @@ export function getGlobalRotation(mesh: Object3D) {
   return euler;
 }
 
-
 export function cleanup() {
   cardsById.clear();
   zonesById.clear();
@@ -292,10 +355,14 @@ export function cleanup() {
   provider.destroy();
   ydoc.destroy();
   setAnimating(false);
-  setPlayers([])
+  setPlayers([]);
 
   renderer.domElement.remove();
   renderer.dispose();
+
+  focusRenderer.dispose();
+  focusRenderer.domElement.remove();
+
   scene.traverse(object => {
     if (!object.isMesh) return;
     object.geometry.dispose();

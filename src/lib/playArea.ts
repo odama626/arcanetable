@@ -1,10 +1,25 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
-import { Card, cloneCard, createCardGeometry, getSearchLine, renderModifiers } from './card';
+import {
+  Card,
+  CARD_WIDTH,
+  cloneCard,
+  createCardGeometry,
+  getSearchLine,
+  renderModifiers,
+} from './card';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Deck, loadDeckList } from './deck';
-import { animateObject, cardsById, provider, zonesById } from './globals';
+import {
+  animateObject,
+  cardsById,
+  focusCamera,
+  getFocusCameraPositionRelativeTo,
+  provider,
+  updateFocusCamera,
+  zonesById,
+} from './globals';
 import { Hand } from './hand';
 import { CardArea } from './cardArea';
 import { uniqBy } from 'lodash-es';
@@ -217,6 +232,7 @@ export class PlayArea {
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
 
+    let focusCameraTarget = getFocusCameraPositionRelativeTo(cardMesh, new Vector3(-CARD_WIDTH / 4, 0, 0));
     cardMesh.userData.isPublic = !cardMesh.userData.isPublic;
 
     animateObject(cardMesh, {
@@ -230,6 +246,14 @@ export class PlayArea {
         rotation,
       },
     });
+
+    if (focusCamera.userData.target === cardMesh.uuid) {
+      console.log('flip', { focusCamera });
+      animateObject(focusCamera, {
+        duration: 0.4,
+        to: focusCameraTarget,
+      });
+    }
   }
 
   addCardTopDeck(card: Card) {
