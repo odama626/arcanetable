@@ -163,6 +163,7 @@ export class PlayArea {
   async peekGraveyard() {
     await Promise.all(
       this.graveyardZone.mesh.children.map((child, i) => {
+        if (!child.userData.id) return;
         return new Promise<void>(resolve => {
           let card = cardsById.get(child.userData.id);
 
@@ -180,6 +181,7 @@ export class PlayArea {
   async peekExile() {
     await Promise.all(
       this.exileZone.mesh.children.map((child, i) => {
+        if (!child.userData.id) return;
         return new Promise<void>(resolve => {
           let card = cardsById.get(child.userData.id);
 
@@ -232,8 +234,12 @@ export class PlayArea {
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
 
-    let focusCameraTarget = getFocusCameraPositionRelativeTo(cardMesh, new Vector3(-CARD_WIDTH / 4, 0, 0));
+    let focusCameraTarget = getFocusCameraPositionRelativeTo(
+      cardMesh,
+      new Vector3(-CARD_WIDTH / 4, 0, 0)
+    );
     cardMesh.userData.isPublic = !cardMesh.userData.isPublic;
+    cardMesh.userData.isFlipped = !cardMesh.userData.isPublic;
 
     animateObject(cardMesh, {
       duration: 0.4,

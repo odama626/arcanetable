@@ -135,7 +135,7 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
   let worldDirection = target.getWorldDirection(new Vector3());
   let worldRotation = getGlobalRotation(target);
 
-  if (!target.userData.isPublic) {
+  if (target.userData.isFlipped) {
     worldDirection.multiply(new Vector3(-1, -1, -1));
     worldRotation.y += Math.PI;
   }
@@ -162,6 +162,8 @@ export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WI
   focusCamera.lookAt(target.getWorldPosition(new Vector3()));
   focusCamera.rotation.copy(rotation);
 }
+
+
 function fitCameraToObject(camera, object, offset) {
   offset = offset || 1.5;
 
