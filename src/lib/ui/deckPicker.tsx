@@ -78,7 +78,7 @@ const DeckPicker: Component = props => {
               </form>
             </DialogContent>
           </Dialog>
-          <Button onClick={() => props.onSelectDeck(selectedDeckIndex())}>Start Game</Button>
+          <Button onClick={() => props.onSelectDeck(selectedDeckIndex())}>Start Playtest</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

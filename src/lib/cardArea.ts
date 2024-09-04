@@ -1,5 +1,14 @@
 import { nanoid } from 'nanoid';
-import { BoxGeometry, Euler, Mesh, MeshStandardMaterial, Vector3 } from 'three';
+import {
+  BoxGeometry,
+  EdgesGeometry,
+  Euler,
+  LineBasicMaterial,
+  LineSegments,
+  Mesh,
+  MeshStandardMaterial,
+  Vector3,
+} from 'three';
 import { Card, CARD_THICKNESS } from './card';
 import { animateObject, CardZone, getGlobalRotation, zonesById } from './globals';
 
@@ -7,13 +16,19 @@ export class CardArea implements CardZone {
   public mesh: Mesh;
 
   constructor(public zone: string, public id: string = nanoid()) {
+    // let geometry = new BoxGeometry(100, 75, CARD_THICKNESS / 2);
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
     let material = new MeshStandardMaterial({ color: 0x686977 }); //#9d9eae
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    // this.mesh.position.set(12.5, -65, 0);
     this.mesh.position.setY(-50);
     this.mesh.receiveShadow = true;
+    let edges = new EdgesGeometry(geometry);
+    let lineSegments = new LineSegments(edges, new LineBasicMaterial({ color: 0xffffff }));
+    lineSegments.position.setZ(0.125);
+    this.mesh.add(lineSegments);
     // this.mesh.position.setX(-25);
     zonesById.set(id, this);
 

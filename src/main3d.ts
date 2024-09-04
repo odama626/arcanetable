@@ -3,17 +3,10 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import {
-  Card,
-  CARD_WIDTH,
-  cloneCard,
-  createCardGeometry,
-  getCardMeshTetherPoint,
-} from './lib/card';
+import { Card, cloneCard, createCardGeometry, getCardMeshTetherPoint } from './lib/card';
 import {
   animateObject,
   animating,
-  arrowHelper,
   camera,
   cancelAnimation,
   cardsById,
@@ -23,7 +16,6 @@ import {
   focusRayCaster,
   focusRenderer,
   gameLog,
-  getGlobalRotation,
   hoverSignal,
   init,
   playAreas,
@@ -45,6 +37,7 @@ import {
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
+import { uniqBy } from 'lodash-es';
 
 var container;
 
@@ -182,9 +175,10 @@ export async function loadDeckAndJoin(deckIndex: number) {
 
   playArea = await PlayArea.FromCardList(provider.awareness.clientID, deck.cardList);
   playAreas.set(provider.awareness.clientID, playArea);
-  setCounters(existing => [...counters, ...existing]);
+  setCounters(existing => uniqBy([...counters, ...existing], 'id'));
 
   playArea.subscribeEvents(sendEvent);
+  provider.awareness.setLocalStateField('life', 40);
   sendEvent({ type: 'join', payload: playArea.getLocalState() });
   counters.forEach(counter => sendEvent({ type: 'createCounter', counter }));
 
@@ -198,12 +192,23 @@ interface Event {
   payload: unknown;
 }
 
+let playerCount = 0;
+
+let PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
+
 const EVENTS = {
   join(event: Event) {
     let playArea = new PlayArea(event.clientID, event.payload.cards, event.payload);
-    playArea.mesh.rotateZ(Math.PI);
+
     table.add(playArea.mesh);
     playAreas.set(event.clientID, playArea);
+    playerCount++;
+
+    console.log({ playerCount });
+    // playArea.mesh.rotateZ((Math.PI / 2) * playerCount);
+    const rotation = PLAY_AREA_ROTATIONS[playerCount];
+    console.log({ rotation });
+    playArea.mesh.rotateZ(rotation);
   },
   draw(event: Event, playArea: PlayArea) {
     playArea?.draw();
@@ -219,7 +224,7 @@ const EVENTS = {
     playArea.modifyCard(card);
   },
   createCounter(event: Event) {
-    setCounters(counters => [...counters, event.counter]);
+    setCounters(counters => uniqBy([...counters, event.counter], 'id'));
   },
   addCardBottomDeck(event: Event, playArea: PlayArea, card: Card) {
     if (card.mesh.userData.location === 'peek') {
@@ -331,13 +336,14 @@ function onDocumentClick(event) {
   if (!target) return;
 
   if (target.userData.zone === 'battlefield') {
-    setHoverSignal();
+    setHoverSignal({ mouse });
   } else if (target.userData.location === 'battlefield') {
     playArea.tap(target).then(() => {
       setHoverSignal(signal => {
         focusOn(target);
         const tether = getCardMeshTetherPoint(target);
         return {
+          mouse,
           ...signal,
           tether,
         };
@@ -475,6 +481,7 @@ function onDocumentDrop(event) {
       focusOn(signal.mesh);
       const tether = getCardMeshTetherPoint(signal.mesh);
       return {
+        mouse,
         ...signal,
         tether,
       };
@@ -525,10 +532,16 @@ function onDocumentMouseMove(event) {
       focusOn(signal.mesh);
       const tether = getCardMeshTetherPoint(signal.mesh);
       return {
+        mouse,
         ...signal,
         tether,
       };
     });
+  } else {
+    setHoverSignal(signal => ({
+      mouse,
+      ...signal,
+    }));
   }
 }
 
@@ -584,7 +597,7 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
     const tether = getCardMeshTetherPoint(next);
 
     hover = { object: next, colors: [] };
-    setHoverSignal({ mesh: next, tether });
+    setHoverSignal({ mesh: next, tether, mouse });
 
     hover.object.dispatchEvent({ type: 'mousein', mesh: hover.object });
     if (next.userData.location === 'deck') {

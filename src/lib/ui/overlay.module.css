@@ -5,8 +5,7 @@
   pointer-events: none;
 }
 
-.topRight {
-  right: 0;
+.focusCamera {
   position: fixed;
 }
 

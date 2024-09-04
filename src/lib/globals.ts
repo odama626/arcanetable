@@ -129,6 +129,15 @@ export function sendEvent(event) {
   gameLog.push([event]);
 }
 
+
+export async function sha1(input) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
 export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
   let distance = 30;
   let targetWorldPosition = target.localToWorld(offset);
@@ -354,10 +363,12 @@ export function cleanup() {
   setHoverSignal();
   setScrollTarget();
 
-  provider.destroy();
+  provider?.destroy();
   ydoc.destroy();
   setAnimating(false);
   setPlayers([]);
+
+  if (!renderer) return;
 
   renderer.domElement.remove();
   renderer.dispose();

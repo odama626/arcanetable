@@ -9,10 +9,13 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
-import { deckIndex, sendEvent } from '../globals';
+import { deckIndex, sendEvent, sha1 } from '../globals';
+import ColorHash from 'color-hash';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal([]);
+
+const colorHash = new ColorHash({ lightness: 0.7 });
 
 function createCounter(counter) {
   setCounters(counters => [...counters, counter]);
@@ -34,20 +37,21 @@ const CounterDialog: Component = props => {
         onSubmit={e => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
-          formData.set('id', nanoid());
+          async function create() {
+            let id = await sha1(formData.get('name'));
+            formData.set('id', id);
+            formData.set('color', colorHash.hex(formData.get('name')));
 
-          const counter = Object.fromEntries(formData.entries());
-          createCounter(counter);
+            const counter = Object.fromEntries(formData.entries());
+            createCounter(counter);
+          }
+          create();
           e.currentTarget.reset();
           setIsCounterDialogOpen(false);
         }}>
         <TextField>
           <TextFieldLabel for='name'>Name</TextFieldLabel>
           <TextFieldInput type='text' id='name' name='name' />
-        </TextField>
-        <TextField>
-          <TextFieldLabel for='color'>Color</TextFieldLabel>
-          <TextFieldInput type='color' id='color' name='color' />
         </TextField>
         <DialogFooter>
           <Button type='submit'>Create</Button>

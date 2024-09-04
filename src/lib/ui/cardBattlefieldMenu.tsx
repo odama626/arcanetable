@@ -1,5 +1,6 @@
 import { Component, createEffect, createSignal, For, Show } from 'solid-js';
 import { Mesh } from 'three';
+import { Button } from '~/components/ui/button';
 import {
   Menubar,
   MenubarContent,
@@ -12,17 +13,15 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '~/components/ui/menubar';
-import { cardsById, setHoverSignal } from '../globals';
-import { PlayArea } from '../playArea';
-import { Button } from '~/components/ui/button';
-import { counters, setIsCounterDialogOpen } from './counterDialog';
-import { TextField, TextFieldInput } from '~/components/ui/text-field';
 import {
   NumberField,
   NumberFieldDecrementTrigger,
   NumberFieldIncrementTrigger,
   NumberFieldInput,
 } from '~/components/ui/number-field';
+import { cardsById, setHoverSignal } from '../globals';
+import { PlayArea } from '../playArea';
+import { counters, setIsCounterDialogOpen } from './counterDialog';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   createEffect(() => {

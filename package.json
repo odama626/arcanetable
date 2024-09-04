@@ -31,6 +31,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk-solid": "^1.1.0",
+    "color-hash": "^2.0.2",
     "lodash-es": "^4.17.21",
     "nanoid": "^5.0.7",
     "solid-js": "^1.8.11",
