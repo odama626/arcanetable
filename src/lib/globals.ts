@@ -3,7 +3,6 @@ import {
   ArrowHelper,
   Box3,
   BoxGeometry,
-  CameraHelper,
   CatmullRomCurve3,
   Clock,
   Euler,
@@ -20,7 +19,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
-import { WebrtcProvider } from 'y-webrtc';
+import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { cleanMaterial } from '~/main3d';
@@ -66,16 +65,14 @@ export let arrowHelper = new ArrowHelper();
 
 export const [scrollTarget, setScrollTarget] = createSignal();
 
-export let provider: WebrtcProvider;
+export let provider: WebsocketProvider;
 
 export function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
 export function init({ gameId }) {
-  provider = new WebrtcProvider(gameId, ydoc, {
-    signaling: ['wss://signaling.arcanetable.app'],
-  });
+  provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
 
   clock = new Clock();
   loadingManager = new LoadingManager();
@@ -95,8 +92,12 @@ export function init({ gameId }) {
   // renderer.setClearColor(0x9d9eae)
   renderer.setClearColor(0x05050e);
 
-  let focusWidth = 750;
-  let focusHeight = 700;
+  // let focusWidth = 750;
+  // let focusHeight = 700;
+  let focusHeight = window.innerHeight * 0.5;
+
+  let focusWidth = (focusHeight / 700) * 750;
+
   focusRenderer = new WebGLRenderer();
   focusRenderer.setPixelRatio(window.devicePixelRatio);
   focusRenderer.setSize(focusWidth, focusHeight);
@@ -129,14 +130,13 @@ export function sendEvent(event) {
   gameLog.push([event]);
 }
 
-
 export async function sha1(input) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 }
 export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
   let distance = 30;
@@ -171,7 +171,6 @@ export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WI
   focusCamera.lookAt(target.getWorldPosition(new Vector3()));
   focusCamera.rotation.copy(rotation);
 }
-
 
 function fitCameraToObject(camera, object, offset) {
   offset = offset || 1.5;
@@ -362,7 +361,6 @@ export function cleanup() {
   setPeekFilterText('');
   setHoverSignal();
   setScrollTarget();
-
   provider?.destroy();
   ydoc.destroy();
   setAnimating(false);

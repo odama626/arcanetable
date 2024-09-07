@@ -1,0 +1,10 @@
+FROM node:current-alpine3.18
+
+RUN mkdir -p /opt/app
+WORKDIR /opt/app
+
+COPY package*.json ./
+RUN npm install
+ENV HOST="0.0.0.0"
+EXPOSE 4444/tcp
+CMD ["node", "node_modules/.bin/y-websocket"]

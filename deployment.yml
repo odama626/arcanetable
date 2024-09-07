@@ -118,3 +118,65 @@ spec:
             name: signaling  # The name of the service
             port:
               number: 80 # Service Portnumber
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws
+  namespace: arcanetable
+  labels:
+    app: ws
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ws
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ws
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable/ws:latest
+          name: ws
+          ports:
+            - containerPort: 4444
+          env:
+            - name: PORT
+              value: "4444"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 4444
+  type: ClusterIP
+  selector:
+    app: ws
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ws # Name of the ingress object
+  namespace: arcanetable
+spec:
+  rules:
+  - host: "ws.arcanetable.app"  # Your hostname
+    http:
+      paths:
+      # Path-based routing settings:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ws # The name of the service
+            port:
+              number: 80 # Service Portnumber
