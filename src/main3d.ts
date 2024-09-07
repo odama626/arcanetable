@@ -165,20 +165,21 @@ export async function localInit(gameOptions: GameOptions) {
   startAnimating();
 }
 
-export async function loadDeckAndJoin(deckIndex: number) {
+export async function loadDeckAndJoin(settings) {
   let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
 
-  setDeckIndex(deckIndex);
+  setDeckIndex(settings.deckIndex);
 
-  let deck = decks?.decks[deckIndex];
+  let deck = decks?.decks[settings.deckIndex];
   let counters = deck?.counters ?? [];
 
-  playArea = await PlayArea.FromCardList(provider.awareness.clientID, deck.cardList);
+  playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);
   playAreas.set(provider.awareness.clientID, playArea);
   setCounters(existing => uniqBy([...counters, ...existing], 'id'));
 
   playArea.subscribeEvents(sendEvent);
-  provider.awareness.setLocalStateField('life', 40);
+  provider.awareness.setLocalStateField('life', settings.startingLife);
+  provider.awareness.setLocalStateField('name', settings.name);
   sendEvent({ type: 'join', payload: playArea.getLocalState() });
   counters.forEach(counter => sendEvent({ type: 'createCounter', counter }));
 

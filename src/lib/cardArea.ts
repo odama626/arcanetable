@@ -90,6 +90,16 @@ export class CardArea implements CardZone {
   getSerializable(): { id: string } {
     return {
       id: this.id,
+      cards: this.mesh.children
+        .map(child => {
+          if (!child.userData.card) return;
+          return {
+            userData: child.userData,
+            position: child.position.toArray(),
+            rotation: child.rotation.toArray(),
+          };
+        })
+        .filter(Boolean),
     };
   }
 }

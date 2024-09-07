@@ -38,9 +38,9 @@ const GamePage: Component = props => {
       <Overlay />
       <Show when={deckIndex() === undefined}>
         <DeckPicker
-          onSelectDeck={index => {
-            setDeckIndex(index);
-            loadDeckAndJoin(index);
+          onSelectDeck={settings => {
+            setDeckIndex(settings.deckIndex);
+            loadDeckAndJoin(settings);
           }}
         />
       </Show>

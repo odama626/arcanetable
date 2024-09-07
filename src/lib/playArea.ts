@@ -2,15 +2,17 @@ import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import {
   Card,
+  CARD_HEIGHT,
   CARD_WIDTH,
   cloneCard,
   createCardGeometry,
   getSearchLine,
+  initializeCardMesh,
   renderModifiers,
 } from './card';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
-import { Deck, loadDeckList } from './deck';
+import { Deck, loadCardList, loadDeckList } from './deck';
 import {
   animateObject,
   cardsById,
@@ -66,18 +68,7 @@ export class PlayArea {
     this.mesh.add(this.exileZone.mesh);
     this.mesh.add(this.graveyardZone.mesh);
 
-    let deckCards = (state?.deck?.cards || cards).map(card => {
-      const mesh = createCardGeometry(card);
-      mesh.userData.clientId = clientId;
-
-      let result = {
-        ...card,
-        clientId: clientId,
-        mesh,
-      };
-      cardsById.set(result.id, result);
-      return result;
-    });
+    let deckCards = (state?.deck?.cards || cards).map(card => initializeCardMesh(card, clientId));
 
     this.deck = new Deck(deckCards, state?.deck?.id);
     this.hand = new Hand(state?.hand?.id);
@@ -89,6 +80,17 @@ export class PlayArea {
     this.mesh.add(this.deck.mesh);
     this.mesh.add(this.hand.mesh);
     this.mesh.add(this.battlefieldZone.mesh);
+
+    if (state?.battlefield?.cards) {
+      console.log(state.battlefield?.cards);
+      state.battlefield.cards.forEach(mesh => {
+        let card = initializeCardMesh(mesh.userData.card, clientId);
+        this.battlefieldZone.addCard(card, {
+          skipAnimation: true,
+          position: new Vector3().fromArray(mesh.position),
+        });
+      });
+    }
   }
 
   async openTokenMenu() {
@@ -274,10 +276,10 @@ export class PlayArea {
 
   tap(cardMesh: Mesh) {
     return new Promise<void>(onComplete => {
-      let angleDelta = cardMesh.userData.tapped ? Math.PI / 2 : Math.PI / -2;
+      let angleDelta = cardMesh.userData.isTapped ? 0 : -Math.PI / 2;
       let rotation = cardMesh.rotation.clone();
-      rotation.z += angleDelta;
-      cardMesh.userData.tapped = !cardMesh.userData.tapped;
+      rotation.z = angleDelta;
+      cardMesh.userData.isTapped = !cardMesh.userData.isTapped;
       this.emitEvent('tap', { userData: cardMesh.userData });
 
       animateObject(cardMesh, {
@@ -344,10 +346,27 @@ export class PlayArea {
     });
   }
 
-  static async FromCardList(clientId, text: string) {
-    let cards = await loadDeckList(text);
+  static async FromDeck(clientId, deck: string) {
+    let deckList = deck?.deck ?? loadCardList(deck.cardList);
+    console.log({ deckList });
+    let cards = await loadDeckList(deckList);
+
+    console.log({ cards, deck });
 
     const playArea = new PlayArea(clientId, cards);
+
+    if (deck?.inPlay) {
+      let cardsInPlay = await loadDeckList(deck?.inPlay);
+      cardsInPlay.forEach((card, i) => {
+        card.id = card.id || nanoid();
+        let initializedCard = initializeCardMesh(card, clientId);
+        playArea.battlefieldZone.addCard(initializedCard, {
+          skipAnimation: true,
+          position: new Vector3(100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125),
+        });
+      });
+    }
+
     playArea.deck.shuffle();
     return playArea;
   }

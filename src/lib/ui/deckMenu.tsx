@@ -11,6 +11,7 @@ import {
   MenubarTrigger,
 } from '~/components/ui/menubar';
 import { PlayArea } from '../playArea';
+import { queueAnimationGroup } from '../globals';
 
 let COUNT_OPTIONS = [1, 3, 5, 7, 10];
 
@@ -147,6 +148,43 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
+          <MenubarSub overlap>
+            <MenubarSubTrigger
+              onClick={() => {
+                let cardsInHand = props.playArea.hand.cards;
+                cardsInHand.forEach(card => {
+                  props.playArea.hand.removeCard(card.mesh);
+                  props.playArea.deck.addCardBottom(card);
+                });
+                queueAnimationGroup();
+                props.playArea.shuffleDeck();
+                queueAnimationGroup();
+                props.playArea.draw();
+              }}>
+              Mulligan for
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <For each={COUNT_OPTIONS}>
+                {value => (
+                  <MenubarItem
+                    closeOnSelect={false}
+                    onClick={() => {
+                      let cardsInHand = props.playArea.hand.cards;
+                      cardsInHand.forEach(card => {
+                        props.playArea.hand.removeCard(card.mesh);
+                        props.playArea.deck.addCardBottom(card);
+                      });
+                      queueAnimationGroup();
+                      props.playArea.shuffleDeck();
+                      queueAnimationGroup();
+                      doXTimes(value, () => props.playArea.draw());
+                    }}>
+                    {value}
+                  </MenubarItem>
+                )}
+              </For>
+            </MenubarSubContent>
+          </MenubarSub>{' '}
           <MenubarSeparator />
           <MenubarItem
             onClick={() => {

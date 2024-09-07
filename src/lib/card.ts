@@ -87,9 +87,27 @@ export function getCardImage(card: Card) {
   return image_uris?.large;
 }
 
+export function initializeCardMesh(card, clientId) {
+  const mesh = createCardGeometry(card);
+  mesh.userData.clientId = clientId;
+
+  let result = {
+    ...card,
+    clientId: clientId,
+    mesh,
+  };
+  cardsById.set(result.id, result);
+  return result;
+}
+
+export function getCardArtImage(card: Card) {
+  let image_uris = card?.detail?.card_faces?.[0].image_uris ?? card?.detail?.image_uris;
+  return image_uris?.art_crop;
+}
+
 export function getCardMeshTetherPoint(cardMesh: Mesh) {
   let targetVertex = 6;
-  if (cardMesh.userData.tapped) {
+  if (cardMesh.userData.isTapped) {
     targetVertex = 15;
   }
 
@@ -103,13 +121,13 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
 
   if (cardMesh.userData.location === 'battlefield') {
     if (cardMesh.userData.isPublic) {
-      if (cardMesh.userData.tapped) {
+      if (cardMesh.userData.isTapped) {
         targetVertex = 15;
       } else {
         targetVertex = 6;
       }
     } else {
-      if (cardMesh.userData.tapped) {
+      if (cardMesh.userData.isTapped) {
         targetVertex = 1;
       } else {
         targetVertex = 2;

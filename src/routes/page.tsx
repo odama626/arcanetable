@@ -58,11 +58,71 @@ const Page: Component = props => {
           </div>
         </header>
 
+        {/* <!-- First Feature Section (Intuitive Gameplay) --> */}
+        {/* <section class='py-20 bg-gray-900'>
+          <div class='max-w-4xl mx-auto flex flex-col items-center'>
+            <h2 class='text-3xl font-bold mb-8 text-center'>Intuitive and Immersive Gameplay!</h2>
+            <p class='text-gray-400 text-center mb-12'>
+              Experience the next level of card gaming with our immersive and intuitive gameplay
+              features.
+            </p>
+            <img
+              src='path-to-gameplay-image.png'
+              alt='Gameplay Image'
+              class='w-full max-w-xl mx-auto'
+            />
+          </div>
+        </section> */}
+
+        {/* <!-- Second Feature Section (Master Playtesting) --> */}
+        <section class='py-20 bg-gray-900'>
+          <div class='max-w-4xl mx-auto flex flex-col items-center'>
+            <h2 class='text-3xl font-bold mb-8 text-center'>Master the Art of Playtesting</h2>
+            <p class='text-gray-400 text-center mb-12'>
+              Develop your strategies and master deck design so that you will always best your
+              playgroup
+            </p>
+            <img
+              src='/playtesting.png'
+              alt='Playtesting Image'
+              class='w-full max-w-xl mx-auto rounded-lg'
+            />
+          </div>
+        </section>
+        <div class='text-center'>
+          <A
+            href={`/game/${nanoid()}`}
+            class='bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700'>
+            Start Playtesting
+          </A>
+        </div>
+
+        {/* <!-- Third Feature Section (Custom Solutions) --> */}
+        {/* <section class='py-20 bg-gray-900'>
+          <div class='max-w-4xl mx-auto flex flex-col items-center'>
+            <h2 class='text-3xl font-bold mb-8 text-center'>Custom Solutions for Every Player</h2>
+            <p class='text-gray-400 text-center mb-12'>
+              Personalize your gaming experience with custom solutions tailored to your needs.
+            </p>
+            <img
+              src='path-to-custom-solutions-image.png'
+              alt='Custom Solutions Image'
+              class='w-full max-w-xl mx-auto'
+            />
+          </div>
+        </section> */}
+
         {/* <!-- Insights Section --> */}
         <section class='py-16 bg-gray-900'>
           <div class='max-w-7xl mx-auto px-6 lg:px-8'>
-            <h2 class='text-3xl font-bold text-white text-center mb-12'>Explore our Insights</h2>
+            <h2 class='text-3xl font-bold text-white text-center mb-12'>Arcane what?</h2>
 
+            <p class='text-gray-400 text-center mb-12'>
+              Table. Gone are the days of staring at Archidekt and hoping your card pile will
+              execute.
+              <br />
+              Use the power of Arcane Table to make sure that it does.
+            </p>
             <div class='grid gap-8 lg:grid-cols-3'>
               {/* <!-- Insight Card 1 --> */}
               <div

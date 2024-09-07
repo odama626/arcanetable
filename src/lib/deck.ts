@@ -1,6 +1,6 @@
 import { CatmullRomCurve3, Euler, Group, Quaternion, Vector3 } from 'three';
 import { Card, CARD_WIDTH, getSearchLine } from './card';
-import { animateObject, expect, queueAnimationGroup, zonesById } from './globals';
+import { animateObject, expect, queueAnimationGroup, sha1, zonesById } from './globals';
 import { deck as deckParser } from './deckParser';
 import { nanoid } from 'nanoid';
 
@@ -258,30 +258,61 @@ export class Deck {
   }
 }
 
-export async function loadDeckList(deckText) {
-  const deckEntries = deckParser.run(deckText).result;
-  console.log({ deckEntries });
-  const uniqueCards = await Promise.all(
-    deckEntries.map(async entry => {
-      const url = new URL(`https://api.scryfall.com/cards/named`);
-      url.searchParams.set('exact', entry.name);
-      if (entry.set) {
-        url.searchParams.set('set', entry.set);
-      }
-      const payload = await fetch(url.toString(), { cache: 'force-cache' }).then(r => r.json());
+interface CardEntry {
+  name: string;
+  qty: number;
+  categories: string[];
+  set: string;
+}
+
+export function loadCardList(cardList: string): CardEntry[] {
+  return deckParser.run(cardList).result;
+}
+
+export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>) {
+  const url = new URL(`https://api.scryfall.com/cards/named`);
+  url.searchParams.set('exact', entry.name);
+  if (entry.set) {
+    url.searchParams.set('set', entry.set);
+  }
+
+  let urlString = url.toString();
+
+  if (cache && cache.has(urlString + entry.qty)) {
+    return cache.get(urlString + entry.qty);
+  }
+
+  let result = fetch(urlString, { cache: 'force-cache' })
+    .then(r => r.json())
+    .then(async payload => {
       payload.search = getSearchLine(payload);
       return {
         ...entry,
-        card: payload,
+        detail: payload,
       };
-    })
-  );
+    });
+
+  if (cache) {
+    cache.set(urlString + entry.qty, result);
+  }
+
+  return result;
+}
+
+export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string, any>) {
+  const uniqueCards = await Promise.all(cardEntries.map(entry => fetchCardInfo(entry, cache)));
 
   let cards = [];
 
+  console.log({uniqueCards})
+
   uniqueCards.forEach(card => {
     for (let i = 0; i < card.qty; i++) {
-      cards.push({ state: {}, detail: card.card });
+      cards.push({
+        state: {},
+        detail: card.detail,
+        categories: card.categories ?? [],
+      });
     }
   });
 
