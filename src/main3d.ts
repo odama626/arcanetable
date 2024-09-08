@@ -1,14 +1,19 @@
+import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { Card, cloneCard, createCardGeometry, getCardMeshTetherPoint } from './lib/card';
 import {
   animateObject,
+  cancelAnimation,
+  queueAnimationGroup,
+  renderAnimations,
+} from './lib/animations';
+import { Card, cloneCard, createCardGeometry, getCardMeshTetherPoint } from './lib/card';
+import {
   animating,
   camera,
-  cancelAnimation,
   cardsById,
   clock,
   expect,
@@ -21,7 +26,6 @@ import {
   playAreas,
   players,
   provider,
-  renderAnimations,
   renderer,
   scene,
   scrollTarget,
@@ -37,7 +41,6 @@ import {
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
-import { uniqBy } from 'lodash-es';
 
 var container;
 
@@ -55,7 +58,7 @@ interface GameOptions {
   gameId: string;
 }
 
-export function cleanMaterial(material) {
+export function cleanMaterial(material: THREE.Material) {
   console.log('dispose material!');
   material.dispose();
 
@@ -64,7 +67,7 @@ export function cleanMaterial(material) {
     const value = material[key];
     if (value && typeof value === 'object' && 'minFilter' in value) {
       console.log('dispose texture!');
-      value.dispose();
+      value.dispose(); 
     }
   }
 }
@@ -114,12 +117,20 @@ export async function localInit(gameOptions: GameOptions) {
   // let demo = new THREE.CameraHelper(directionalLight.shadow.camera);
   // scene.add(demo);
 
-  function processEvents() {
-    while (processedEvents < gameLog.length) {
-      const event = gameLog.get(processedEvents);
-      processedEvents++;
-      if (event.clientID === provider.awareness.clientID) continue;
-      handleEvent(event);
+  let processing = false;
+
+  async function processEvents() {
+    if (processing) return;
+    processing = true;
+    try {
+      while (processedEvents < gameLog.length) {
+        const event = gameLog.get(processedEvents);
+        processedEvents++;
+        if (event.clientID === provider.awareness.clientID) continue;
+        await handleEvent(event);
+      }
+    } finally {
+      processing = false;
     }
   }
 
@@ -211,6 +222,9 @@ const EVENTS = {
     console.log({ rotation });
     playArea.mesh.rotateZ(rotation);
   },
+  queueAnimationGroup(event: Event) {
+    queueAnimationGroup();
+  },
   draw(event: Event, playArea: PlayArea) {
     playArea?.draw();
   },
@@ -248,14 +262,13 @@ const EVENTS = {
     }
     playArea?.destroy(card.mesh);
   },
-  transferCard(event: Event, playArea: PlayArea, card: Card) {
+  async transferCard(event: Event, playArea: PlayArea, card: Card) {
     let fromZone = zonesById.get(event.payload.fromZoneId);
     let toZone = zonesById.get(event.payload.toZoneId);
-    console.log({ fromZone, toZone });
-    fromZone?.removeCard(card.mesh);
+    await fromZone?.removeCard(card.mesh);
     let p = event?.payload?.addOptions?.position;
     let position = p ? new THREE.Vector3(p.x, p.y, p.z) : undefined;
-    toZone?.addCard(card, { position });
+    await toZone?.addCard(card, { position });
   },
   createCard(event: Event, playArea: PlayArea) {
     // let card = cloneCard(event.payload.card, event.payload.card.id);
@@ -299,16 +312,19 @@ const EVENTS = {
     playArea?.deckFlipTop(event.payload.toggle);
   },
   shuffleDeck(event: Event, playArea: PlayArea) {
-    playArea?.reorderDeck(event.payload.order);
+    return playArea?.shuffleDeck(event.payload.order);
   },
+  mulligan(event: Event, playArea: PlayArea) {
+    return playArea.mulligan(event.payload.drawCount, event.payload.order);
+  }
 };
 
-function handleEvent(event) {
-  console.log({ event });
+async function handleEvent(event) {
+  console.log(event);
   expect(!!EVENTS[event.type], `${event.type} not implemented`);
   let playArea = playAreas.get(event.clientID);
   let card = cardsById.get(event.payload?.userData?.id);
-  EVENTS[event.type](event, playArea, card);
+  await EVENTS[event.type](event, playArea, card);
 }
 
 function onDocumentScroll(event) {

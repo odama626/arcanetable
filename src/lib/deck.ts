@@ -1,6 +1,8 @@
 import { CatmullRomCurve3, Euler, Group, Quaternion, Vector3 } from 'three';
 import { Card, CARD_WIDTH, getSearchLine } from './card';
-import { animateObject, expect, queueAnimationGroup, sha1, zonesById } from './globals';
+import { expect, sha1, zonesById } from './globals';
+import { animateObject } from './animations';
+import { queueAnimationGroup } from './animations';
 import { deck as deckParser } from './deckParser';
 import { nanoid } from 'nanoid';
 
@@ -134,22 +136,22 @@ export class Deck {
   }
 
   addCard(card: Card) {
-    this.addCardTop(card);
+    return this.addCardTop(card);
   }
 
-  shuffle() {
+  async shuffle(order?: number[]) {
     let newOrder = [];
     if (this.cards[0].mesh.userData.isPublic) {
       this.flipTop();
     }
 
     for (let i = 0; i < this.cards.length - 2; i++) {
-      let j = (Math.random() * i) | 0;
+      let j = order?.[i] ?? (Math.random() * i) | 0;
       [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
       newOrder[i] = j;
     }
 
-    this.animateReorder().then(() => {
+    await this.animateReorder().then(() => {
       if (this.isTopPublic) {
         this.flipTop();
       }
@@ -157,37 +159,35 @@ export class Deck {
     return newOrder;
   }
 
-  animateReorder() {
+  async animateReorder() {
     queueAnimationGroup();
-    return new Promise<void>(resolve => {
-      animateObject(this.mesh, {
-        duration: 0.2,
-        to: {
-          position: new Vector3(70, -55, this.cards.length * 0.125 + 2.5),
-        },
-      });
-
-      this.cards.forEach((card, i) => {
-        this.mesh.remove(card.mesh);
-        this.mesh.add(card.mesh);
-        let z = card.mesh.position.clone().z;
-        let onComplete = undefined;
-        if (i === 0) {
-          onComplete = resolve;
-        }
-        animateObject(card.mesh, {
-          duration: 0.4,
-          path: new CatmullRomCurve3([
-            card.mesh.position.clone(),
-            new Vector3((i % 2) * 20 - 10, 0, card.mesh.position.z),
-            new Vector3((i % 2) * 20 - 10, 0, i * 0.125),
-            new Vector3(0, 0, i * 0.125),
-          ]),
-          onComplete,
-        });
-      });
-      queueAnimationGroup();
+    animateObject(this.mesh, {
+      duration: 0.2,
+      to: {
+        position: new Vector3(70, -55, this.cards.length * 0.125 + 2.5),
+      },
     });
+
+    await Promise.all(
+      this.cards.map((card, i) => {
+        return new Promise<void>(resolve => {
+          this.mesh.remove(card.mesh);
+          this.mesh.add(card.mesh);
+          let z = card.mesh.position.clone().z;
+          animateObject(card.mesh, {
+            duration: 0.4,
+            path: new CatmullRomCurve3([
+              card.mesh.position.clone(),
+              new Vector3((i % 2) * 20 - 10, 0, card.mesh.position.z),
+              new Vector3((i % 2) * 20 - 10, 0, i * 0.125),
+              new Vector3(0, 0, i * 0.125),
+            ]),
+            onComplete: resolve,
+          });
+        });
+      })
+    );
+    queueAnimationGroup();
   }
 
   flipTop(toggle = false) {
@@ -304,7 +304,7 @@ export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string,
 
   let cards = [];
 
-  console.log({uniqueCards})
+  console.log({ uniqueCards });
 
   uniqueCards.forEach(card => {
     for (let i = 0; i < card.qty; i++) {

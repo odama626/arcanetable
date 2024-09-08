@@ -3,10 +3,8 @@ import {
   ArrowHelper,
   Box3,
   BoxGeometry,
-  CatmullRomCurve3,
   Clock,
   Euler,
-  Group,
   LoadingManager,
   Mesh,
   MeshStandardMaterial,
@@ -60,16 +58,9 @@ export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
 export let [deckIndex, setDeckIndex] = createSignal();
 export let focusRayCaster: Raycaster;
-
 export let arrowHelper = new ArrowHelper();
-
 export const [scrollTarget, setScrollTarget] = createSignal();
-
 export let provider: WebsocketProvider;
-
-export function lerp(a: number, b: number, t: number) {
-  return a + (b - a) * t;
-}
 
 export function init({ gameId }) {
   provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
@@ -153,12 +144,10 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
     worldDirection.multiply(new Vector3(distance, distance, distance))
   );
 
-  // focusCamera.lookAt(target.getWorldPosition(new Vector3()));
   return {
     position,
     rotation: worldRotation,
   };
-  // focusCamera.rotation.copy(worldRotation);}
 }
 
 export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
@@ -170,169 +159,6 @@ export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WI
 
   focusCamera.lookAt(target.getWorldPosition(new Vector3()));
   focusCamera.rotation.copy(rotation);
-}
-
-function fitCameraToObject(camera, object, offset) {
-  offset = offset || 1.5;
-
-  const boundingBox = new Box3();
-
-  boundingBox.setFromObject(object);
-
-  const center = boundingBox.getCenter(new Vector3());
-  const size = boundingBox.getSize(new Vector3());
-
-  const startDistance = center.distanceTo(camera.position);
-  // here we must check if the screen is horizontal or vertical, because camera.fov is
-  // based on the vertical direction.
-  const endDistance =
-    camera.aspect > 1
-      ? (size.y / 2 + offset) / Math.abs(Math.tan(camera.fov / 2))
-      : (size.y / 2 + offset) / Math.abs(Math.tan(camera.fov / 2)) / camera.aspect;
-
-  camera.position.set(
-    (camera.position.x * endDistance) / startDistance,
-    (camera.position.y * endDistance) / startDistance,
-    (camera.position.z * endDistance) / startDistance
-  );
-  camera.lookAt(center);
-}
-
-export async function animateCardToNewLocalPosition(
-  cardMesh: Group,
-  newParent: Group,
-  localPath: Vector3[],
-  duration: number = 0.2
-) {
-  let initialPosition = new Vector3();
-  cardMesh.getWorldPosition(initialPosition);
-  let quarternion = new Quaternion().setFromEuler(cardMesh.parent.rotation).invert();
-  newParent.add(cardMesh);
-  cardMesh.position.copy(initialPosition);
-
-  newParent.worldToLocal(initialPosition);
-
-  return new Promise<void>(resolve =>
-    animateObject(cardMesh, {
-      duration,
-      path: new CatmullRomCurve3([initialPosition, ...localPath]),
-      to: {
-        quarternion,
-      },
-      onComplete: resolve,
-    })
-  );
-}
-
-interface AnimationOpts {
-  from?: {
-    position?: Vector3;
-    rotation?: Euler;
-    quarternion?: Quaternion;
-  };
-  to?: {
-    position?: Vector3;
-    rotation?: Euler;
-    quarternion?: Quaternion;
-  };
-  path?: CatmullRomCurve3;
-  duration: number;
-  start?: number;
-  onComplete?: () => void;
-}
-
-interface AnimationGroup {
-  animatingObjects: Set<{ obj: Object3D } & AnimationOpts>;
-  animationMap: Map<string, any>;
-}
-
-const animationGroupQueue: AnimationGroup[] = [];
-queueAnimationGroup();
-
-export function queueAnimationGroup() {
-  animationGroupQueue.push({
-    animatingObjects: new Set<{ obj: Object3D } & AnimationOpts>(),
-    animationMap: new Map<string, any>(),
-  });
-}
-export function animateObject(obj: Object3D, opts: AnimationOpts) {
-  expect(animationGroupQueue.length > 0, `animationGroupQueue empty!`);
-  const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
-  if (!opts.from) {
-    opts.from = {};
-  }
-
-  if (opts.to?.position && !opts.from.position) {
-    opts.from.position = obj.position.clone();
-  }
-
-  if (opts.to?.rotation && !opts.from.rotation) {
-    opts.from.rotation = obj.rotation.clone();
-  }
-
-  if (opts.to?.rotation) {
-    opts.from.quarternion = new Quaternion().setFromEuler(opts.from.rotation);
-    opts.to.quarternion = new Quaternion().setFromEuler(opts.to.rotation);
-  }
-
-  let animation = {
-    obj,
-    ...opts,
-    start: clock.elapsedTime,
-  };
-
-  if (animationMap.has(obj.uuid)) {
-    animatingObjects.delete(animationMap.get(obj.uuid));
-    animationMap.delete(obj.uuid);
-  }
-
-  obj.userData.isAnimating = true;
-  animationMap.set(obj.uuid, animation);
-  animatingObjects.add(animation);
-}
-
-export function cancelAnimation(obj: Object3D) {
-  const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
-  animationMap.delete(obj.uuid);
-  animatingObjects.delete(obj.uuid);
-  obj.userData.isAnimating = false;
-}
-
-export function renderAnimations(time: number) {
-  expect(animationGroupQueue.length > 0, `animationGroupQueue empty!`);
-  const { animatingObjects } = animationGroupQueue[0];
-  for (const animation of animatingObjects) {
-    let t = Math.max(0, Math.min((time - animation.start) / animation.duration, 1));
-
-    if (animation.path) {
-      animation.path.getPointAt(t, animation.obj.position);
-    }
-
-    if (animation.to?.position) {
-      animation.obj.position.copy(animation.from!.position!.clone().lerp(animation.to.position, t));
-    }
-    if (animation.to?.rotation) {
-      animation.obj.rotation.setFromQuaternion(
-        animation.from!.quarternion!.clone().slerp(animation.to.quarternion!.clone(), t)
-      );
-    }
-
-    if (t === 1) {
-      animation.obj.userData.isAnimating = false;
-      if (animation.onComplete) {
-        animation.onComplete();
-      }
-      animatingObjects.delete(animation);
-    }
-  }
-  if (animatingObjects.size < 1 && animationGroupQueue.length > 1) {
-    animatingObjects.clear();
-    animationGroupQueue[0].animationMap.clear();
-    animationGroupQueue.shift();
-    animationGroupQueue[0].animatingObjects.forEach(animation => {
-      animation.start = clock.elapsedTime;
-    });
-  }
 }
 
 export function getProjectionVec(vec: Vector3) {

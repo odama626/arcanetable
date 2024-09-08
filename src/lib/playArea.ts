@@ -1,5 +1,7 @@
+import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
-import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
+import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
+import { animateObject } from './animations';
 import {
   Card,
   CARD_HEIGHT,
@@ -10,21 +12,18 @@ import {
   initializeCardMesh,
   renderModifiers,
 } from './card';
+import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import {
-  animateObject,
   cardsById,
   focusCamera,
   getFocusCameraPositionRelativeTo,
   provider,
-  updateFocusCamera,
   zonesById,
 } from './globals';
 import { Hand } from './hand';
-import { CardArea } from './cardArea';
-import { uniqBy } from 'lodash-es';
 
 export class PlayArea {
   public deck: Deck;
@@ -147,6 +146,22 @@ export class PlayArea {
     this.hand.addCard(card);
   }
 
+  async mulligan(drawCount: number, existingOrder?: number[]) {
+    let cardsInHand = this.hand.cards;
+    cardsInHand.forEach(card => {
+      this.hand.removeCard(card.mesh);
+      this.deck.addCardBottom(card);
+    });
+    let order = await this.deck.shuffle(existingOrder);
+    this.emitEvent('mulligan', { order, drawCount });
+
+    new Array(drawCount).fill(0).forEach((_, i) =>
+      setTimeout(() => {
+        this.hand.addCard(this.deck.draw());
+      }, 100 * i)
+    );
+  }
+
   peek() {
     this.emitEvent('peek');
     let card = this.deck.draw()!;
@@ -208,23 +223,8 @@ export class PlayArea {
     this.destroy(card.mesh);
   }
 
-  reorderDeck(order: number[]) {
-    if (this.deck.cards[0].mesh.userData.isPublic) {
-      this.deck.flipTop();
-    }
-    for (let i = 0; i < order.length - 2; i++) {
-      let j = order[i];
-      [this.deck.cards[i], this.deck.cards[j]] = [this.deck.cards[j], this.deck.cards[i]];
-    }
-    this.deck.animateReorder().then(() => {
-      if (this.deck.isTopPublic) {
-        this.deck.flipTop();
-      }
-    });
-  }
-
-  shuffleDeck() {
-    let order = this.deck.shuffle();
+  async shuffleDeck(existingOrder?: number[]) {
+    let order = await this.deck.shuffle(existingOrder);
     this.emitEvent('shuffleDeck', { order });
   }
 

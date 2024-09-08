@@ -4,7 +4,6 @@ import { createStore } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { Card, CARD_HEIGHT, CARD_WIDTH } from './card';
 import {
-  animateObject,
   CardZone,
   getGlobalRotation,
   getProjectionVec,
@@ -12,6 +11,7 @@ import {
   setScrollTarget,
   zonesById,
 } from './globals';
+import { animateObject } from './animations';
 
 const CARDS_PER_ROW = 4;
 export const [cardGridStore, setCardGridStore] = createStore({

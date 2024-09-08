@@ -1,15 +1,12 @@
 import { A } from '@solidjs/router';
 import { nanoid } from 'nanoid';
 import { Component, createEffect, createSignal } from 'solid-js';
-import { Button } from '~/components/ui/button';
-import { createDeckStore } from '~/lib/deckStore';
 
 const Page: Component = props => {
-  const [deckStore, setDeckStore] = createDeckStore();
-  const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(0);
+  const [startUrl, setStartUrl] = createSignal(`/game/${nanoid()}`);
 
   createEffect(() => {
-    console.log({ deckStore });
+    setStartUrl(`/game/${nanoid()}`);
   });
 
   return (
@@ -51,7 +48,7 @@ const Page: Component = props => {
             <h1 class='text-4xl font-bold text-white mb-6'>Welcome to Arcane Table</h1>
             <p class='text-xl text-gray-100 mb-6'>Unleash the power of your deck.</p>
             <A
-              href={`/game/${nanoid()}`}
+              href={startUrl()}
               class='bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700'>
               Start Now
             </A>
@@ -90,9 +87,7 @@ const Page: Component = props => {
           </div>
         </section>
         <div class='text-center'>
-          <A
-            href={`/game/${nanoid()}`}
-            class='bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700'>
+          <A href={startUrl()} class='bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700'>
             Start Playtesting
           </A>
         </div>

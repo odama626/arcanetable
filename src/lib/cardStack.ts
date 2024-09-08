@@ -11,7 +11,8 @@ import {
   Vector3,
 } from 'three';
 import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH } from './card';
-import { animateObject, CardZone, getGlobalRotation, zonesById } from './globals';
+import { CardZone, getGlobalRotation, zonesById } from './globals';
+import { animateObject } from './animations';
 
 export class CardStack implements CardZone {
   public mesh: Mesh;

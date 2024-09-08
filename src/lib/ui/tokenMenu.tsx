@@ -4,7 +4,6 @@ import { Command, CommandInput } from '~/components/ui/command';
 import { Menubar, MenubarItem, MenubarMenu } from '~/components/ui/menubar';
 import { cleanupCard } from '../card';
 import {
-  animateCardToNewLocalPosition,
   cardsById,
   hoverSignal,
   playAreas,
@@ -36,8 +35,6 @@ const TokenSearchMenu: Component = props => {
 
     battlefield.addCard(card, { position });
 
-    
-
     console.log({ card });
 
     let { card: _, ...userData } = card.mesh;
@@ -50,7 +47,6 @@ const TokenSearchMenu: Component = props => {
         addOptions: { position },
       },
     });
-
 
     playArea().tokenSearchZone.removeCard(card.mesh);
 

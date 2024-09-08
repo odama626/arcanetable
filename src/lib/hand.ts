@@ -1,14 +1,8 @@
-import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
-import { Card } from './card';
-import {
-  animateObject,
-  cardsById,
-  CardZone,
-  getGlobalRotation,
-  queueAnimationGroup,
-  zonesById,
-} from './globals';
 import { nanoid } from 'nanoid';
+import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
+import { animateObject } from './animations';
+import { Card } from './card';
+import { cardsById, CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class Hand implements CardZone {
   public mesh: Group;

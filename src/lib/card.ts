@@ -14,7 +14,12 @@ import { cardsById, getProjectionVec, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
 
 export interface Card {
-  mesh: Mesh<BoxGeometry, (MeshBasicMaterial | MeshPhongMaterial)[], Object3DEventMap>;
+  mesh: Mesh;
+  modifiers: {
+    pt: Mesh
+    [id: string]: Mesh;
+  }
+
 }
 
 let cardBackTexture: MeshBasicMaterial;
@@ -173,7 +178,7 @@ function createLabel(text, color?: string) {
   return { texture, width: textCanvas.width / 30 };
 }
 
-function updateCounter(card, counterId: string, index: number) {
+function updateCounter(card: Card, counterId: string, index: number) {
   let counter = counters().find(counter => counter.id === counterId)!;
   let counterValue = card.mesh.userData.modifiers.counters?.[counterId];
 
@@ -203,7 +208,7 @@ function updateCounter(card, counterId: string, index: number) {
   }
 }
 
-export function renderModifiers(card) {
+export function renderModifiers(card: Card) {
   card.modifiers = card.modifiers ?? {};
 
   let modifiers = card.mesh.userData.modifiers;

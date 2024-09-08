@@ -11,7 +11,8 @@ import {
   MenubarTrigger,
 } from '~/components/ui/menubar';
 import { PlayArea } from '../playArea';
-import { queueAnimationGroup } from '../globals';
+import { sendEvent } from '../globals';
+import { queueAnimationGroup } from '../animations';
 
 let COUNT_OPTIONS = [1, 3, 5, 7, 10];
 
@@ -149,36 +150,13 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
-            <MenubarSubTrigger
-              onClick={() => {
-                let cardsInHand = props.playArea.hand.cards;
-                cardsInHand.forEach(card => {
-                  props.playArea.hand.removeCard(card.mesh);
-                  props.playArea.deck.addCardBottom(card);
-                });
-                queueAnimationGroup();
-                props.playArea.shuffleDeck();
-                queueAnimationGroup();
-                props.playArea.draw();
-              }}>
+            <MenubarSubTrigger onClick={() => props.playArea.mulligan(1)}>
               Mulligan for
             </MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() => {
-                      let cardsInHand = props.playArea.hand.cards;
-                      cardsInHand.forEach(card => {
-                        props.playArea.hand.removeCard(card.mesh);
-                        props.playArea.deck.addCardBottom(card);
-                      });
-                      queueAnimationGroup();
-                      props.playArea.shuffleDeck();
-                      queueAnimationGroup();
-                      doXTimes(value, () => props.playArea.draw());
-                    }}>
+                  <MenubarItem closeOnSelect={false} onClick={() => props.playArea.mulligan(value)}>
                     {value}
                   </MenubarItem>
                 )}

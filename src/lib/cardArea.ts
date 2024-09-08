@@ -10,7 +10,8 @@ import {
   Vector3,
 } from 'three';
 import { Card, CARD_THICKNESS } from './card';
-import { animateObject, CardZone, getGlobalRotation, zonesById } from './globals';
+import { CardZone, getGlobalRotation, zonesById } from './globals';
+import { animateObject } from './animations';
 
 export class CardArea implements CardZone {
   public mesh: Mesh;
