@@ -175,7 +175,9 @@ export class CardGrid implements CardZone {
     card.mesh.userData.isInGrid = true;
     card.mesh.userData.zoneId = this.id;
     card.mesh.userData.isInteractive = true;
+    card.mesh.userData.location = this.zone;
     this.scrollContainer.worldToLocal(initialPosition);
+
 
     if (this.cards.length < 1) {
       this.scrollContainer.position.y = this.minScroll;

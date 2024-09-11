@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { Card } from './card';
+import { Card, setCardData } from './card';
 import { cardsById, CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class Hand implements CardZone {
@@ -56,6 +56,8 @@ export class Hand implements CardZone {
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
     card.mesh.userData.zoneId = this.id;
+    card.mesh.userData.isDragging = false;
+    setCardData(card.mesh,'isPublic', false)
 
     this.mesh.add(card.mesh);
     this.cards.push(card);

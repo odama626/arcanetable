@@ -10,7 +10,13 @@ import {
   queueAnimationGroup,
   renderAnimations,
 } from './lib/animations';
-import { Card, cloneCard, createCardGeometry, getCardMeshTetherPoint } from './lib/card';
+import {
+  Card,
+  cloneCard,
+  createCardGeometry,
+  getCardMeshTetherPoint,
+  setCardData,
+} from './lib/card';
 import {
   animating,
   camera,
@@ -59,15 +65,13 @@ interface GameOptions {
 }
 
 export function cleanMaterial(material: THREE.Material) {
-  console.log('dispose material!');
   material.dispose();
 
   // dispose textures
   for (const key of Object.keys(material)) {
     const value = material[key];
     if (value && typeof value === 'object' && 'minFilter' in value) {
-      console.log('dispose texture!');
-      value.dispose(); 
+      value.dispose();
     }
   }
 }
@@ -292,14 +296,14 @@ const EVENTS = {
   clone(event: Event, playArea: PlayArea) {
     playArea?.clone(event.payload.id, event.payload.newId);
   },
-  peek(event: Event, playArea: PlayArea) {
-    playArea.peek();
+  peek(event: Event, playArea: PlayArea, card: Card) {
+    playArea.peek(card);
   },
   reveal(event: Event, remotePlayArea: PlayArea, card: Card) {
     expect(!!card, 'card not found');
     let cardProxy = cloneCard(card, nanoid());
     // remotePlayArea.peek();
-    cardProxy.mesh.userData.isPublic = true;
+    setCardData(cardProxy.mesh, 'isPublic', true);
     playArea.reveal(cardProxy);
   },
   exileCard(event: Event, playArea: PlayArea, card: Card) {
@@ -316,7 +320,7 @@ const EVENTS = {
   },
   mulligan(event: Event, playArea: PlayArea) {
     return playArea.mulligan(event.payload.drawCount, event.payload.order);
-  }
+  },
 };
 
 async function handleEvent(event) {
@@ -372,7 +376,7 @@ function onDocumentClick(event) {
       remotePlayArea?.graveyardZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id);
         let cardProxy = cloneCard(card, nanoid());
-        cardProxy.mesh.userData.isPublic = true;
+        setCardData(cardProxy.mesh, 'isPublic', true);
         setTimeout(() => {
           playArea.reveal(cardProxy);
         }, 50 * i);
@@ -384,9 +388,10 @@ function onDocumentClick(event) {
     if (target.userData.clientId !== provider.awareness.clientID) {
       let remotePlayArea = playAreas.get(target.userData.clientId);
       remotePlayArea?.exileZone.mesh.children.forEach((cardMesh, i) => {
-        let card = cardsById.get(cardMesh.userData.id);
+        let card = cardsById.get(cardMesh.userData.id)!;
+        expect(!!card, `Card not found`, { cardMesh });
         let cardProxy = cloneCard(card, nanoid());
-        cardProxy.mesh.userData.isPublic = true;
+        setCardData(cardProxy.mesh, 'isPublic', true);
         setTimeout(() => {
           playArea.reveal(cardProxy);
         }, 50 * i);
@@ -442,7 +447,6 @@ function onDocumentDrop(event) {
     let fromLocation = target.userData.location;
     let toLocation = intersection.object.userData.location ?? intersection.object.userData.zone;
 
-    console.log(intersection.object.userData);
 
     if (fromZoneId && fromZoneId === toZoneId) {
       sendEvent({
@@ -461,7 +465,7 @@ function onDocumentDrop(event) {
       return;
     }
 
-    if (!!fromZone?.removeCard) {
+    if (!fromZone?.removeCard) {
       console.warn(`fromZone removeCard doesn't exist`, target.userData.zoneId);
     }
     console.log({ fromZone, fromZoneId, zonesById, toZone, toZoneId, intersection });

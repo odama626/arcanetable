@@ -15,11 +15,11 @@ import { counters } from './ui/counterDialog';
 
 export interface Card {
   mesh: Mesh;
+  id: string;
   modifiers: {
-    pt: Mesh
+    pt: Mesh;
     [id: string]: Mesh;
-  }
-
+  };
 }
 
 let cardBackTexture: MeshBasicMaterial;
@@ -54,6 +54,15 @@ export function createCardGeometry(card: Card) {
   mesh.userData.isInteractive = true;
   mesh.userData.card = card;
   mesh.userData.id = card.id;
+  mesh.userData.isDoubleSided = card.detail.card_faces?.length > 1;
+  if (mesh.userData.isDoubleSided) {
+    mesh.userData.cardBack = new MeshStandardMaterial({
+      map: textureLoader.load(card.detail.card_faces[1].image_uris.large),
+      alphaMap: frontAlphaMap,
+      color: 0xffffff,
+    });
+    mesh.userData.publicCardBack = cardBack;
+  }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
   // mesh.scale.set(0.25, 0.25, 0.25);
@@ -66,9 +75,9 @@ export function getSearchLine(cardDetail) {
     .toLowerCase();
 }
 
-export function cloneCard(card: Card, newId: string) {
+export function cloneCard(card: Card, newId: string): Card {
   let { mesh, ...shared } = card;
-  let newCard = structuredClone(shared);
+  let newCard = structuredClone(shared) as Card;
 
   newCard.id = newId;
   newCard.mesh = createCardGeometry(newCard);
@@ -151,6 +160,17 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
 export function cleanupCard(card: card) {
   card.mesh.geometry.dispose();
   cardsById.delete(card.id);
+}
+
+export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
+  cardMesh.userData[field] = value;
+
+  if (field === 'isPublic') {
+    if (cardMesh.userData.isDoubleSided) {
+      cardMesh.material[cardMesh.material.length - 1] =
+        cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
+    }
+  }
 }
 
 const textCanvas = document.createElement('canvas');

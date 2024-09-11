@@ -162,7 +162,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
                 )}
               </For>
             </MenubarSubContent>
-          </MenubarSub>{' '}
+          </MenubarSub>
           <MenubarSeparator />
           <MenubarItem
             onClick={() => {

@@ -138,6 +138,7 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
   if (target.userData.isFlipped) {
     worldDirection.multiply(new Vector3(-1, -1, -1));
     worldRotation.y += Math.PI;
+    worldRotation.z *= -1;
   }
 
   let position = targetWorldPosition.add(

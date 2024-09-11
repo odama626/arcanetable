@@ -11,6 +11,7 @@ import {
   getSearchLine,
   initializeCardMesh,
   renderModifiers,
+  setCardData,
 } from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
@@ -21,6 +22,7 @@ import {
   focusCamera,
   getFocusCameraPositionRelativeTo,
   provider,
+  sendEvent,
   zonesById,
 } from './globals';
 import { Hand } from './hand';
@@ -110,7 +112,7 @@ export class PlayArea {
       .map(detail => {
         let card = { detail, id: nanoid() };
         card.mesh = createCardGeometry(structuredClone(card));
-        card.mesh.userData.isPublic = true;
+        setCardData(card.mesh, 'isPublic', true);
         card.mesh.userData.isInteractive = true;
         card.mesh.userData.location = 'tokenSearch';
         card.mesh.userData.clientId = provider.awareness.clientID;
@@ -162,10 +164,11 @@ export class PlayArea {
     );
   }
 
-  peek() {
+  peek(card?: Card) {
     this.emitEvent('peek');
-    let card = this.deck.draw()!;
+    card = card ?? this.deck.draw()!;
     this.peekZone.isPublic = false;
+    setCardData(card.mesh, 'isPublic', false)
     this.peekZone.addCard(card);
   }
 
@@ -187,6 +190,7 @@ export class PlayArea {
           setTimeout(() => {
             this.graveyardZone.removeCard(card.mesh);
             this.peekZone.addCard(card);
+            this.emitEvent('peek', { userData: card?.mesh.userData });
             resolve();
           }, (this.graveyardZone.mesh.children.length - i) * 50);
         });
@@ -240,8 +244,7 @@ export class PlayArea {
       cardMesh,
       new Vector3(-CARD_WIDTH / 4, 0, 0)
     );
-    cardMesh.userData.isPublic = !cardMesh.userData.isPublic;
-    cardMesh.userData.isFlipped = !cardMesh.userData.isPublic;
+    cardMesh.userData.isFlipped = !cardMesh.userData.isFlipped;
 
     animateObject(cardMesh, {
       duration: 0.4,
@@ -277,6 +280,11 @@ export class PlayArea {
   tap(cardMesh: Mesh) {
     return new Promise<void>(onComplete => {
       let angleDelta = cardMesh.userData.isTapped ? 0 : -Math.PI / 2;
+
+      if (cardMesh.userData.isFlipped) {
+        angleDelta += Math.PI;
+      }
+
       let rotation = cardMesh.rotation.clone();
       rotation.z = angleDelta;
       cardMesh.userData.isTapped = !cardMesh.userData.isTapped;

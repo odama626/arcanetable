@@ -42,6 +42,7 @@ export class CardStack implements CardZone {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
+    card.mesh.userData.isInteractive = false;
 
     this.mesh.add(card.mesh);
 
@@ -66,7 +67,6 @@ export class CardStack implements CardZone {
       onComplete: () => {
         card.mesh.userData.zoneId = this.id;
         card.mesh.userData.location = this.zone;
-        card.mesh.userData.isInteractive = false;
       },
     });
   }

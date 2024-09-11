@@ -9,7 +9,7 @@ import {
   MeshStandardMaterial,
   Vector3,
 } from 'three';
-import { Card, CARD_THICKNESS } from './card';
+import { Card, CARD_THICKNESS, setCardData } from './card';
 import { CardZone, getGlobalRotation, zonesById } from './globals';
 import { animateObject } from './animations';
 
@@ -50,7 +50,7 @@ export class CardArea implements CardZone {
 
     card.mesh.userData.zoneId = this.id;
     card.mesh.userData.location = this.zone;
-    card.mesh.userData.isPublic = true;
+    setCardData(card.mesh, 'isPublic', true);
     card.mesh.userData.isInteractive = true;
     this.mesh.add(card.mesh);
 

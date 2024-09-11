@@ -1,5 +1,5 @@
 import { CatmullRomCurve3, Euler, Group, Quaternion, Vector3 } from 'three';
-import { Card, CARD_WIDTH, getSearchLine } from './card';
+import { Card, CARD_WIDTH, getSearchLine, setCardData } from './card';
 import { expect, sha1, zonesById } from './globals';
 import { animateObject } from './animations';
 import { queueAnimationGroup } from './animations';
@@ -23,7 +23,7 @@ export class Deck {
 
     cards.forEach((card, i) => {
       card.mesh.userData.location = 'deck';
-      card.mesh.userData.isPublic = false;
+      setCardData(card.mesh, 'isPublic', false);
       card.mesh.userData.zoneId = id;
       card.mesh.position.set(0, 0, i * 0.125);
       this.mesh.add(card.mesh);
@@ -31,7 +31,7 @@ export class Deck {
   }
 
   addCardBottom(card: Card) {
-    card.mesh.userData.isPublic = false;
+    setCardData(card.mesh, 'isPublic', false);
     card.mesh.userData.zoneId = this.id;
     this.cards.push(card);
 
@@ -77,7 +77,7 @@ export class Deck {
     }
 
     card.mesh.userData.location = 'deck';
-    card.mesh.userData.isPublic = false;
+    setCardData(card.mesh, 'isPublic', false);
     card.mesh.userData.zoneId = this.id;
     this.cards.unshift(card);
 
@@ -196,7 +196,7 @@ export class Deck {
       if (!card) return;
       let isVisible = !card.mesh.userData.isPublic;
 
-      card.mesh.userData.isPublic = isVisible;
+      setCardData(card.mesh, 'isPublic', isVisible);
 
       console.log({ isVisible, position: card.mesh.position.clone() });
 
@@ -304,8 +304,6 @@ export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string,
 
   let cards = [];
 
-  console.log({ uniqueCards });
-
   uniqueCards.forEach(card => {
     for (let i = 0; i < card.qty; i++) {
       cards.push({
@@ -316,6 +314,5 @@ export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string,
     }
   });
 
-  console.log({ cards });
   return cards;
 }
