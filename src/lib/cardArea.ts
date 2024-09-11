@@ -48,10 +48,10 @@ export class CardArea implements CardZone {
       position = new Vector3();
     }
 
-    card.mesh.userData.zoneId = this.id;
-    card.mesh.userData.location = this.zone;
+    setCardData(card.mesh, 'zoneId', this.id);
+    setCardData(card.mesh, 'location', this.zone);
     setCardData(card.mesh, 'isPublic', true);
-    card.mesh.userData.isInteractive = true;
+    setCardData(card.mesh, 'isInteractive', true);
     this.mesh.add(card.mesh);
 
     let initialRotation = card.mesh.rotation;

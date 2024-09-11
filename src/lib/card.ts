@@ -23,7 +23,7 @@ export interface Card {
 }
 
 let cardBackTexture: MeshBasicMaterial;
-let frontAlphaMap;
+let alphaMap: Texture;
 
 export const CARD_WIDTH = 63 / 4;
 export const CARD_HEIGHT = 88 / 4;
@@ -36,13 +36,13 @@ export function createCardGeometry(card: Card) {
 
   cardBack.transparent = true;
 
-  frontAlphaMap = frontAlphaMap || textureLoader.load(`/alphaMap.webp`);
+  alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
   let front = textureLoader.load(getCardImage(card));
 
   let frontMesh = new MeshStandardMaterial({
     color: 0xffffff,
     map: front,
-    alphaMap: frontAlphaMap,
+    alphaMap,
   });
   frontMesh.transparent = true;
 
@@ -51,17 +51,17 @@ export function createCardGeometry(card: Card) {
     return img;
   });
   const mesh = new Mesh(geometry, materials);
-  mesh.userData.isInteractive = true;
-  mesh.userData.card = card;
-  mesh.userData.id = card.id;
-  mesh.userData.isDoubleSided = card.detail.card_faces?.length > 1;
+  setCardData(mesh, 'isInteractive', true);
+  setCardData(mesh, 'card', card);
+  setCardData(mesh, 'id', card.id);
+  setCardData(mesh, 'isDoubleSided', card.detail.card_faces?.length > 1);
   if (mesh.userData.isDoubleSided) {
     mesh.userData.cardBack = new MeshStandardMaterial({
       map: textureLoader.load(card.detail.card_faces[1].image_uris.large),
-      alphaMap: frontAlphaMap,
+      alphaMap: alphaMap,
       color: 0xffffff,
     });
-    mesh.userData.publicCardBack = cardBack;
+    setCardData(mesh, 'publicCardBack', cardBack);
   }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
@@ -82,7 +82,7 @@ export function cloneCard(card: Card, newId: string): Card {
   newCard.id = newId;
   newCard.mesh = createCardGeometry(newCard);
   newCard.mesh.userData = structuredClone(card.mesh.userData);
-  newCard.mesh.userData.id = newCard.id;
+  setCardData(newCard.mesh, 'id', newCard.id);
   newCard.mesh.position.copy(card.mesh.position).add(new Vector3(2, -2, 0.125));
   newCard.mesh.rotation.copy(card.mesh.rotation);
   cardsById.set(newCard.id, newCard);
@@ -103,7 +103,7 @@ export function getCardImage(card: Card) {
 
 export function initializeCardMesh(card, clientId) {
   const mesh = createCardGeometry(card);
-  mesh.userData.clientId = clientId;
+  setCardData(mesh, 'clientId', clientId);
 
   let result = {
     ...card,
@@ -163,14 +163,13 @@ export function cleanupCard(card: card) {
 }
 
 export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
-  cardMesh.userData[field] = value;
-
   if (field === 'isPublic') {
     if (cardMesh.userData.isDoubleSided) {
       cardMesh.material[cardMesh.material.length - 1] =
         cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
     }
   }
+  cardMesh.userData[field] = value;
 }
 
 const textCanvas = document.createElement('canvas');

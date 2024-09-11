@@ -1,5 +1,6 @@
 import { CatmullRomCurve3, Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { clock, expect, sendEvent } from './globals';
+import { setCardData } from './card';
 
 export interface AnimationOpts {
   from?: {
@@ -71,7 +72,7 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
     animationMap.delete(obj.uuid);
   }
 
-  obj.userData.isAnimating = true;
+  setCardData(obj, 'isAnimating', true);
   animationMap.set(obj.uuid, animation);
   animatingObjects.add(animation);
 }
@@ -80,7 +81,7 @@ export function cancelAnimation(obj: Object3D) {
   const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
   animationMap.delete(obj.uuid);
   animatingObjects.delete(obj.uuid);
-  obj.userData.isAnimating = false;
+  setCardData(obj, 'isAnimating', false);
 }
 
 export function renderAnimations(time: number) {
@@ -103,7 +104,7 @@ export function renderAnimations(time: number) {
     }
 
     if (t >= 1) {
-      animation.obj.userData.isAnimating = false;
+      setCardData(animation.obj, 'isAnimating', false);
       if (animation.onComplete) {
         animation.onComplete();
       }

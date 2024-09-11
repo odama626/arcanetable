@@ -55,9 +55,9 @@ export class Hand implements CardZone {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
-    card.mesh.userData.zoneId = this.id;
-    card.mesh.userData.isDragging = false;
-    setCardData(card.mesh,'isPublic', false)
+    setCardData(card.mesh, 'zoneId', this.id);
+    setCardData(card.mesh, 'isDragging', false);
+    setCardData(card.mesh, 'isPublic', false);
 
     this.mesh.add(card.mesh);
     this.cards.push(card);
@@ -77,7 +77,7 @@ export class Hand implements CardZone {
 
     if (skipAnimation) {
       this.isInteractive = true;
-      card.mesh.userData.location = 'hand';
+      setCardData(card.mesh, 'location', 'hand');
       card.mesh.userData.resting = {
         position: restingPosition,
         rotation: new Euler(0, 0, 0),
@@ -101,7 +101,7 @@ export class Hand implements CardZone {
         duration: 0.5,
         onComplete: () => {
           this.isInteractive = true;
-          card.mesh.userData.location = 'hand';
+          setCardData(card.mesh, 'location', 'hand');
           card.mesh.userData.resting = {
             position: restingPosition,
             rotation: new Euler(0, 0, 0),
@@ -141,7 +141,7 @@ export class Hand implements CardZone {
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
     cardMesh.removeEventListener('mousein', this.cardMouseIn);
     cardMesh.removeEventListener('mouseout', this.cardMouseOut);
-    cardMesh.userData.resting = undefined;
+    setCardData(cardMesh, 'resting', undefined);
     this.mesh.remove(cardMesh);
     let card = this.cardMap.get(cardMesh.uuid);
     let index = this.cards.findIndex(c => c === card);

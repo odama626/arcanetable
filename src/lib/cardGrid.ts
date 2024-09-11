@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
-import { Card, CARD_HEIGHT, CARD_WIDTH } from './card';
+import { Card, CARD_HEIGHT, CARD_WIDTH, setCardData } from './card';
 import {
   CardZone,
   getGlobalRotation,
@@ -172,12 +172,11 @@ export class CardGrid implements CardZone {
   addCard(card: Card) {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
-    card.mesh.userData.isInGrid = true;
-    card.mesh.userData.zoneId = this.id;
-    card.mesh.userData.isInteractive = true;
-    card.mesh.userData.location = this.zone;
+    setCardData(card.mesh, 'isInGrid', true);
+    setCardData(card.mesh, 'zoneId', this.id);
+    setCardData(card.mesh, 'isInteractive', true);
+    setCardData(card.mesh, 'location', this.zone);
     this.scrollContainer.worldToLocal(initialPosition);
-
 
     if (this.cards.length < 1) {
       this.scrollContainer.position.y = this.minScroll;
@@ -232,7 +231,7 @@ export class CardGrid implements CardZone {
       },
       duration: 0.5,
       onComplete: () => {
-        card.mesh.userData.location = this.zone;
+        setCardData(card.mesh, 'location', this.zone);
         card.mesh.userData.resting = {
           position,
           rotation: new Euler(0, 0, 0),
@@ -244,7 +243,7 @@ export class CardGrid implements CardZone {
   removeCard(cardMesh: Object3D) {
     let worldPosition = new Vector3();
     cardMesh.getWorldPosition(worldPosition);
-    cardMesh.userData.isInGrid = false;
+    setCardData(cardMesh, 'isInGrid', false);
 
     let globalRotation = getGlobalRotation(cardMesh);
 

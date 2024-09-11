@@ -22,9 +22,9 @@ export class Deck {
     this.mesh.userData.zone = 'deck';
 
     cards.forEach((card, i) => {
-      card.mesh.userData.location = 'deck';
+      setCardData(card.mesh, 'location', 'deck');
       setCardData(card.mesh, 'isPublic', false);
-      card.mesh.userData.zoneId = id;
+      setCardData(card.mesh, 'zoneId', id);
       card.mesh.position.set(0, 0, i * 0.125);
       this.mesh.add(card.mesh);
     });
@@ -32,7 +32,7 @@ export class Deck {
 
   addCardBottom(card: Card) {
     setCardData(card.mesh, 'isPublic', false);
-    card.mesh.userData.zoneId = this.id;
+    setCardData(card.mesh, 'zoneId', this.id);
     this.cards.push(card);
 
     let initialPosition = card.mesh.getWorldPosition(new Vector3());
@@ -66,7 +66,7 @@ export class Deck {
         rotation: new Euler(0, 0, 0),
       },
       onComplete() {
-        card.mesh.userData.location = 'deck';
+        setCardData(card.mesh, 'location', 'deck');
       },
     });
   }
@@ -76,9 +76,9 @@ export class Deck {
       await this.flipTop();
     }
 
-    card.mesh.userData.location = 'deck';
+    setCardData(card.mesh, 'location', 'deck');
     setCardData(card.mesh, 'isPublic', false);
-    card.mesh.userData.zoneId = this.id;
+    setCardData(card.mesh, 'zoneId', this.id);
     this.cards.unshift(card);
 
     let initialPosition = card.mesh.getWorldPosition(new Vector3());
@@ -104,7 +104,7 @@ export class Deck {
               // rotation: new Euler(0, 0, 0),
             },
             onComplete: () => {
-              this.cards[i].mesh.userData.location = 'deck';
+              setCardData(this.cards[i].mesh, 'location', 'deck');
               resolve();
             },
           });
@@ -121,7 +121,7 @@ export class Deck {
             rotation: new Euler(0, 0, 0),
           },
           onComplete() {
-            card.mesh.userData.location = 'deck';
+            setCardData(card.mesh, 'location', 'deck');
             resolve();
           },
         });
@@ -302,12 +302,11 @@ export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>) 
 export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string, any>) {
   const uniqueCards = await Promise.all(cardEntries.map(entry => fetchCardInfo(entry, cache)));
 
-  let cards = [];
+  let cards: Card[] = [];
 
   uniqueCards.forEach(card => {
     for (let i = 0; i < card.qty; i++) {
       cards.push({
-        state: {},
         detail: card.detail,
         categories: card.categories ?? [],
       });

@@ -10,7 +10,7 @@ import {
   MeshStandardMaterial,
   Vector3,
 } from 'three';
-import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH } from './card';
+import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, setCardData } from './card';
 import { CardZone, getGlobalRotation, zonesById } from './globals';
 import { animateObject } from './animations';
 
@@ -42,7 +42,7 @@ export class CardStack implements CardZone {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
-    card.mesh.userData.isInteractive = false;
+    setCardData(card.mesh, 'isInteractive', false);
 
     this.mesh.add(card.mesh);
 
@@ -65,8 +65,8 @@ export class CardStack implements CardZone {
         rotation: new Euler(),
       },
       onComplete: () => {
-        card.mesh.userData.zoneId = this.id;
-        card.mesh.userData.location = this.zone;
+        setCardData(card.mesh, 'zoneId', this.id);
+        setCardData(card.mesh, 'location', this.zone);
       },
     });
   }

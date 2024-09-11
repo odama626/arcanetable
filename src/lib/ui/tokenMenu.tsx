@@ -49,9 +49,6 @@ const TokenSearchMenu: Component = props => {
     });
 
     playArea().tokenSearchZone.removeCard(card.mesh);
-
-    // card.mesh.userData.location = 'battlefield';
-    // card.mesh.userData.isInteractive = true;
   }
 
   return (

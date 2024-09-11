@@ -239,7 +239,7 @@ const EVENTS = {
     playArea.addToHand(card);
   },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
-    card.mesh.userData.modifiers = event.payload.userData.modifiers;
+    setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
     playArea.modifyCard(card);
   },
   createCounter(event: Event) {
@@ -420,7 +420,7 @@ function onDocumentDragStart(event) {
   if (!target.userData.isInteractive) return;
   if (target.userData.isInGrid) return;
 
-  target.userData.isDragging = true;
+  setCardData(target, 'isDragging', true);
 
   dragTargets = [target];
 }
@@ -434,7 +434,7 @@ function onDocumentDrop(event) {
   let intersects = raycaster.intersectObject(scene);
 
   dragTargets?.forEach(target => {
-    target.userData.isDragging = false;
+    setCardData(target, 'isDragging', false);
     let intersection = intersects.find(
       i =>
         i.object.userData.id !== target.userData.id &&
@@ -446,7 +446,6 @@ function onDocumentDrop(event) {
     let toZone = zonesById.get(toZoneId);
     let fromLocation = target.userData.location;
     let toLocation = intersection.object.userData.location ?? intersection.object.userData.zone;
-
 
     if (fromZoneId && fromZoneId === toZoneId) {
       sendEvent({
@@ -496,7 +495,7 @@ function onDocumentDrop(event) {
 
     console.log({ fromLocation, toLocation });
 
-    target.userData.location = toLocation;
+    setCardData(target, 'location', toLocation);
 
     setHoverSignal(signal => {
       focusOn(signal.mesh);

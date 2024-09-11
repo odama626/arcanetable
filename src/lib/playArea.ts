@@ -113,9 +113,9 @@ export class PlayArea {
         let card = { detail, id: nanoid() };
         card.mesh = createCardGeometry(structuredClone(card));
         setCardData(card.mesh, 'isPublic', true);
-        card.mesh.userData.isInteractive = true;
-        card.mesh.userData.location = 'tokenSearch';
-        card.mesh.userData.clientId = provider.awareness.clientID;
+        setCardData(card.mesh, 'isInteractive', true);
+        setCardData(card.mesh, 'location', 'tokenSearch');
+        setCardData(card.mesh, 'clientId', provider.awareness.clientID);
         card.detail.search = getSearchLine(card.detail);
         cardsById.set(card.id, card);
         return card;
@@ -168,7 +168,7 @@ export class PlayArea {
     this.emitEvent('peek');
     card = card ?? this.deck.draw()!;
     this.peekZone.isPublic = false;
-    setCardData(card.mesh, 'isPublic', false)
+    setCardData(card.mesh, 'isPublic', false);
     this.peekZone.addCard(card);
   }
 
@@ -239,12 +239,13 @@ export class PlayArea {
     let vec = new Vector3();
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
+    rotation.z *= -1;
 
     let focusCameraTarget = getFocusCameraPositionRelativeTo(
       cardMesh,
       new Vector3(-CARD_WIDTH / 4, 0, 0)
     );
-    cardMesh.userData.isFlipped = !cardMesh.userData.isFlipped;
+    setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
 
     animateObject(cardMesh, {
       duration: 0.4,
@@ -287,7 +288,7 @@ export class PlayArea {
 
       let rotation = cardMesh.rotation.clone();
       rotation.z = angleDelta;
-      cardMesh.userData.isTapped = !cardMesh.userData.isTapped;
+      setCardData(cardMesh, 'isTapped', !cardMesh.userData.isTapped);
       this.emitEvent('tap', { userData: cardMesh.userData });
 
       animateObject(cardMesh, {
