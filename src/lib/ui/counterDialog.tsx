@@ -53,6 +53,7 @@ const CounterDialog: Component = props => {
           <TextFieldLabel for='name'>Name</TextFieldLabel>
           <TextFieldInput type='text' id='name' name='name' />
         </TextField>
+        <br />
         <DialogFooter>
           <Button type='submit'>Create</Button>
         </DialogFooter>

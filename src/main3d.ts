@@ -64,17 +64,6 @@ interface GameOptions {
   gameId: string;
 }
 
-export function cleanMaterial(material: THREE.Material) {
-  material.dispose();
-
-  // dispose textures
-  for (const key of Object.keys(material)) {
-    const value = material[key];
-    if (value && typeof value === 'object' && 'minFilter' in value) {
-      value.dispose();
-    }
-  }
-}
 export async function localInit(gameOptions: GameOptions) {
   container = document.createElement('div');
   document.body.appendChild(container);

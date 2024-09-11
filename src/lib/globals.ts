@@ -1,7 +1,6 @@
 import { createSignal } from 'solid-js';
 import {
   ArrowHelper,
-  Box3,
   BoxGeometry,
   Clock,
   Euler,
@@ -20,7 +19,6 @@ import {
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { cleanMaterial } from '~/main3d';
 import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
 
@@ -201,7 +199,11 @@ export function cleanup() {
   focusRenderer.dispose();
   focusRenderer.domElement.remove();
 
-  scene.traverse(object => {
+  cleanupFromNode(scene);
+}
+
+export function cleanupFromNode(root: Object3D) {
+  root.traverse(object => {
     if (!object.isMesh) return;
     object.geometry.dispose();
     if (object.material.isMaterial) {
@@ -209,5 +211,17 @@ export function cleanup() {
     } else {
       for (const material of object.material) cleanMaterial(material);
     }
+    root.remove(object)
   });
+}
+export function cleanMaterial(material: Material) {
+  material.dispose();
+
+  // dispose textures
+  for (const key of Object.keys(material)) {
+    const value = material[key];
+    if (value && typeof value === 'object' && 'minFilter' in value) {
+      value.dispose();
+    }
+  }
 }

@@ -4,13 +4,11 @@ import {
   LinearFilter,
   Mesh,
   MeshBasicMaterial,
-  MeshPhongMaterial,
   MeshStandardMaterial,
-  Object3DEventMap,
   Texture,
   Vector3,
 } from 'three';
-import { cardsById, getProjectionVec, textureLoader } from './globals';
+import { cardsById, cleanupFromNode, getProjectionVec, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
 
 export interface Card {
@@ -169,6 +167,10 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
         cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
     }
   }
+  if (field === 'location' && value !== 'battlefield') {
+    cleanupFromNode(cardMesh);
+    cardMesh.userData.modifiers = undefined;
+  }
   cardMesh.userData[field] = value;
 }
 
@@ -227,7 +229,7 @@ function updateCounter(card: Card, counterId: string, index: number) {
   }
 }
 
-export function renderModifiers(card: Card) {
+export function updateModifiers(card: Card) {
   card.modifiers = card.modifiers ?? {};
 
   let modifiers = card.mesh.userData.modifiers;

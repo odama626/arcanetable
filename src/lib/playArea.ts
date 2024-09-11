@@ -10,7 +10,7 @@ import {
   createCardGeometry,
   getSearchLine,
   initializeCardMesh,
-  renderModifiers,
+  updateModifiers,
   setCardData,
 } from './card';
 import { CardArea } from './cardArea';
@@ -135,7 +135,7 @@ export class PlayArea {
     );
     this.emitEvent('modifyCard', { userData: card.mesh.userData });
 
-    renderModifiers(card);
+    updateModifiers(card);
   }
 
   draw() {
