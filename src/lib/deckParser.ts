@@ -13,7 +13,7 @@ export const cardCategories = (open, close) =>
 
 export const card = a
   .sequenceOf([
-    a.digits,
+    a.possibly(a.digits),
     a.possibly(a.char('x')),
     a.everyCharUntil(a.choice([a.char('('), a.char('\n'), a.char('['), a.char('<'), a.endOfInput])),
     a.possibly(a.sequenceOf([a.char('('), a.everyCharUntil(a.char(')'))])).map(r => r?.[1]),
@@ -23,16 +23,16 @@ export const card = a
     a.everyCharUntil(a.choice([a.char('['), a.char('\n'), a.endOfInput])),
     a.possibly(cardCategories('[', ']')),
   ])
-  .map(([qty, _, name, set, __, cats1, ___, categories]) => {
+  .map(([rawQty, _, name, set, __, cats1, ___, categories]) => {
     if (categories?.length === 1 && !set) {
       set = categories[0];
-      // categories = [];
       categories = cats1 || [];
     }
     if (set?.includes(':')) {
       set = set.split(':')[0];
     }
-    return { qty: parseInt(qty, 10), name: name.trim(), set, categories };
+    let qty = parseInt(rawQty, 10);
+    return { qty: isNaN(qty) ? 1 : qty, name: name.trim(), set, categories };
   });
 
 const comment = a
@@ -44,8 +44,9 @@ export const deck = a
     a
       .sequenceOf([
         a.optionalWhitespace,
-        a.choice([card, comment]),
+        a.choice([comment, card]),
         a.everyCharUntil(a.choice([a.char('\n'), a.endOfInput])),
+        a.optionalWhitespace,
       ])
       .map(r => r?.[1])
   )

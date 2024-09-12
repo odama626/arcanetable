@@ -278,41 +278,55 @@ test('mtga extended', () => {
 });
 
 test('mtg.wtf', () => {
-  expect
-    .soft(
-      deck.run(`// NAME: Hare Raising - Bloomburrow Starter Kit
+  expect.soft(
+    deck.run(`// NAME: Hare Raising - Bloomburrow Starter Kit
 // URL: http://mtg.wtf/deck/blb/hare-raising
 // DATE: 2024-08-02
 1 Byrke, Long Ear of the Law [BLB:380] [foil]
 1 Serra Redeemer [BLB:387]
 1 Colossification [BLB:392]
 `)
-    )
-    .toMatchInlineSnapshot(`
-      {
-        "data": null,
-        "index": 213,
-        "isError": false,
-        "result": [
-          {
-            "categories": [],
-            "name": "Byrke, Long Ear of the Law",
-            "qty": 1,
-            "set": "BLB",
-          },
-          {
-            "categories": [],
-            "name": "Serra Redeemer",
-            "qty": 1,
-            "set": "BLB",
-          },
-          {
-            "categories": [],
-            "name": "Colossification",
-            "qty": 1,
-            "set": "BLB",
-          },
-        ],
-      }
-    `);
+  ).toMatchInlineSnapshot(`
+    {
+      "data": null,
+      "index": 214,
+      "isError": false,
+      "result": [
+        {
+          "categories": [],
+          "name": "Byrke, Long Ear of the Law",
+          "qty": 1,
+          "set": "BLB",
+        },
+        {
+          "categories": [],
+          "name": "Serra Redeemer",
+          "qty": 1,
+          "set": "BLB",
+        },
+        {
+          "categories": [],
+          "name": "Colossification",
+          "qty": 1,
+          "set": "BLB",
+        },
+      ],
+    }
+  `);
+});
+
+test('edhrec clipboard', () => {
+  expect.soft(card.run('Test')).toMatchInlineSnapshot(`
+    {
+      "data": null,
+      "index": 4,
+      "isError": false,
+      "result": {
+        "categories": null,
+        "name": "Test",
+        "qty": 1,
+        "set": undefined,
+      },
+    }
+  `);
 });
