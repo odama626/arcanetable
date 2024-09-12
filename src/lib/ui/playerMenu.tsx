@@ -39,7 +39,7 @@ export const LocalPlayer: Component = props => {
 
   return (
     <div
-      class='bg-gray-100 p-4 rounded-lg shadow-md w-64 flex-shrink-0'
+      class='bg-gray-100 p-2 rounded-lg shadow-md w-64 flex-shrink-0'
       style='pointer-events: initial'>
       <Collapsible onOpenChange={setOpen} open={open()}>
         <div class='flex gap-5 items-center justify-around'>
@@ -191,7 +191,7 @@ export const NetworkPlayer: Component = props => {
 
   return (
     <div
-      class='bg-gray-100 p-4 rounded-lg shadow-md w-64 flex-shrink-0'
+      class='bg-gray-100 p-2 rounded-lg shadow-md w-64 flex-shrink-0'
       style='pointer-events: initial'>
       <Collapsible onOpenChange={setOpen} open={open()}>
         <div class='flex gap-5 items-center justify-around'>

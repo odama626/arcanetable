@@ -33,6 +33,7 @@ export class Deck {
   addCardBottom(card: Card) {
     setCardData(card.mesh, 'isPublic', false);
     setCardData(card.mesh, 'zoneId', this.id);
+    setCardData(card.mesh, 'location', 'deck');
     this.cards.push(card);
 
     let initialPosition = card.mesh.getWorldPosition(new Vector3());
@@ -65,9 +66,6 @@ export class Deck {
       to: {
         rotation: new Euler(0, 0, 0),
       },
-      onComplete() {
-        setCardData(card.mesh, 'location', 'deck');
-      },
     });
   }
 
@@ -95,16 +93,15 @@ export class Deck {
     for (let i = 1; i < this.cards.length; i++) {
       this.mesh.remove(this.cards[i].mesh);
       this.mesh.add(this.cards[i].mesh);
+      setCardData(this.cards[i].mesh, 'location', 'deck');
       promises.push(
         new Promise<void>(resolve => {
           animateObject(this.cards[i].mesh, {
             duration: 0.2,
             to: {
               position: new Vector3(0, 0, i * 0.125),
-              // rotation: new Euler(0, 0, 0),
             },
             onComplete: () => {
-              setCardData(this.cards[i].mesh, 'location', 'deck');
               resolve();
             },
           });
@@ -121,7 +118,6 @@ export class Deck {
             rotation: new Euler(0, 0, 0),
           },
           onComplete() {
-            setCardData(card.mesh, 'location', 'deck');
             resolve();
           },
         });

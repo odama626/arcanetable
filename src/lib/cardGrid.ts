@@ -211,6 +211,11 @@ export class CardGrid implements CardZone {
     this.adjustHandPosition();
 
     let position = this.getCardPosition(index);
+    setCardData(card.mesh, 'location', this.zone);
+    card.mesh.userData.resting = {
+      position,
+      rotation: new Euler(0, 0, 0),
+    };
 
     const path = new CatmullRomCurve3([
       initialPosition,
@@ -230,13 +235,6 @@ export class CardGrid implements CardZone {
         rotation: initialRotation,
       },
       duration: 0.5,
-      onComplete: () => {
-        setCardData(card.mesh, 'location', this.zone);
-        card.mesh.userData.resting = {
-          position,
-          rotation: new Euler(0, 0, 0),
-        };
-      },
     });
   }
 

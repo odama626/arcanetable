@@ -44,7 +44,7 @@ const Overlay: Component = () => {
         e.stopImmediatePropagation();
       }}>
       <div class={styles.top}>
-        <div class='flex flex-wrap justify-start space-x-4 p-4 items-start'>
+        <div class='flex flex-wrap justify-start space-x-2 p-2 items-start'>
           <LocalPlayer {...currentPlayer()?.entry} />
           <For each={players().filter(player => player.id !== provider.awareness.clientID)}>
             {player => <NetworkPlayer {...player?.entry} />}

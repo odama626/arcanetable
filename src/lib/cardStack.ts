@@ -43,6 +43,8 @@ export class CardStack implements CardZone {
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
     setCardData(card.mesh, 'isInteractive', false);
+    setCardData(card.mesh, 'zoneId', this.id);
+    setCardData(card.mesh, 'location', this.zone);
 
     this.mesh.add(card.mesh);
 
@@ -63,10 +65,6 @@ export class CardStack implements CardZone {
       },
       to: {
         rotation: new Euler(),
-      },
-      onComplete: () => {
-        setCardData(card.mesh, 'zoneId', this.id);
-        setCardData(card.mesh, 'location', this.zone);
       },
     });
   }

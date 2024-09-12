@@ -211,7 +211,7 @@ export function cleanupFromNode(root: Object3D) {
     } else {
       for (const material of object.material) cleanMaterial(material);
     }
-    root.remove(object)
+    if (root !== scene) root.remove(object)
   });
 }
 export function cleanMaterial(material: Material) {

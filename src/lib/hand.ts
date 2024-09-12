@@ -64,7 +64,6 @@ export class Hand implements CardZone {
     this.cardMap.set(card.mesh.uuid, card);
 
     let index = this.cards.length - 1;
-    this.isInteractive = false;
 
     this.adjustHandPosition();
 
@@ -73,18 +72,20 @@ export class Hand implements CardZone {
 
     let restingPosition = new Vector3(index * 5, 0, index * -0.125);
 
+    setCardData(card.mesh, 'resting', {
+      position: restingPosition,
+      rotation: new Euler(0, 0, 0),
+    });
+
     let initialRotation = getGlobalRotation(card.mesh);
 
     if (skipAnimation) {
-      this.isInteractive = true;
       setCardData(card.mesh, 'location', 'hand');
-      card.mesh.userData.resting = {
-        position: restingPosition,
-        rotation: new Euler(0, 0, 0),
-      };
       card.mesh.position.copy(restingPosition);
       card.mesh.rotation.set(0, 0, 0);
     } else {
+      setCardData(card.mesh, 'location', 'hand');
+      this.isInteractive = false;
       animateObject(card.mesh, {
         path: new CatmullRomCurve3([
           initialPosition,
@@ -101,11 +102,6 @@ export class Hand implements CardZone {
         duration: 0.5,
         onComplete: () => {
           this.isInteractive = true;
-          setCardData(card.mesh, 'location', 'hand');
-          card.mesh.userData.resting = {
-            position: restingPosition,
-            rotation: new Euler(0, 0, 0),
-          };
         },
       });
     }

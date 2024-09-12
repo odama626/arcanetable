@@ -209,6 +209,7 @@ export class PlayArea {
           setTimeout(() => {
             this.exileZone.removeCard(card.mesh);
             this.peekZone.addCard(card);
+            this.emitEvent('peek', { userData: card?.mesh.userData });
             resolve();
           }, (this.exileZone.mesh.children.length - i) * 50);
         });
