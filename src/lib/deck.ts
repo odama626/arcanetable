@@ -280,6 +280,11 @@ export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>) 
 
   let result = fetch(urlString, { cache: 'force-cache' })
     .then(r => r.json())
+    .then(r => {
+      if (r.status !== 404) return r;
+      url.searchParams.delete('set');
+      return fetch(url.toString(), { cache: 'force-cache' }).then(r => r.json());
+    })
     .then(async payload => {
       payload.search = getSearchLine(payload);
       return {

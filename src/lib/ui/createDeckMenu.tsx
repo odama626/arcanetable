@@ -1,20 +1,15 @@
 import { Component, createEffect, createSignal, For, on, Setter, Show, splitProps } from 'solid-js';
 import { Button } from '~/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog';
+import { DialogFooter } from '~/components/ui/dialog';
 import {
   TextField,
+  TextFieldDescription,
   TextFieldInput,
   TextFieldLabel,
   TextFieldTextArea,
 } from '~/components/ui/text-field';
 import { getCardArtImage, getCardImage } from '../card';
-import { fetchCardInfo, loadCardList, loadDeckList } from '../deck';
+import { fetchCardInfo, loadCardList } from '../deck';
 import styles from './createDeckMenu.module.css';
 import {
   Combobox,
@@ -118,6 +113,9 @@ export const DeckEditor: Component<Props> = props => {
                   name='cardList'
                   placeholder='1x Sol Ring'
                 />
+                {/* <TextFieldDescription>
+                  Card list or drag and drop .dek or text file
+                </TextFieldDescription> */}
               </TextField>
               <h2>Start in play</h2>
               <Combobox

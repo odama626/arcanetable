@@ -77,7 +77,7 @@ const labelVariants = cva(
     variants: {
       variant: {
         label: "data-[invalid]:text-destructive",
-        description: "text-destructive",
+        description: "text-slate-500",
         error: "font-normal text-muted-foreground"
       }
     },
