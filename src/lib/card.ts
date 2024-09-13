@@ -52,8 +52,9 @@ export function createCardGeometry(card: Card) {
   setCardData(mesh, 'isInteractive', true);
   setCardData(mesh, 'card', card);
   setCardData(mesh, 'id', card.id);
-  setCardData(mesh, 'isDoubleSided', card.detail.card_faces?.length > 1);
+  setCardData(mesh, 'isDoubleSided', card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris);
   if (mesh.userData.isDoubleSided) {
+    console.log({ card });
     mesh.userData.cardBack = new MeshStandardMaterial({
       map: textureLoader.load(card.detail.card_faces[1].image_uris.large),
       alphaMap: alphaMap,
