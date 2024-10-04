@@ -1,12 +1,11 @@
 import { useBeforeLeave } from '@solidjs/router';
 import { Component, createSignal, onCleanup, onMount, Show } from 'solid-js';
+import { Button } from '~/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
+import { cleanup, players } from '~/lib/globals';
 import DeckPicker from '~/lib/ui/deckPicker';
 import Overlay from '~/lib/ui/overlay';
 import { loadDeckAndJoin, localInit } from '~/main3d';
-import { animate } from '~/lib/animations';
-import { cleanup, players } from '~/lib/globals';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { Button } from '~/components/ui/button';
 
 const GamePage: Component = props => {
   const [deckIndex, setDeckIndex] = createSignal(props.location.query.deck);
@@ -15,12 +14,11 @@ const GamePage: Component = props => {
 
   console.log({ props });
   let url = new URL(document.location);
-  url.pathname = props.location.pathname
+  url.pathname = props.location.pathname;
   url.searchParams.forEach((value, key) => {
     console.log({ key });
     url.searchParams.delete(key);
   });
-
 
   onMount(() => {
     localInit({ gameId: props.params.gameId, deckIndex: deckIndex() });

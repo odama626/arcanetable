@@ -11,22 +11,23 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.5.0",
+    "@types/color-hash": "^2.0.0",
+    "@types/node": "^22.5.5",
     "autoprefixer": "^10.4.20",
-    "jsdom": "^24.1.1",
-    "postcss": "^8.4.41",
-    "solid-devtools": "^0.29.2",
-    "tailwindcss": "^3.4.10",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.11",
-    "vite-plugin-solid": "^2.8.2"
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.47",
+    "solid-devtools": "^0.30.1",
+    "tailwindcss": "^3.4.12",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.6",
+    "vite-plugin-solid": "^2.10.2"
   },
   "dependencies": {
-    "@kobalte/core": "^0.13.4",
+    "@kobalte/core": "^0.13.6",
     "@picocss/pico": "^2.0.6",
-    "@solidjs/router": "^0.14.3",
+    "@solidjs/router": "^0.14.5",
     "@types/lodash-es": "^4.17.12",
-    "@types/three": "^0.167.1",
+    "@types/three": "^0.168.0",
     "arcsecond": "^5.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -34,13 +35,13 @@
     "color-hash": "^2.0.2",
     "lodash-es": "^4.17.21",
     "nanoid": "^5.0.7",
-    "solid-js": "^1.8.11",
+    "solid-js": "^1.8.22",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.167.1",
-    "vitest": "^2.0.5",
+    "three": "^0.168.0",
+    "vitest": "^2.1.1",
     "y-webrtc": "^10.3.0",
     "y-websocket": "^2.0.4",
-    "yjs": "^13.6.18"
+    "yjs": "^13.6.19"
   }
 }

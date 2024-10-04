@@ -244,7 +244,7 @@ export class PlayArea {
 
     let focusCameraTarget = getFocusCameraPositionRelativeTo(
       cardMesh,
-      new Vector3(-CARD_WIDTH / 4, 0, 0)
+      new Vector3(CARD_WIDTH / 4, 0, 0)
     );
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
 
@@ -261,7 +261,6 @@ export class PlayArea {
     });
 
     if (focusCamera.userData.target === cardMesh.uuid) {
-      console.log('flip', { focusCamera });
       animateObject(focusCamera, {
         duration: 0.4,
         to: focusCameraTarget,

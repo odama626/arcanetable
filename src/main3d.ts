@@ -345,6 +345,11 @@ function onDocumentClick(event) {
 
   if (!target) return;
 
+  console.log('target', target);
+
+  if (target.userData.isAnimating && !['battlefield', 'hand'].includes(target.userData.location))
+    return;
+
   if (target.userData.zone === 'battlefield') {
     setHoverSignal({ mouse });
   } else if (target.userData.location === 'battlefield') {
@@ -402,14 +407,21 @@ function onDocumentDragStart(event) {
   event.dataTransfer.dropEffect = 'move';
   raycaster.setFromCamera(mouse, camera);
   let intersects = raycaster.intersectObject(scene);
-
   if (!intersects.length) return;
-  let target = intersects[0].object;
+
+  let intersection = intersects[0];
+
+  let target = intersection.object;
   if (target.userData.location === 'deck') return;
   if (!target.userData.isInteractive) return;
   if (target.userData.isInGrid) return;
 
   setCardData(target, 'isDragging', true);
+  setCardData(
+    target,
+    'dragOffset',
+    target.worldToLocal(intersection.point).multiply(new THREE.Vector3(-1, -1, 1)).toArray()
+  );
 
   dragTargets = [target];
 }
@@ -417,7 +429,6 @@ function onDocumentDragStart(event) {
 function onDocumentDrop(event) {
   event.preventDefault();
   if (!dragTargets?.length) return;
-  console.log({ dragTargets });
   raycaster.setFromCamera(mouse, camera);
 
   let intersects = raycaster.intersectObject(scene);
@@ -534,7 +545,9 @@ function onDocumentMouseMove(event) {
         zone.mesh.worldToLocal(pointTarget);
       }
 
-      target.position.set(pointTarget.x, pointTarget.y, pointTarget.z);
+      target.position.copy(
+        pointTarget.add(new THREE.Vector3().fromArray(target.userData.dragOffset))
+      );
     }
 
     setHoverSignal(signal => {

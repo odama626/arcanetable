@@ -8,6 +8,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+import { Menubar, MenubarItem, MenubarMenu } from '~/components/ui/menubar';
 import {
   NumberField,
   NumberFieldDecrementTrigger,
@@ -16,7 +17,6 @@ import {
 } from '~/components/ui/number-field';
 import { playAreas, provider } from '../globals';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
-import { Menubar, MenubarItem, MenubarMenu, MenubarTrigger } from '~/components/ui/menubar';
 
 export const LocalPlayer: Component = props => {
   const [open, setOpen] = createSignal(false);

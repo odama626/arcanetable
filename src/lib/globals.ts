@@ -21,6 +21,7 @@ import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
+import { WebrtcProvider } from 'y-webrtc';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -58,10 +59,16 @@ export let [deckIndex, setDeckIndex] = createSignal();
 export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
-export let provider: WebsocketProvider;
+export let provider: WebsocketProvider | WebrtcProvider;
 
 export function init({ gameId }) {
-  provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
+  if (import.meta.env.PROD) {
+    provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
+  } else {
+    provider = new WebrtcProvider(gameId, ydoc, { signaling: [`signaling.arcanetable.app`] });
+  }
+
+  console.log(import.meta.env);
 
   clock = new Clock();
   loadingManager = new LoadingManager();
@@ -129,14 +136,16 @@ export async function sha1(input) {
 }
 export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
   let distance = 30;
-  let targetWorldPosition = target.localToWorld(offset);
+  let localOffset = new Vector3(target.userData.isFlipped ? -CARD_WIDTH / 2 : 0, 0, 0);
+
+  let targetWorldPosition = target.localToWorld(offset.clone().add(localOffset));
   let worldDirection = target.getWorldDirection(new Vector3());
-  let worldRotation = getGlobalRotation(target);
+  let rotation = getGlobalRotation(target);
 
   if (target.userData.isFlipped) {
     worldDirection.multiply(new Vector3(-1, -1, -1));
-    worldRotation.y += Math.PI;
-    worldRotation.z *= -1;
+    rotation.y += Math.PI;
+    rotation.z *= -1;
   }
 
   let position = targetWorldPosition.add(
@@ -145,7 +154,7 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
 
   return {
     position,
-    rotation: worldRotation,
+    rotation,
   };
 }
 
@@ -211,7 +220,7 @@ export function cleanupFromNode(root: Object3D) {
     } else {
       for (const material of object.material) cleanMaterial(material);
     }
-    if (root !== scene) root.remove(object)
+    if (root !== scene) root.remove(object);
   });
 }
 export function cleanMaterial(material: Material) {

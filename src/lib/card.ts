@@ -52,9 +52,12 @@ export function createCardGeometry(card: Card) {
   setCardData(mesh, 'isInteractive', true);
   setCardData(mesh, 'card', card);
   setCardData(mesh, 'id', card.id);
-  setCardData(mesh, 'isDoubleSided', card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris);
+  setCardData(
+    mesh,
+    'isDoubleSided',
+    card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris
+  );
   if (mesh.userData.isDoubleSided) {
-    console.log({ card });
     mesh.userData.cardBack = new MeshStandardMaterial({
       map: textureLoader.load(card.detail.card_faces[1].image_uris.large),
       alphaMap: alphaMap,
@@ -162,6 +165,7 @@ export function cleanupCard(card: card) {
 }
 
 export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
+  // before setting value
   if (field === 'isPublic') {
     if (cardMesh.userData.isDoubleSided) {
       cardMesh.material[cardMesh.material.length - 1] =
@@ -169,10 +173,19 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     }
   }
   if (field === 'location' && value !== 'battlefield') {
-    cleanupFromNode(cardMesh);
+    cleanupFromNode(cardMesh)
+    cardMesh.userData.isFlipped = false;
     cardMesh.userData.modifiers = undefined;
   }
+
   cardMesh.userData[field] = value;
+
+  // after setting value
+
+  if (field === 'isFlipped') {
+    let card = cardsById.get(cardMesh.userData.id);
+    updateModifiers(card);
+  }
 }
 
 const textCanvas = document.createElement('canvas');
@@ -203,6 +216,7 @@ function createLabel(text, color?: string) {
 function updateCounter(card: Card, counterId: string, index: number) {
   let counter = counters().find(counter => counter.id === counterId)!;
   let counterValue = card.mesh.userData.modifiers.counters?.[counterId];
+  let zOffset = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -2 : 1);
 
   if (!card.modifiers[counterId]) {
     let geometry = new BoxGeometry(1, 1, 1);
@@ -211,7 +225,7 @@ function updateCounter(card: Card, counterId: string, index: number) {
     mesh.scale.set(7, 3, CARD_THICKNESS);
     card.mesh.add(mesh);
     mesh.transparent = true;
-    mesh.position.set(CARD_WIDTH / 2 + 3, CARD_HEIGHT / 2 - (index + 1) * 5, CARD_THICKNESS);
+    // mesh.position.set(CARD_WIDTH / 2 + 3, CARD_HEIGHT / 2 - (index + 1) * 5, zOffset);
     card.modifiers[counter.id] = mesh;
   }
   if (counterValue !== 0) {
@@ -221,9 +235,11 @@ function updateCounter(card: Card, counterId: string, index: number) {
     let mesh: Mesh = card.modifiers[counter.id];
     let label = createLabel(`${counterValue} ${counter.name}`, counter.color);
     mesh.material.map = label.texture;
-    mesh.scale.setX(label.width);
-    mesh.position.setY(CARD_HEIGHT / 2 - index * 3.25 - 2.5);
-    mesh.position.setX(CARD_WIDTH / 2 + label.width / 2 - 0.5);
+    mesh.position.set(
+      (CARD_WIDTH / 2 + label.width / 2 - 0.5) * (card.mesh.userData.isFlipped ? -1 : 1),
+      CARD_HEIGHT / 2 - index * 3.25 - 2.5,
+      zOffset
+    );
     mesh.material.needsUpdate = true;
   } else {
     card.mesh.remove(card.modifiers[counter.id]);
@@ -232,9 +248,10 @@ function updateCounter(card: Card, counterId: string, index: number) {
 
 export function updateModifiers(card: Card) {
   card.modifiers = card.modifiers ?? {};
+  let zPosition = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -5 : 1);
 
   let modifiers = card.mesh.userData.modifiers;
-  let { power, toughness } = modifiers;
+  let { power = 0, toughness = 0 } = modifiers || {};
 
   if (power !== 0 || toughness !== 0) {
     if (!card.modifiers.pt) {
@@ -244,7 +261,7 @@ export function updateModifiers(card: Card) {
       mesh.scale.set(7, 3, CARD_THICKNESS);
       card.mesh.add(mesh);
       mesh.transparent = true;
-      mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, CARD_THICKNESS);
+      mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, zPosition);
       card.modifiers.pt = mesh;
     }
     let mesh = card.modifiers.pt as Mesh;
@@ -256,11 +273,15 @@ export function updateModifiers(card: Card) {
     );
     mesh.material.map = label.texture;
     mesh.scale.setX(label.width);
-    mesh.position.setX(CARD_WIDTH / 2 - label.width / 2);
+    mesh.position.setZ(zPosition);
+    let xPosition = (CARD_WIDTH / 2 - label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1);
+    mesh.position.setX(xPosition);
     mesh.material.needsUpdate = true;
   } else if (card.modifiers.pt) {
     card.mesh.remove(card.modifiers.pt);
   }
+
+  if (!card.mesh.userData?.modifiers?.counters) return;
 
   Object.keys(card.mesh.userData.modifiers.counters)
     .sort((a, b) => a.localeCompare(b))

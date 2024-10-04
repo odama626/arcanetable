@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid';
+import ColorHash from 'color-hash';
 import { createSignal } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
@@ -10,7 +10,6 @@ import {
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
 import { deckIndex, sendEvent, sha1 } from '../globals';
-import ColorHash from 'color-hash';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal([]);
