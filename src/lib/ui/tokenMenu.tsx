@@ -1,10 +1,20 @@
-import { Component, Show } from 'solid-js';
+import { nanoid } from 'nanoid';
+import { Component, For, Show } from 'solid-js';
 import { Raycaster, Vector3 } from 'three';
 import { Command, CommandInput } from '~/components/ui/command';
-import { Menubar, MenubarItem, MenubarMenu } from '~/components/ui/menubar';
-import { CARD_STACK_OFFSET, CARD_THICKNESS, cleanupCard } from '../card';
+import {
+  Menubar,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
+} from '~/components/ui/menubar';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, cleanupCard, cloneCard } from '../card';
 import {
   cardsById,
+  COUNT_OPTIONS,
+  doXTimes,
   hoverSignal,
   playAreas,
   provider,
@@ -24,8 +34,8 @@ const TokenSearchMenu: Component = props => {
   const tether = () => hoverSignal()?.tether;
   const playArea = () => playAreas.get(provider.awareness.clientID)!;
 
-  function addToBattlefield(card: Card) {
-    console.log({ card });
+  function addToBattlefield(referenceCard: Card) {
+    let card = cloneCard(referenceCard, nanoid());
 
     let battlefield = playArea().battlefieldZone;
     let rayOrigin = new Vector3(40, 60, 65);
@@ -42,12 +52,9 @@ const TokenSearchMenu: Component = props => {
     } else {
       position = battlefield.mesh.worldToLocal(intersections[0].point);
     }
-
     battlefield.addCard(card, { position });
 
     console.log({ card });
-
-    let { card: _, ...userData } = card.mesh;
 
     sendEvent({
       type: 'createCard',
@@ -57,8 +64,6 @@ const TokenSearchMenu: Component = props => {
         addOptions: { position },
       },
     });
-
-    playArea().tokenSearchZone.removeCard(card.mesh);
   }
 
   return (
@@ -68,13 +73,30 @@ const TokenSearchMenu: Component = props => {
           <div class={styles.peekActions} style={`--x: ${tether().x}px; --y: ${tether().y}px;`}>
             <Menubar>
               <MenubarMenu>
-                <MenubarItem
-                  onClick={() => {
-                    let card = cardsById.get(cardMesh().userData.id);
-                    addToBattlefield(card);
-                  }}>
-                  Add
-                </MenubarItem>
+                <MenubarSub>
+                  <MenubarSubTrigger
+                    onClick={() => addToBattlefield(cardsById.get(cardMesh().userData.id))}>
+                    Add
+                  </MenubarSubTrigger>
+                  <MenubarSubContent>
+                    <For each={COUNT_OPTIONS}>
+                      {value => (
+                        <MenubarItem
+                          closeOnSelect={false}
+                          onClick={() =>
+                            doXTimes(
+                              value,
+                              () => addToBattlefield(cardsById.get(cardMesh().userData.id)),
+                              500
+                            )
+                          }>
+                          {value}
+                        </MenubarItem>
+                      )}
+                    </For>
+                  </MenubarSubContent>
+                </MenubarSub>
+
                 <MenubarItem
                   onClick={() => {
                     playArea().tokenSearchZone.removeCard(cardMesh());

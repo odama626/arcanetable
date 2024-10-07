@@ -52,6 +52,7 @@ export class CardArea implements CardZone {
     setCardData(card.mesh, 'location', this.zone);
     setCardData(card.mesh, 'isPublic', true);
     setCardData(card.mesh, 'isInteractive', true);
+    setCardData(card.mesh, 'isInGrid', false);
     this.mesh.add(card.mesh);
 
     let initialRotation = card.mesh.rotation;
