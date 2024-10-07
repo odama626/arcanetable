@@ -2,7 +2,7 @@ import { Component, Show } from 'solid-js';
 import { Raycaster, Vector3 } from 'three';
 import { Command, CommandInput } from '~/components/ui/command';
 import { Menubar, MenubarItem, MenubarMenu } from '~/components/ui/menubar';
-import { cleanupCard } from '../card';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, cleanupCard } from '../card';
 import {
   cardsById,
   hoverSignal,
@@ -28,10 +28,20 @@ const TokenSearchMenu: Component = props => {
     console.log({ card });
 
     let battlefield = playArea().battlefieldZone;
-    let rayOrigin = battlefield.mesh.localToWorld(new Vector3(40, -55, 10));
+    let rayOrigin = new Vector3(40, 60, 65);
+    let direction = new Vector3(0, -1, 0);
 
-    let intersections = new Raycaster(rayOrigin).intersectObject(scene);
-    let position = battlefield.mesh.worldToLocal(intersections[0].point);
+    let raycaster = new Raycaster(rayOrigin, direction);
+
+    let intersections = raycaster.intersectObject(scene);
+    let position: Vector3;
+    if (intersections[0].object.userData.card) {
+      position = intersections[0].object.position
+        .clone()
+        .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
+    } else {
+      position = battlefield.mesh.worldToLocal(intersections[0].point);
+    }
 
     battlefield.addCard(card, { position });
 
