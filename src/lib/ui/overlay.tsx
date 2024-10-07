@@ -52,7 +52,7 @@ const Overlay: Component = () => {
         </div>
       </div>
       <div class={styles.focusCamera} style={focusCameraStyle()}>
-        <Show when={isPublic() || (isOwner() && ['battlefield', 'peek'].includes(location()))}>
+        <Show when={isPublic() || (isOwner() && ['battlefield', 'peek', 'hand'].includes(location()))}>
           <div ref={setContainer} class={styles.focusCameraContainer} />
         </Show>
       </div>
