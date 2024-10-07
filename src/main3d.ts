@@ -42,7 +42,7 @@ import {
   setPlayers,
   table,
   updateFocusCamera,
-  zonesById,
+  zonesById
 } from './lib/globals';
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
@@ -520,7 +520,16 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 
+  composer.setSize(window.innerWidth, window.innerHeight);
+
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+
+  let focusHeight = window.innerHeight * 0.5;
+  let focusWidth = (focusHeight / 700) * 750;
+
+  focusRenderer.setPixelRatio(window.devicePixelRatio);
+  focusRenderer.setSize(focusWidth, focusHeight);
 }
 
 function onDocumentMouseMove(event) {
