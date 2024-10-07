@@ -26,6 +26,7 @@ let alphaMap: Texture;
 export const CARD_WIDTH = 63 / 4;
 export const CARD_HEIGHT = 88 / 4;
 export const CARD_THICKNESS = 0.5 / 4;
+export const CARD_STACK_OFFSET = 2;
 
 export function createCardGeometry(card: Card) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
@@ -78,15 +79,18 @@ export function getSearchLine(cardDetail) {
 }
 
 export function cloneCard(card: Card, newId: string): Card {
-  let { mesh, ...shared } = card;
+  let { mesh, modifiers, ...shared } = card;
   let newCard = structuredClone(shared) as Card;
 
   newCard.id = newId;
   newCard.mesh = createCardGeometry(newCard);
   newCard.mesh.userData = structuredClone(card.mesh.userData);
   setCardData(newCard.mesh, 'id', newCard.id);
-  newCard.mesh.position.copy(card.mesh.position).add(new Vector3(2, -2, 0.125));
+  newCard.mesh.position
+    .copy(card.mesh.position)
+    .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
   newCard.mesh.rotation.copy(card.mesh.rotation);
+  updateModifiers(newCard);
   cardsById.set(newCard.id, newCard);
   return newCard;
 }
@@ -173,7 +177,7 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     }
   }
   if (field === 'location' && value !== 'battlefield') {
-    cleanupFromNode(cardMesh)
+    cleanupFromNode(cardMesh);
     cardMesh.userData.isFlipped = false;
     cardMesh.userData.modifiers = undefined;
   }
