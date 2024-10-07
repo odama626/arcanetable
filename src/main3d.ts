@@ -208,6 +208,12 @@ const EVENTS = {
     }
     playArea.addToHand(card);
   },
+  addToBattlefield(event: Event, playArea: PlayArea, card: Card) {
+    if (card.mesh.userData.location === 'peek') {
+      playArea.peekZone.removeCard(card.mesh);
+    }
+    playArea.addToBattlefield(card);
+  },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
     playArea.modifyCard(card);
