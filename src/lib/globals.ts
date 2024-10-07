@@ -103,6 +103,8 @@ export function init({ gameId }) {
   focusRenderer = new WebGLRenderer();
   focusRenderer.setPixelRatio(window.devicePixelRatio);
   focusRenderer.setSize(focusWidth, focusHeight);
+  focusRenderer.shadowMap.enabled = true;
+  focusRenderer.setClearAlpha(0x05050e);
 
   focusCamera = new PerspectiveCamera(50, focusWidth / focusHeight, 1, 2000);
 
