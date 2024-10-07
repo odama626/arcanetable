@@ -9,6 +9,7 @@ import {
 } from '~/components/ui/menubar';
 import {
   cardsById,
+  doXTimes,
   hoverSignal,
   playAreas,
   provider,
@@ -16,15 +17,70 @@ import {
   setPeekFilterText,
 } from '../globals';
 import styles from './peekMenu.module.css';
+import { Card } from '../card';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
   const isPublic = () => userData()?.isPublic;
   const isOwner = () => userData()?.clientId === provider.awareness.clientID;
   const location = () => userData()?.location;
-  const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = () => playAreas.get(provider.awareness.clientID)!;
+  const cardCount = () => playArea().peekZone.cards.length;
+  const card = () => cardsById.get(hoverSignal()?.mesh?.userData.id);
+
+  function drawAfterRevealing(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().addToHand(card);
+    playArea().reveal(card);
+    if (!playArea().peekZone.cards.length) {
+      setHoverSignal();
+    }
+  }
+
+  function drawWithoutRevealing(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().addToHand(card);
+    if (!playArea().peekZone.cards.length) {
+      setHoverSignal();
+    }
+  }
+
+  function discard(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().destroy(card.mesh);
+    if (!playArea().peekZone.cards.length) {
+      setHoverSignal();
+    }
+  }
+
+  function exile(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().exileCard(card.mesh);
+    if (!playArea().peekZone.cards.length) {
+      setHoverSignal();
+    }
+  }
+
+  function topOfDeck(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().addCardTopDeck(card);
+    setHoverSignal();
+  }
+
+  function bottomOfDeck(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().addCardBottomDeck(card);
+    setHoverSignal();
+  }
+
+  function battlefield(card: Card) {
+    playArea().peekZone.removeCard(card.mesh);
+    playArea().addToBattlefield(card);
+    if (!playArea().peekZone.cards.length) {
+      setHoverSignal();
+    }
+  }
 
   return (
     <>
@@ -33,79 +89,16 @@ const PeekMenu: Component = props => {
           <div class={styles.peekActions} style={`--x: ${tether().x}px; --y: ${tether().y}px;`}>
             <Menubar>
               <MenubarMenu>
-                <MenubarTrigger>Draw</MenubarTrigger>
+                <MenubarItem onClick={() => drawAfterRevealing(card())}>Reveal & Draw</MenubarItem>
+                <MenubarItem onClick={() => drawWithoutRevealing(card())}>Draw</MenubarItem>
+                <MenubarTrigger>Move To</MenubarTrigger>
                 <MenubarContent>
-                  <MenubarItem
-                    onClick={() => {
-                      let card = cardsById.get(cardMesh().userData.id);
-                      playArea().peekZone.removeCard(cardMesh());
-                      playArea().addToHand(card);
-                      playArea().reveal(card);
-                      if (!playArea().peekZone.cards.length) {
-                        setHoverSignal();
-                      }
-                    }}>
-                    After Revealing
-                  </MenubarItem>
-                  <MenubarItem
-                    onClick={() => {
-                      let card = cardsById.get(cardMesh().userData.id);
-                      playArea().peekZone.removeCard(cardMesh());
-                      playArea().addToHand(card);
-                      if (!playArea().peekZone.cards.length) {
-                        setHoverSignal();
-                      }
-                    }}>
-                    Without Revealing
-                  </MenubarItem>
+                  <MenubarItem onClick={() => discard(card())}>Discard</MenubarItem>
+                  <MenubarItem onClick={() => exile(card())}>Exile</MenubarItem>
+                  <MenubarItem onClick={() => topOfDeck(card())}>Top of Deck</MenubarItem>
+                  <MenubarItem onClick={() => bottomOfDeck(card())}>Bottom of Deck</MenubarItem>
+                  <MenubarItem onClick={() => battlefield(card())}>Battlefield</MenubarItem>
                 </MenubarContent>
-                <MenubarItem
-                  onClick={() => {
-                    playArea().peekZone.removeCard(cardMesh());
-                    playArea().destroy(cardMesh());
-                    if (!playArea().peekZone.cards.length) {
-                      setHoverSignal();
-                    }
-                  }}>
-                  Discard
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() => {
-                    playArea().peekZone.removeCard(cardMesh());
-                    playArea().exileCard(cardMesh());
-                    if (!playArea().peekZone.cards.length) {
-                      setHoverSignal();
-                    }
-                  }}>
-                  Exile
-                </MenubarItem>
-                <MenubarMenu overlap>
-                  <MenubarTrigger>Deck</MenubarTrigger>
-                  <MenubarContent>
-                    <MenubarItem
-                      onClick={() => {
-                        let card = cardsById.get(cardMesh().userData.id);
-                        playArea().peekZone.removeCard(cardMesh());
-                        playArea().addCardTopDeck(card);
-                        if (!playArea().peekZone.cards.length) {
-                          setHoverSignal();
-                        }
-                      }}>
-                      Put on Top
-                    </MenubarItem>
-                    <MenubarItem
-                      onClick={() => {
-                        let card = cardsById.get(cardMesh().userData.id);
-                        playArea().peekZone.removeCard(cardMesh());
-                        playArea().addCardBottomDeck(card);
-                        if (!playArea().peekZone.cards.length) {
-                          setHoverSignal();
-                        }
-                      }}>
-                      Put on Bottom
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
               </MenubarMenu>
             </Menubar>
           </div>
@@ -135,102 +128,53 @@ const PeekMenu: Component = props => {
                     doOne();
                     setHoverSignal();
                   }}>
-                  Shuffle
+                  Shuffle into deck
                 </MenubarItem>
-                <MenubarTrigger>Draw All</MenubarTrigger>
+                <MenubarItem
+                  onClick={() =>
+                    doXTimes(cardCount(), () => drawAfterRevealing(playArea().peekZone.cards[0]))
+                  }>
+                  Reveal & Draw All
+                </MenubarItem>
+                <MenubarItem
+                  onClick={() =>
+                    doXTimes(cardCount(), () => drawWithoutRevealing(playArea().peekZone.cards[0]))
+                  }>
+                  Draw All
+                </MenubarItem>
+                <MenubarTrigger>Move All To</MenubarTrigger>
                 <MenubarContent>
                   <MenubarItem
-                    onClick={() => {
-                      function doOne() {
-                        let card = playArea().peekZone.cards[0];
-                        playArea().peekZone.removeCard(card.mesh);
-                        playArea().addToHand(card);
-                        playArea().reveal(card);
-                        if (playArea().peekZone.cards.length) {
-                          setTimeout(doOne, 50);
-                        }
-                      }
-                      doOne();
-                      setHoverSignal();
-                    }}>
-                    After Revealing
+                    onClick={() =>
+                      doXTimes(cardCount(), () => discard(playArea().peekZone.cards[0]))
+                    }>
+                    Discard
                   </MenubarItem>
                   <MenubarItem
-                    onClick={() => {
-                      function doOne() {
-                        let card = playArea().peekZone.cards[0];
-                        playArea().peekZone.removeCard(card.mesh);
-                        playArea().addToHand(card);
-                        if (playArea().peekZone.cards.length) {
-                          setTimeout(doOne, 50);
-                        }
-                      }
-                      doOne();
-                      setHoverSignal();
-                    }}>
-                    Without Revealing
+                    onClick={() =>
+                      doXTimes(cardCount(), () => exile(playArea().peekZone.cards[0]))
+                    }>
+                    Exile
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      doXTimes(cardCount(), () => topOfDeck(playArea().peekZone.cards[0]))
+                    }>
+                    Top of Deck
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      doXTimes(cardCount(), () => bottomOfDeck(playArea().peekZone.cards[0]))
+                    }>
+                    Bottom of Deck
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      doXTimes(cardCount(), () => battlefield(playArea().peekZone.cards[0]))
+                    }>
+                    Battlefield
                   </MenubarItem>
                 </MenubarContent>
-                <MenubarItem
-                  onClick={() => {
-                    function doOne() {
-                      let card = playArea().peekZone.cards[0];
-                      playArea().peekZone.removeCard(card.mesh);
-                      playArea().destroy(card.mesh);
-                      if (playArea().peekZone.cards.length) {
-                        setTimeout(doOne, 50);
-                      }
-                    }
-                    doOne();
-                    setHoverSignal();
-                  }}>
-                  Discard All
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() => {
-                    function doOne() {
-                      let card = playArea().peekZone.cards[0];
-                      playArea().peekZone.removeCard(card.mesh);
-                      playArea().exileCard(card.mesh);
-                      if (playArea().peekZone.cards.length) {
-                        setTimeout(doOne, 50);
-                      }
-                    }
-                    doOne();
-                    setHoverSignal();
-                  }}>
-                  Exile All
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() => {
-                    function doOne() {
-                      let card = playArea().peekZone.cards[0];
-                      playArea().peekZone.removeCard(card.mesh);
-                      playArea().addCardTopDeck(card);
-                      if (playArea().peekZone.cards.length) {
-                        setTimeout(doOne, 50);
-                      }
-                    }
-                    doOne();
-                    setHoverSignal();
-                  }}>
-                  Put on Top
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() => {
-                    function doOne() {
-                      let card = playArea().peekZone.cards[0];
-                      playArea().peekZone.removeCard(card.mesh);
-                      playArea().addCardBottomDeck(card);
-                      if (playArea().peekZone.cards.length) {
-                        setTimeout(doOne, 50);
-                      }
-                    }
-                    doOne();
-                    setHoverSignal();
-                  }}>
-                  Put on Bottom
-                </MenubarItem>
               </MenubarMenu>
             </Menubar>
           </Command>
