@@ -417,11 +417,16 @@ function onDocumentDragStart(event) {
   if (target.userData.isInGrid) return;
 
   setCardData(target, 'isDragging', true);
-  setCardData(
-    target,
-    'dragOffset',
-    target.worldToLocal(intersection.point).multiply(new THREE.Vector3(-1, -1, 1)).toArray()
-  );
+
+  let dragOffset = [0, 0, 0];
+  if (target.userData.location !== 'hand') {
+    dragOffset = target
+      .worldToLocal(intersection.point)
+      .multiply(new THREE.Vector3(-1, -1, 1))
+      .toArray();
+  }
+
+  setCardData(target, 'dragOffset', dragOffset);
 
   dragTargets = [target];
 }
