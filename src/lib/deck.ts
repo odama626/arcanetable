@@ -70,7 +70,7 @@ export class Deck {
   }
 
   async addCardTop(card: Card) {
-    if (this.cards[0].mesh.userData.isPublic) {
+    if (this.cards[0]?.mesh.userData.isPublic) {
       await this.flipTop();
     }
 
