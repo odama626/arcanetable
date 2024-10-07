@@ -19,7 +19,7 @@ export class CardArea implements CardZone {
   constructor(public zone: string, public id: string = nanoid()) {
     // let geometry = new BoxGeometry(100, 75, CARD_THICKNESS / 2);
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
-    let material = new MeshStandardMaterial({ color: 0x686977 }); //#9d9eae
+    let material = new MeshStandardMaterial({ color: 0x2c2d3a }); //#9d9eae
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;

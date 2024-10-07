@@ -42,7 +42,7 @@ import {
   setPlayers,
   table,
   updateFocusCamera,
-  zonesById
+  zonesById,
 } from './lib/globals';
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
@@ -90,11 +90,11 @@ export async function localInit(gameOptions: GameOptions) {
   outlinePass.pulsePeriod = 2;
 
   var ambient = new THREE.AmbientLight(0xffffff);
-  ambient.intensity = 2;
+  ambient.intensity = 1.5;
   scene.add(ambient);
 
   var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.intensity = 2;
+  directionalLight.intensity = 1.5;
   directionalLight.position.set(0, 100, 200);
   directionalLight.shadow.mapSize.set(1024 * 2, 1024 * 2);
   directionalLight.shadow.camera.left = -140;
@@ -134,26 +134,7 @@ export async function localInit(gameOptions: GameOptions) {
   container.appendChild(renderer.domElement);
 
   composer = new EffectComposer(renderer);
-
-  // const bloomComposer = new EffectComposer(renderer);
-  // bloomComposer.renderToScreen = false;
-
-  // const copyPass = new TexturePass(scene.texture);
-  // bloomComposer.addPass(copyPass);
-
-  // const bloomPass = new UnrealBloomPas(
-  //   new Vector2(renderer.domElement.width, renderer.domElement.height),
-  //   1.5,
-  //   0.4,
-  //   0,
-  //   85
-  // );
-
-  // bloomPass.clearColor= new Color(0xfffff)
-  // bloomComposer.addPass(bloomPass);
-
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(outlinePass);
 
   renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
   document.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -550,14 +531,12 @@ function onDocumentMouseMove(event) {
       let intersection = intersects.find(intersect => intersect.object.uuid !== target.uuid);
       if (!intersection) continue;
       let pointTarget = intersection.point.clone();
+      let zone = zonesById.get(target.userData.zoneId)!;
       if (target.userData.location === 'hand') {
-        hand.mesh.worldToLocal(pointTarget);
         let quarternion = new THREE.Quaternion().setFromEuler(hand.mesh.rotation).invert();
         target.rotation.setFromQuaternion(quarternion);
-      } else if (target.userData.location === 'battlefield') {
-        let zone = zonesById.get(target.userData.zoneId)!;
-        zone.mesh.worldToLocal(pointTarget);
       }
+      zone.mesh.worldToLocal(pointTarget);
 
       target.position.copy(
         pointTarget.add(new THREE.Vector3().fromArray(target.userData.dragOffset))
@@ -618,11 +597,12 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
   if (!intersects.length) needsCleanup = true;
   if (target !== hover?.object) {
     needsCleanup = true;
-    if (target?.userData?.isInteractive && !target?.userData?.isAnimating) next = target;
+    let { isInteractive, isAnimating, location } = target?.userData ?? {};
+    if ((isInteractive || ['graveyard', 'exile'].includes(location)) && !isAnimating) next = target;
   }
 
   if (needsCleanup && hover) {
-    hover.object.material?.forEach((mat, i) => mat.color.set(hover.colors[i]));
+    hover.object.material?.forEach?.((mat, i) => mat.color.set(hover.colors[i]));
 
     hover.object.dispatchEvent({ type: 'mouseout', mesh: hover.object });
     hover = undefined;
