@@ -148,6 +148,11 @@ export class PlayArea {
     this.hand.addCard(card);
   }
 
+  addToBattlefield(card: Card) {
+    this.emitEvent('addToBattlefield', { userData: card.mesh.userData});
+    this.battlefieldZone.addCard(card);
+  }
+
   async mulligan(drawCount: number, existingOrder?: number[]) {
     let cardsInHand = this.hand.cards;
     cardsInHand.forEach(card => {

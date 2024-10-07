@@ -29,7 +29,6 @@ export class CardStack implements CardZone {
     this.mesh.add(lineSegments);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
-    this.mesh.userData.isPublic = true;
     zonesById.set(id, this);
   }
 
@@ -39,7 +38,16 @@ export class CardStack implements CardZone {
     };
   }
 
+  updateCardPositions() {
+    let cummulativeZ = 0;
+    this.mesh.children.forEach((card, i) => {
+      card.position.setZ(cummulativeZ);
+      cummulativeZ += CARD_THICKNESS;
+    });
+  }
+
   addCard(card: Card, { skipAnimation } = {}) {
+    if (!card) return;
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
@@ -79,5 +87,6 @@ export class CardStack implements CardZone {
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
     this.mesh.remove(cardMesh);
+    this.updateCardPositions();
   }
 }

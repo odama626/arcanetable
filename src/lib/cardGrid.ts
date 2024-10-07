@@ -170,6 +170,7 @@ export class CardGrid implements CardZone {
   }
 
   addCard(card: Card) {
+    if (!card) return;
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     setCardData(card.mesh, 'isInGrid', true);
