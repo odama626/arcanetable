@@ -1,4 +1,5 @@
 import { createSignal } from 'solid-js';
+import * as THREE from 'three';
 import {
   ArrowHelper,
   BoxGeometry,
@@ -16,12 +17,12 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
-import { WebrtcProvider } from 'y-webrtc';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -60,6 +61,11 @@ export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
 export let provider: WebsocketProvider | WebrtcProvider;
+export let COUNT_OPTIONS = [1, 2, 3, 5, 7, 10];
+
+export function doXTimes(x: number, callback, delay = 100) {
+  new Array(x).fill(0).forEach((_, i) => setTimeout(callback, delay * i));
+}
 
 export function init({ gameId }) {
   if (import.meta.env.PROD) {
@@ -76,6 +82,7 @@ export function init({ gameId }) {
     console.log(item, loaded, total);
   };
   textureLoader = new TextureLoader(loadingManager);
+  THREE.Cache.enabled = true;
 
   camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
   camera.position.z = 250;
@@ -91,7 +98,6 @@ export function init({ gameId }) {
   // let focusWidth = 750;
   // let focusHeight = 700;
   let focusHeight = window.innerHeight * 0.5;
-
   let focusWidth = (focusHeight / 700) * 750;
 
   focusRenderer = new WebGLRenderer();

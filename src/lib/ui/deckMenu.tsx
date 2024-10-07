@@ -10,11 +10,9 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '~/components/ui/menubar';
+import { COUNT_OPTIONS, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
-import { sendEvent } from '../globals';
-import { queueAnimationGroup } from '../animations';
 
-let COUNT_OPTIONS = [1, 3, 5, 7, 10];
 
 const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   function getNextLandIndex() {
@@ -23,9 +21,6 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
     );
   }
 
-  function doXTimes(x: number, callback, delay = 100) {
-    new Array(x).fill(0).forEach((_, i) => setTimeout(callback, delay * i));
-  }
 
   return (
     <Menubar>

@@ -19,7 +19,7 @@ import {
   NumberFieldIncrementTrigger,
   NumberFieldInput,
 } from '~/components/ui/number-field';
-import { cardsById, setHoverSignal } from '../globals';
+import { cardsById, COUNT_OPTIONS, doXTimes, setHoverSignal } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 
@@ -103,12 +103,24 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
-          <MenubarItem
-            onClick={() => {
-              props.playArea.clone(props.cardMesh?.userData.id);
-            }}>
-            Clone
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger onClick={() => props.playArea.clone(props.cardMesh?.userData.id)}>
+              Clone
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <For each={COUNT_OPTIONS}>
+                {value => (
+                  <MenubarItem
+                    closeOnSelect={false}
+                    onClick={() =>
+                      doXTimes(value, () => props.playArea.clone(props.cardMesh?.userData.id), 10)
+                    }>
+                    {value}
+                  </MenubarItem>
+                )}
+              </For>
+            </MenubarSubContent>
+          </MenubarSub>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
