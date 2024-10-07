@@ -7,11 +7,12 @@ import {
   LineSegments,
   Mesh,
   MeshStandardMaterial,
+  Raycaster,
   Vector3,
 } from 'three';
-import { Card, CARD_THICKNESS, setCardData } from './card';
-import { CardZone, getGlobalRotation, zonesById } from './globals';
 import { animateObject } from './animations';
+import { Card, CARD_STACK_OFFSET, CARD_THICKNESS, setCardData } from './card';
+import { CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class CardArea implements CardZone {
   public mesh: Mesh;
@@ -45,7 +46,19 @@ export class CardArea implements CardZone {
       console.log({ position: position.clone() });
       // position.z = CARD_THICKNESS;
     } else {
-      position = new Vector3();
+      let rayOrigin = new Vector3(40, 60, 65);
+      let direction = new Vector3(0, -1, 0);
+
+      let raycaster = new Raycaster(rayOrigin, direction);
+
+      let intersections = raycaster.intersectObject(this.mesh);
+      if (intersections[0].object.userData.card) {
+        position = intersections[0].object.position
+          .clone()
+          .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
+      } else {
+        position = this.mesh.worldToLocal(intersections[0].point);
+      }
     }
 
     setCardData(card.mesh, 'zoneId', this.id);
