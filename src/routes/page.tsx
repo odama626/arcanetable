@@ -1,11 +1,11 @@
 import { A } from '@solidjs/router';
 import { nanoid } from 'nanoid';
-import { Component, createEffect, createSignal } from 'solid-js';
+import { Component, createSignal, onMount } from 'solid-js';
 
 const Page: Component = props => {
   const [startUrl, setStartUrl] = createSignal(`/game/${nanoid()}`);
 
-  createEffect(() => {
+  onMount(() => {
     setStartUrl(`/game/${nanoid()}`);
   });
 
