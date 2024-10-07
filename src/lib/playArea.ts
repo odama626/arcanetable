@@ -172,8 +172,9 @@ export class PlayArea {
     this.peekZone.addCard(card);
   }
 
-  reveal(card = this.deck.draw()) {
+  reveal(card: Card) {
     if (provider.awareness.clientID !== card?.mesh.userData.clientId) {
+      setCardData(card.mesh,'isPublic', true)
       this.revealZone.addCard(card);
     } else {
       this.emitEvent('reveal', { userData: card.mesh.userData });

@@ -13,14 +13,12 @@ import {
 import { COUNT_OPTIONS, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
 
-
 const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   function getNextLandIndex() {
     return props.playArea.deck.cards.findIndex(card =>
       card.detail.type_line.toLowerCase().includes('land')
     );
   }
-
 
   return (
     <Menubar>
@@ -107,26 +105,40 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
-          {/* <MenubarSub>
+          <MenubarSub>
             <MenubarSubTrigger>Reveal</MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
                   <MenubarItem
                     closeOnSelect={false}
-                    onClick={() => doXTimes(value, () => props.playArea.reveal())}>
+                    onClick={() =>
+                      doXTimes(value, () => {
+                        let card = props.playArea.deck.cards[0];
+                        props.playArea.peek();
+                        props.playArea.reveal(card);
+                      })
+                    }>
                     {value}
                   </MenubarItem>
                 )}
               </For>
               <MenubarItem
                 onClick={() => {
-                  doXTimes(props.playArea.deck.cards.length, () => props.playArea.reveal(), 50);
+                  doXTimes(
+                    props.playArea.deck.cards.length,
+                    () => {
+                      let card = props.playArea.deck.cards[0];
+                      props.playArea.peek();
+                      props.playArea.reveal(card);
+                    },
+                    50
+                  );
                 }}>
                 All
               </MenubarItem>
             </MenubarSubContent>
-          </MenubarSub> */}
+          </MenubarSub>
           <MenubarSub>
             <MenubarSubTrigger onClick={() => props.playArea.deckFlipTop()}>Flip</MenubarSubTrigger>
             <MenubarSubContent>
