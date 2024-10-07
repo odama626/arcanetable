@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import { card, deck } from './deckParser';
 
 test('card', () => {
@@ -35,7 +35,6 @@ test('card', () => {
 test('deck', () => {
   expect.soft(
     deck.run(`
-    
 1x Alela, Artful Provocateur (brc) 119 [Tokens]
 1x All That Glitters (cmm) 622 [Pump]
 1x Angelic Destiny (woc) 60 [Evasion]
