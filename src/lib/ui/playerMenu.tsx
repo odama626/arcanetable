@@ -19,7 +19,7 @@ import { playAreas, provider } from '../globals';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 
 export const LocalPlayer: Component = props => {
-  const [open, setOpen] = createSignal(false);
+  const [open, setOpen] = createSignal(true);
   const playArea = () => playAreas.get(provider?.awareness?.clientID)!;
 
   function changeCounter(counterId, callback) {
@@ -165,23 +165,6 @@ export const LocalPlayer: Component = props => {
           </ul>
         </CollapsibleContent>
       </Collapsible>
-      <Menubar>
-        <MenubarMenu>
-          <MenubarItem
-            onClick={() => {
-              console.log(playArea().battlefieldZone.mesh.children);
-              let tappedCards = playArea().battlefieldZone.mesh.children.filter(
-                mesh => mesh.userData.isTapped
-              );
-
-              tappedCards.forEach(card => {
-                playArea().tap(card);
-              });
-            }}>
-            Untap All
-          </MenubarItem>
-        </MenubarMenu>
-      </Menubar>
     </div>
   );
 };

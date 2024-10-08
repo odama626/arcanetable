@@ -28,7 +28,7 @@
 .mainMenu {
   pointer-events: initial;
   position: fixed;
-  bottom: 130px;
+  bottom: 180px;
   left: 2rem;
   display: flex;
   gap: 1rem;

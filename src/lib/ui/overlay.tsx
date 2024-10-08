@@ -1,7 +1,7 @@
 import { createEffect, createSignal, For, Match, Show, Switch, type Component } from 'solid-js';
 
-import { Menubar, MenubarMenu, MenubarTrigger } from '../../components/ui/menubar';
-import { focusRenderer, hoverSignal, playAreas, players, provider } from '../globals';
+import { Menubar, MenubarItem, MenubarMenu, MenubarTrigger } from '../../components/ui/menubar';
+import { cardsById, doXTimes, focusRenderer, hoverSignal, playAreas, players, provider } from '../globals';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
@@ -52,7 +52,8 @@ const Overlay: Component = () => {
         </div>
       </div>
       <div class={styles.focusCamera} style={focusCameraStyle()}>
-        <Show when={isPublic() || (isOwner() && ['battlefield', 'peek', 'hand'].includes(location()))}>
+        <Show
+          when={isPublic() || (isOwner() && ['battlefield', 'peek', 'hand'].includes(location()))}>
           <div ref={setContainer} class={styles.focusCameraContainer} />
         </Show>
       </div>
@@ -70,13 +71,70 @@ const Overlay: Component = () => {
             <Match when={cardMesh()?.userData.location === 'battlefield'}>
               <CardBattlefieldMenu playArea={playArea()} cardMesh={cardMesh()} />
             </Match>
+            <Match when={cardMesh()?.userData.location === 'hand'}>
+              <Menubar class='flex-col' style='height: auto; margin-left: -10px;'>
+                <MenubarMenu>
+                  <MenubarItem onClick={() => {
+                    playArea().reveal(cardsById.get(cardMesh().userData.id))
+                  }}>Reveal</MenubarItem>
+                </MenubarMenu>
+              </Menubar>
+            </Match>
           </Switch>
         </div>
       </Show>
       <div class={styles.mainMenu}>
-        <Menubar>
+        <Menubar style='height: auto;' class='flex-col'>
           <MenubarMenu>
-            <MenubarTrigger onClick={() => playArea().openTokenMenu()}>Add Tokens</MenubarTrigger>
+            <MenubarItem
+              class='w-full flex justify-center'
+              onClick={() => {
+                let tappedCards = playArea().battlefieldZone.mesh.children.filter(
+                  mesh => mesh.userData.isTapped
+                );
+
+                tappedCards.forEach(card => playArea().tap(card));
+              }}>
+              Untap All
+            </MenubarItem>
+            <MenubarItem
+              class='w-full flex justify-center'
+              onClick={() => playArea().openTokenMenu()}>
+              Add Tokens
+            </MenubarItem>
+            <MenubarItem
+              class='w-full flex justify-center'
+              onClick={() => {
+                let cards = playArea().hand.cards;
+                doXTimes(cards.length, () => {
+                  let card = playArea().hand.cards[0];
+
+                  playArea().removeFromHand(card.mesh);
+                  playArea().destroy(card.mesh);
+                });
+              }}>
+              Discard Hand
+            </MenubarItem>
+            <MenubarItem
+              class='w-full flex justify-center'
+              onClick={() => {
+                let cards = playArea().hand.cards;
+                doXTimes(cards.length, () => {
+                  let card = playArea().hand.cards[0];
+
+                  playArea().removeFromHand(card.mesh);
+                  playArea().exileCard(card.mesh);
+                });
+              }}>
+              Exile Hand
+            </MenubarItem>
+            <MenubarItem
+              class='w-full flex justify-center'
+              onClick={() => {
+                playArea().hand.cards.forEach(card => playArea().reveal(card));
+              }}>
+              Reveal Hand
+            </MenubarItem>
           </MenubarMenu>
         </Menubar>
       </div>

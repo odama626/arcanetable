@@ -357,7 +357,7 @@ function onDocumentClick(event) {
       remotePlayArea?.graveyardZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id);
         if (!card) return;
-        
+
         let cardProxy = cloneCard(card, nanoid());
         setCardData(cardProxy.mesh, 'isPublic', true);
         setTimeout(() => {
@@ -653,6 +653,13 @@ function render3d() {
   let intersects = raycaster.intersectObject(scene);
 
   hightlightHover(intersects);
+
+  if (hoverSignal()?.mesh) {
+    setHoverSignal(signal => ({
+      ...signal,
+      tether: getCardMeshTetherPoint(signal.mesh)
+    }))
+  }
 
   camera.lookAt(scene.position);
   composer.render();
