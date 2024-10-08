@@ -10,6 +10,6 @@
 
 .search {
   pointer-events: initial;
-  margin-left: 9rem;
+  margin: auto;
   width: 80ch;
 }

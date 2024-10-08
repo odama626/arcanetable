@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import { Component, createSignal, Match, Show, Switch } from 'solid-js';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
   Menubar,
@@ -7,6 +7,7 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from '~/components/ui/menubar';
+import { Card } from '../card';
 import {
   cardsById,
   doXTimes,
@@ -17,7 +18,6 @@ import {
   setPeekFilterText,
 } from '../globals';
 import styles from './peekMenu.module.css';
-import { Card } from '../card';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -28,6 +28,7 @@ const PeekMenu: Component = props => {
   const playArea = () => playAreas.get(provider.awareness.clientID)!;
   const cardCount = () => playArea().peekZone.cards.length;
   const card = () => cardsById.get(hoverSignal()?.mesh?.userData.id);
+  const [viewField, setViewField] = createSignal(false);
 
   function drawAfterRevealing(card: Card) {
     playArea().peekZone.removeCard(card.mesh);
@@ -104,6 +105,7 @@ const PeekMenu: Component = props => {
           </div>
         </Show>
         <div class={styles.search}>
+          <h2 class='text-white text-xl text-left mb-1'>Peek</h2>
           <Command>
             <CommandInput
               placeholder='Search'
@@ -175,6 +177,26 @@ const PeekMenu: Component = props => {
                     Battlefield
                   </MenubarItem>
                 </MenubarContent>
+                <Switch>
+                  <Match when={viewField()}>
+                    <MenubarItem
+                      onClick={() => {
+                        playArea().peekZone.viewGrid();
+                        setViewField(false);
+                      }}>
+                      View Grid
+                    </MenubarItem>
+                  </Match>
+                  <Match when>
+                    <MenubarItem
+                      onClick={() => {
+                        playArea().peekZone.viewField();
+                        setViewField(true);
+                      }}>
+                      View Field
+                    </MenubarItem>
+                  </Match>
+                </Switch>
               </MenubarMenu>
             </Menubar>
           </Command>

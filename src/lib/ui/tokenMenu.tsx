@@ -126,8 +126,6 @@ const TokenSearchMenu: Component = props => {
                       playArea().tokenSearchZone.removeCard(card.mesh);
                       card.mesh.geometry.dispose();
                       cardsById.delete(card.id);
-                      // card.mesh.geometry = undefined;
-                      // card.mesh.material = undefined;
                     });
                     setHoverSignal();
                   }}>

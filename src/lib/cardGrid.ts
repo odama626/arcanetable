@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
+import { animateObject } from './animations';
 import { Card, CARD_HEIGHT, CARD_WIDTH, setCardData } from './card';
 import {
   CardZone,
@@ -11,9 +12,8 @@ import {
   setScrollTarget,
   zonesById,
 } from './globals';
-import { animateObject } from './animations';
 
-const CARDS_PER_ROW = 4;
+const CARDS_PER_ROW = 5;
 export const [cardGridStore, setCardGridStore] = createStore({
   active: false,
   cards: [],
@@ -32,7 +32,7 @@ export class CardGrid implements CardZone {
   public id: string;
 
   constructor(isLocalPlayArea: boolean, public zone: string) {
-    const POSITION = new Vector3(-(CARD_WIDTH * CARDS_PER_ROW) / 2 - CARD_WIDTH / 2, -95, 50);
+    const POSITION = new Vector3(-((CARD_WIDTH + 1) * CARDS_PER_ROW) / 2 + CARD_WIDTH / 2, -95, 50);
     this.mesh = new Group();
     this.id = nanoid();
     zonesById.set(this.id, this);
@@ -94,6 +94,39 @@ export class CardGrid implements CardZone {
         this.updateCardPositions();
       });
     }
+  }
+
+  viewField() {
+    this.cards.forEach((card, i) => {
+      let position = card.mesh.position.clone();
+      let isEven = i % 2 === 0;
+      let x = isEven ? 115 : -40;
+      x += (i % CARDS_PER_ROW) * 3;
+      position.x = x;
+      position.z = -20;
+
+      animateObject(card.mesh, {
+        duration: 0.2,
+        to: {
+          position,
+          rotation: card.mesh.rotation
+            .clone()
+            .setFromVector3(new Vector3(0, (Math.PI / 4) * (isEven ? -1 : 1), 0)),
+        },
+      });
+    });
+  }
+
+  viewGrid() {
+    this.cards.forEach((card, i) => {
+      animateObject(card.mesh, {
+        duration: 0.2,
+        to: {
+          position: this.getCardPosition(i),
+          rotation: new Euler(0, 0, 0),
+        },
+      });
+    });
   }
 
   private updateCardPositions() {
