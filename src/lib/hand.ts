@@ -162,7 +162,7 @@ function animateFocusCard(handMesh: Group, cards: Card[], index: number) {
     to: {
       position: new Vector3().addVectors(
         cards[index].mesh.userData.resting.position,
-        new Vector3(10, 15, 5)
+        new Vector3(10, 13, 5)
       ),
       rotation: cards[index].mesh.userData.resting.rotation,
     },
