@@ -90,11 +90,11 @@ export async function localInit(gameOptions: GameOptions) {
   outlinePass.pulsePeriod = 2;
 
   var ambient = new THREE.AmbientLight(0xffffff);
-  ambient.intensity = 1.5;
+  ambient.intensity = 2;
   scene.add(ambient);
 
   var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.intensity = 1.5;
+  directionalLight.intensity = 2;
   directionalLight.position.set(0, 100, 200);
   directionalLight.shadow.mapSize.set(1024 * 2, 1024 * 2);
   directionalLight.shadow.camera.left = -140;

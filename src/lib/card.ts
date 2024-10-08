@@ -1,14 +1,16 @@
+import { uniqBy } from 'lodash-es';
 import {
   BoxGeometry,
   Color,
   LinearFilter,
   Mesh,
-  MeshBasicMaterial,
   MeshStandardMaterial,
+  Raycaster,
+  SRGBColorSpace,
   Texture,
   Vector3,
 } from 'three';
-import { cardsById, cleanupFromNode, getProjectionVec, textureLoader } from './globals';
+import { cardsById, cleanupFromNode, getProjectionVec, scene, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
 
 export interface Card {
@@ -20,7 +22,7 @@ export interface Card {
   };
 }
 
-let cardBackTexture: MeshBasicMaterial;
+let cardBackTexture: Texture;
 let alphaMap: Texture;
 
 export const CARD_WIDTH = 63 / 4;
@@ -31,12 +33,15 @@ export const CARD_STACK_OFFSET = 2;
 export function createCardGeometry(card: Card) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
   cardBackTexture = cardBackTexture || textureLoader.load('/arcane-table-back.webp');
+  cardBackTexture.colorSpace = SRGBColorSpace;
   let cardBack = new MeshStandardMaterial({ map: cardBackTexture });
 
   cardBack.transparent = true;
 
   alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
   let front = textureLoader.load(getCardImage(card));
+
+  front.colorSpace = SRGBColorSpace;
 
   let frontMesh = new MeshStandardMaterial({
     color: 0xffffff,
@@ -292,4 +297,43 @@ export function updateModifiers(card: Card) {
     .forEach((counterId, index) => {
       updateCounter(card, counterId, index);
     });
+}
+
+let raycaster = new Raycaster();
+
+export function getYOffsetForTopOfStack(obj: Mesh) {
+  let maxZ = obj.position.z - CARD_THICKNESS;
+  let pointData = obj.geometry.attributes.position;
+  let vector = new Vector3();
+  let direction = obj.getWorldDirection(new Vector3()).normalize().multiplyScalar(-1);
+  let intersections = [];
+
+  console.log(direction);
+
+  console.log(obj, direction);
+
+  for (
+    let pointOffset = 0;
+    pointOffset < pointData.array.length;
+    pointOffset += pointData.itemSize
+  ) {
+    vector.fromArray(pointData.array, pointOffset);
+    obj.localToWorld(vector);
+    raycaster.set(vector.clone().add(direction.clone().multiplyScalar(-1000)), direction);
+    // arrowHelper.position.copy(vector.clone().multiply(new Vector3(0, 10, 0)));
+    // arrowHelper.setDirection(direction);
+    // arrowHelper.setLength(200);
+    intersections.push(...raycaster.intersectObject(scene).filter(i => i.object.id !== obj.id));
+    if (intersections.length) {
+      maxZ = Math.max(intersections[0].object.position.z, maxZ);
+    }
+  }
+
+  let stack = uniqBy(intersections, intersection => intersection.object.id);
+  let stackCount = stack.length - 1;
+
+  console.log(stack);
+
+  return stackCount * CARD_THICKNESS;
+  // return maxZ + CARD_THICKNESS;
 }
