@@ -208,6 +208,9 @@ const EVENTS = {
     }
     playArea.addToHand(card);
   },
+  removeFromHand(event: Event, playArea: PlayArea, card: Card) {
+    playArea.removeFromHand(card.mesh);
+  },
   addToBattlefield(event: Event, playArea: PlayArea, card: Card) {
     if (card.mesh.userData.location === 'peek') {
       playArea.peekZone.removeCard(card.mesh);

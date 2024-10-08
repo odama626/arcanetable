@@ -149,14 +149,19 @@ export class PlayArea {
   }
 
   addToBattlefield(card: Card) {
-    this.emitEvent('addToBattlefield', { userData: card.mesh.userData});
+    this.emitEvent('addToBattlefield', { userData: card.mesh.userData });
     this.battlefieldZone.addCard(card);
+  }
+
+  removeFromHand(cardMesh: Mesh) {
+    this.emitEvent('removeFromHand', { userData: cardMesh.userData });
+    this.hand.removeCard(cardMesh)
   }
 
   async mulligan(drawCount: number, existingOrder?: number[]) {
     let cardsInHand = this.hand.cards;
     cardsInHand.forEach(card => {
-      this.hand.removeCard(card.mesh);
+      this.removeFromHand(card.mesh);
       this.deck.addCardBottom(card);
     });
     let order = await this.deck.shuffle(existingOrder);
@@ -179,7 +184,7 @@ export class PlayArea {
 
   reveal(card: Card) {
     if (provider.awareness.clientID !== card?.mesh.userData.clientId) {
-      setCardData(card.mesh,'isPublic', true)
+      setCardData(card.mesh, 'isPublic', true);
       this.revealZone.addCard(card);
     } else {
       this.emitEvent('reveal', { userData: card.mesh.userData });
