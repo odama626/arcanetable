@@ -356,6 +356,8 @@ function onDocumentClick(event) {
       let remotePlayArea = playAreas.get(target.userData.clientId);
       remotePlayArea?.graveyardZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id);
+        if (!card) return;
+        
         let cardProxy = cloneCard(card, nanoid());
         setCardData(cardProxy.mesh, 'isPublic', true);
         setTimeout(() => {
@@ -370,7 +372,8 @@ function onDocumentClick(event) {
       let remotePlayArea = playAreas.get(target.userData.clientId);
       remotePlayArea?.exileZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id)!;
-        expect(!!card, `Card not found`, { cardMesh });
+        if (!card) return;
+
         let cardProxy = cloneCard(card, nanoid());
         setCardData(cardProxy.mesh, 'isPublic', true);
         setTimeout(() => {
