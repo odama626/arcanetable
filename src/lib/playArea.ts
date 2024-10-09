@@ -144,18 +144,18 @@ export class PlayArea {
   }
 
   addToHand(card: Card) {
-    this.emitEvent('addToHand', { userData: card.mesh.userData });
     this.hand.addCard(card);
+    this.emitEvent('addToHand', { userData: card.mesh.userData });
   }
 
   addToBattlefield(card: Card) {
-    this.emitEvent('addToBattlefield', { userData: card.mesh.userData });
     this.battlefieldZone.addCard(card);
+    this.emitEvent('addToBattlefield', { userData: card.mesh.userData });
   }
 
   removeFromHand(cardMesh: Mesh) {
+    this.hand.removeCard(cardMesh);
     this.emitEvent('removeFromHand', { userData: cardMesh.userData });
-    this.hand.removeCard(cardMesh)
   }
 
   async mulligan(drawCount: number, existingOrder?: number[]) {
@@ -175,11 +175,14 @@ export class PlayArea {
   }
 
   peek(card?: Card) {
-    this.emitEvent('peek');
     card = card ?? this.deck.draw()!;
     this.peekZone.isPublic = false;
     setCardData(card.mesh, 'isPublic', false);
+    console.log({ card });
+    let previousZone = zonesById.get(card.mesh.userData.zoneId);
+    previousZone?.removeCard?.(card.mesh);
     this.peekZone.addCard(card);
+    this.emitEvent('peek', { userData: card.mesh.userData });
   }
 
   reveal(card: Card) {
@@ -245,6 +248,7 @@ export class PlayArea {
   }
 
   flip(cardMesh: Mesh) {
+    setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
     this.emitEvent('flip', { userData: cardMesh.userData });
 
     let rotation = cardMesh.rotation.clone();
@@ -257,7 +261,6 @@ export class PlayArea {
       cardMesh,
       new Vector3(CARD_WIDTH / 4, 0, 0)
     );
-    setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
 
     animateObject(cardMesh, {
       duration: 0.4,
@@ -280,13 +283,13 @@ export class PlayArea {
   }
 
   addCardTopDeck(card: Card) {
-    this.emitEvent('addCardTopDeck', { userData: card.mesh.userData });
     this.deck.addCardTop(card);
+    this.emitEvent('addCardTopDeck', { userData: card.mesh.userData });
   }
 
   addCardBottomDeck(card: Card) {
-    this.emitEvent('addCardBottomDeck', { userData: card.mesh.userData });
     this.deck.addCardBottom(card);
+    this.emitEvent('addCardBottomDeck', { userData: card.mesh.userData });
   }
 
   tap(cardMesh: Mesh) {
@@ -318,13 +321,12 @@ export class PlayArea {
   }
 
   destroy(cardMesh: Mesh) {
-    this.emitEvent('destroy', { userData: cardMesh.userData });
-
     let card = cardsById.get(cardMesh.userData.id)!;
     let zone = zonesById.get(cardMesh.userData.zoneId);
 
     // if (zone?.removeCard) zone.removeCard(card.mesh);
     this.graveyardZone.addCard(card);
+    this.emitEvent('destroy', { userData: cardMesh.userData });
   }
 
   exileTopDeck() {

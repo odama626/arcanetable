@@ -245,7 +245,6 @@ export class CardGrid implements CardZone {
     this.adjustHandPosition();
 
     let position = this.getCardPosition(index);
-    setCardData(card.mesh, 'location', this.zone);
     card.mesh.userData.resting = {
       position,
       rotation: new Euler(0, 0, 0),

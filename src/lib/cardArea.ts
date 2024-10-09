@@ -11,8 +11,15 @@ import {
   Vector3,
 } from 'three';
 import { animateObject } from './animations';
-import { Card, CARD_STACK_OFFSET, CARD_THICKNESS, setCardData } from './card';
-import { CardZone, getGlobalRotation, zonesById } from './globals';
+import {
+  Card,
+  CARD_HEIGHT,
+  CARD_STACK_OFFSET,
+  CARD_THICKNESS,
+  CARD_WIDTH,
+  setCardData,
+} from './card';
+import { arrowHelper, CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class CardArea implements CardZone {
   public mesh: Mesh;
@@ -45,13 +52,18 @@ export class CardArea implements CardZone {
       console.log({ position: position.clone() });
       // position.z = CARD_THICKNESS;
     } else {
-      let rayOrigin = new Vector3(40, 60, 65);
-      let direction = new Vector3(0, -1, 0);
+      // let rayOrigin = new Vector3(40, 60, 65);
+
+      let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 1000));
+      let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
+      // arrowHelper.position.copy(rayOrigin);
+      // arrowHelper.setDirection(direction);
+      // arrowHelper.setLength(1000);
 
       let raycaster = new Raycaster(rayOrigin, direction);
 
       let intersections = raycaster.intersectObject(this.mesh);
-      if (intersections[0].object.userData.card) {
+      if (intersections[0]?.object?.userData?.card) {
         position = intersections[0].object.position
           .clone()
           .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));

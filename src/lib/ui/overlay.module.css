@@ -33,4 +33,21 @@
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-direction: row;
+}
+
+.log {
+  height: 202px;
+  width: 40vw;
+  overflow: auto;
+  text-align: left;
+}
+
+.log * {
+  overflow-anchor: none;
+}
+
+.log .anchor {
+  overflow-anchor: auto;
+  height: 1px;
 }

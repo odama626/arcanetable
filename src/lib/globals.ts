@@ -23,6 +23,9 @@ import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
+import { createStore } from 'solid-js/store';
+import get from 'lodash-es/get';
+import set from 'lodash-es/set';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -62,9 +65,14 @@ export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
 export let provider: WebsocketProvider | WebrtcProvider;
 export let COUNT_OPTIONS = [1, 2, 3, 5, 7, 10];
+export let [logs, setLogs] = createStore([]);
 
 export function doXTimes(x: number, callback, delay = 100) {
   new Array(x).fill(0).forEach((_, i) => setTimeout(callback, delay * i));
+}
+
+export function headlessInit() {
+  clock = new Clock();
 }
 
 export function init({ gameId }) {
@@ -75,8 +83,8 @@ export function init({ gameId }) {
   }
 
   console.log(import.meta.env);
+  headlessInit();
 
-  clock = new Clock();
   loadingManager = new LoadingManager();
   loadingManager.onProgress = function (item, loaded, total) {
     console.log(item, loaded, total);
@@ -240,5 +248,10 @@ export function cleanMaterial(material: Material) {
     if (value && typeof value === 'object' && 'minFilter' in value) {
       value.dispose();
     }
+  }
+}
+export function hydratePathWith<T>(obj: any, path: string[], hydrator: (value: any) => T) {
+  if (get(obj, path)) {
+    set(obj, path, hydrator(get(obj, path)));
   }
 }

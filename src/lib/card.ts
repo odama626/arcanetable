@@ -181,10 +181,18 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
         cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
     }
   }
-  if (field === 'location' && value !== 'battlefield') {
+  if (
+    field === 'location' &&
+    cardMesh.userData.previousValue === 'battlefield' &&
+    value !== 'battlefield'
+  ) {
     cleanupFromNode(cardMesh);
     cardMesh.userData.isFlipped = false;
     cardMesh.userData.modifiers = undefined;
+  }
+
+  if (field === 'location') {
+    cardMesh.userData.previousLocation = cardMesh.userData.location;
   }
 
   cardMesh.userData[field] = value;

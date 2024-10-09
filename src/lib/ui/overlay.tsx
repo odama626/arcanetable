@@ -1,10 +1,19 @@
 import { createEffect, createSignal, For, Match, Show, Switch, type Component } from 'solid-js';
 
-import { Menubar, MenubarItem, MenubarMenu, MenubarTrigger } from '../../components/ui/menubar';
-import { cardsById, doXTimes, focusRenderer, hoverSignal, playAreas, players, provider } from '../globals';
+import { Menubar, MenubarItem, MenubarMenu } from '../../components/ui/menubar';
+import {
+  cardsById,
+  doXTimes,
+  focusRenderer,
+  hoverSignal,
+  playAreas,
+  players,
+  provider,
+} from '../globals';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
+import Log from './log';
 import styles from './overlay.module.css';
 import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
@@ -13,7 +22,7 @@ import TokenSearchMenu from './tokenMenu';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
-
+  let [isLogVisible, setIsLogVisible] = createSignal(false);
   const isPublic = () => userData()?.isPublic;
   const isOwner = () => userData()?.clientId === provider?.awareness?.clientID;
   const location = () => userData()?.location;
@@ -74,9 +83,12 @@ const Overlay: Component = () => {
             <Match when={cardMesh()?.userData.location === 'hand'}>
               <Menubar class='flex-col' style='height: auto; margin-left: -10px;'>
                 <MenubarMenu>
-                  <MenubarItem onClick={() => {
-                    playArea().reveal(cardsById.get(cardMesh().userData.id))
-                  }}>Reveal</MenubarItem>
+                  <MenubarItem
+                    onClick={() => {
+                      playArea().reveal(cardsById.get(cardMesh().userData.id));
+                    }}>
+                    Reveal
+                  </MenubarItem>
                 </MenubarMenu>
               </Menubar>
             </Match>
@@ -84,7 +96,7 @@ const Overlay: Component = () => {
         </div>
       </Show>
       <div class={styles.mainMenu}>
-        <Menubar style='height: auto;' class='flex-col'>
+        <Menubar style='height: auto; white-space: nowrap;' class='flex-col'>
           <MenubarMenu>
             <MenubarItem
               class='w-full flex justify-center'
@@ -135,8 +147,14 @@ const Overlay: Component = () => {
               }}>
               Reveal Hand
             </MenubarItem>
+            <MenubarItem onClick={() => setIsLogVisible(visible => !visible)}>
+              {isLogVisible() ? 'Hide Log' : 'Show Log'}
+            </MenubarItem>
           </MenubarMenu>
         </Menubar>
+        <Show when={isLogVisible()}>
+          <Log />
+        </Show>
       </div>
       <PeekMenu />
       <RevealMenu />

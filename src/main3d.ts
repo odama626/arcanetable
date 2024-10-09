@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash-es';
+import { get, set, uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
@@ -28,7 +28,9 @@ import {
   focusRenderer,
   gameLog,
   hoverSignal,
+  hydratePathWith,
   init,
+  logs,
   playAreas,
   players,
   provider,
@@ -39,6 +41,7 @@ import {
   setAnimating,
   setDeckIndex,
   setHoverSignal,
+  setLogs,
   setPlayers,
   table,
   updateFocusCamera,
@@ -47,6 +50,7 @@ import {
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
+import { isLogMessageStackable } from './lib/ui/log';
 
 var container;
 
@@ -112,12 +116,32 @@ export async function localInit(gameOptions: GameOptions) {
 
   let processing = false;
 
+  function addLogMessage(event) {
+    if (event.type === 'animateObject') return;
+    let index = logs.length;
+
+    const { type, clientID, payload } = event;
+    let count = 1;
+    let lastEvent = logs[index - 1];
+    if (isLogMessageStackable(lastEvent, event)) {
+      count = lastEvent.count + 1;
+      index--;
+    }
+    try {
+      setLogs(index, { type, clientID, payload: structuredClone(payload), count });
+    } catch (e) {
+      console.error(e);
+      console.error(event);
+    }
+  }
+
   async function processEvents() {
     if (processing) return;
     processing = true;
     try {
       while (processedEvents < gameLog.length) {
         const event = gameLog.get(processedEvents);
+        addLogMessage(event);
         processedEvents++;
         if (event.clientID === provider.awareness.clientID) continue;
         await handleEvent(event);
@@ -431,7 +455,7 @@ function onDocumentDrop(event) {
 
   let intersects = raycaster.intersectObject(scene);
 
-  dragTargets?.forEach(target => {
+  dragTargets?.forEach(async target => {
     setCardData(target, 'isDragging', false);
     let intersection = intersects.find(
       i =>
@@ -465,10 +489,9 @@ function onDocumentDrop(event) {
     if (!fromZone?.removeCard) {
       console.warn(`fromZone removeCard doesn't exist`, target.userData.zoneId);
     }
-    console.log({ fromZone, fromZoneId, zonesById, toZone, toZoneId, intersection });
 
     if (fromZone?.removeCard) {
-      fromZone.removeCard(target);
+      await fromZone.removeCard(target);
     } else {
       console.warn('fromZone missing');
       if (fromLocation !== toLocation) {
@@ -479,7 +502,10 @@ function onDocumentDrop(event) {
     let card = cardsById.get(target.userData.id);
     let position = toZone?.mesh?.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
-    toZone.addCard(card, { skipAnimation: true, position });
+    await toZone.addCard(card, { skipAnimation: true, position });
+
+    // setCardData(target, 'location', toLocation);
+    console.log({ fromLocation, toLocation });
 
     sendEvent({
       type: 'transferCard',
@@ -490,10 +516,6 @@ function onDocumentDrop(event) {
         addOptions: { skipAnimation: true, position },
       },
     });
-
-    console.log({ fromLocation, toLocation });
-
-    setCardData(target, 'location', toLocation);
 
     setHoverSignal(signal => {
       focusOn(signal.mesh);
@@ -604,6 +626,8 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
   // select top of deck
   if (target?.parent?.userData.zone === 'deck') {
     target = target.parent?.children[0];
+    let zone = zonesById.get(target.userData.zoneId);
+    target = zone.cards[0].mesh;
   }
 
   if (!intersects.length) needsCleanup = true;
@@ -660,8 +684,8 @@ function render3d() {
   if (hoverSignal()?.mesh) {
     setHoverSignal(signal => ({
       ...signal,
-      tether: getCardMeshTetherPoint(signal.mesh)
-    }))
+      tether: getCardMeshTetherPoint(signal.mesh),
+    }));
   }
 
   camera.lookAt(scene.position);
