@@ -11,6 +11,7 @@ const GamePage: Component = props => {
   const [deckIndex, setDeckIndex] = createSignal(props.location.query.deck);
   const [inviteDismissed, setInviteDismissed] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
+  const [isSpectating, setIsSpectating] = createSignal(false);
 
   console.log({ props });
   let url = new URL(document.location);
@@ -35,12 +36,13 @@ const GamePage: Component = props => {
   return (
     <>
       <Overlay />
-      <Show when={deckIndex() === undefined}>
+      <Show when={deckIndex() === undefined && !isSpectating()}>
         <DeckPicker
           onSelectDeck={settings => {
             setDeckIndex(settings.deckIndex);
             loadDeckAndJoin(settings);
           }}
+          setIsSpectating={setIsSpectating}
         />
       </Show>
       <Show when={deckIndex() !== undefined && players().length < 2 && !inviteDismissed()}>

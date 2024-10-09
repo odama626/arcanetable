@@ -95,7 +95,10 @@ const DeckPicker: Component = props => {
               </For>
             </div>
             <DialogFooter>
-              <Button type='button' onClick={() => setEditingDeck(true)}>
+              <Button onClick={() => props.setIsSpectating(true)} variant='ghost'>
+                Spectate
+              </Button>
+              <Button variant='outline' type='button' onClick={() => setEditingDeck(true)}>
                 Create Deck
               </Button>
               <Button type='submit'>Start Playtest</Button>
