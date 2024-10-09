@@ -1,5 +1,5 @@
 import { CatmullRomCurve3, Euler, Group, Quaternion, Vector3 } from 'three';
-import { Card, CARD_WIDTH, getSearchLine, setCardData } from './card';
+import { Card, CARD_THICKNESS, CARD_WIDTH, getSearchLine, setCardData } from './card';
 import { expect, sha1, zonesById } from './globals';
 import { animateObject } from './animations';
 import { queueAnimationGroup } from './animations';
@@ -86,27 +86,17 @@ export class Deck {
     let position = new Vector3(0, 0, 0);
     let path = new CatmullRomCurve3([initialPosition, new Vector3(0, 0, -5), position]);
 
-    this.mesh.position.copy(new Vector3(70, -55, this.cards.length * 0.125 + 2.5));
+    this.mesh.position.setZ(this.cards.length * CARD_THICKNESS + 2.5);
 
     let promises = [];
+    let positionOffset = 0;
 
     for (let i = 1; i < this.cards.length; i++) {
       this.mesh.remove(this.cards[i].mesh);
       this.mesh.add(this.cards[i].mesh);
       setCardData(this.cards[i].mesh, 'location', 'deck');
-      promises.push(
-        new Promise<void>(resolve => {
-          animateObject(this.cards[i].mesh, {
-            duration: 0.2,
-            to: {
-              position: new Vector3(0, 0, i * 0.125),
-            },
-            onComplete: () => {
-              resolve();
-            },
-          });
-        })
-      );
+      this.cards[i].mesh.position.set(0, 0, positionOffset);
+      positionOffset += CARD_THICKNESS;
     }
 
     promises.push(

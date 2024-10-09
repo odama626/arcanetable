@@ -100,7 +100,7 @@ export class CardGrid implements CardZone {
     this.cards.forEach((card, i) => {
       let position = card.mesh.position.clone();
       let isEven = i % 2 === 0;
-      let x = isEven ? 115 : -40;
+      let x = isEven ? 115 : -60;
       x += (i % CARDS_PER_ROW) * 3;
       position.x = x;
       position.z = -20;
