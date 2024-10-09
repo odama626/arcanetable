@@ -54,12 +54,8 @@ export class CardArea implements CardZone {
     } else {
       // let rayOrigin = new Vector3(40, 60, 65);
 
-      let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 1000));
+      let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 10));
       let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
-      // arrowHelper.position.copy(rayOrigin);
-      // arrowHelper.setDirection(direction);
-      // arrowHelper.setLength(1000);
-
       let raycaster = new Raycaster(rayOrigin, direction);
 
       let intersections = raycaster.intersectObject(this.mesh);
