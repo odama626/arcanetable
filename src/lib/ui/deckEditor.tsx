@@ -1,16 +1,6 @@
+import { nanoid } from 'nanoid';
 import { Component, createEffect, createSignal, For, on, Setter, Show, splitProps } from 'solid-js';
 import { Button } from '~/components/ui/button';
-import { DialogFooter } from '~/components/ui/dialog';
-import {
-  TextField,
-  TextFieldDescription,
-  TextFieldInput,
-  TextFieldLabel,
-  TextFieldTextArea,
-} from '~/components/ui/text-field';
-import { getCardArtImage, getCardImage } from '../card';
-import { fetchCardInfo, loadCardList } from '../deck';
-import styles from './createDeckMenu.module.css';
 import {
   Combobox,
   ComboboxContent,
@@ -20,7 +10,16 @@ import {
   ComboboxItemLabel,
   ComboboxTrigger,
 } from '~/components/ui/combobox';
-import { nanoid } from 'nanoid';
+import { DialogFooter } from '~/components/ui/dialog';
+import {
+  TextField,
+  TextFieldInput,
+  TextFieldLabel,
+  TextFieldTextArea,
+} from '~/components/ui/text-field';
+import { getCardArtImage, getCardImage } from '../card';
+import { fetchCardInfo, loadCardList } from '../deck';
+import styles from './createDeckMenu.module.css';
 
 type Deck = any;
 
@@ -190,7 +189,7 @@ export const DeckEditor: Component<Props> = props => {
           <div class={styles.cardListScrollContainer} aria-hidden='false'>
             <div style='position: relative'>
               <div class={styles.cardList}>
-                <For each={cardList()}>{card => <img src={getCardImage(card)} />}</For>
+                <For each={cardList()}>{card => <img crossOrigin='' src={getCardImage(card)} />}</For>
               </div>
             </div>
           </div>
