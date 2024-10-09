@@ -16,7 +16,7 @@ import {
 } from '~/components/ui/number-field';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
 import { createDeckStore } from '../deckStore';
-import { DeckEditor } from './createDeckMenu';
+import { DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
 
 const DeckPicker: Component = props => {
