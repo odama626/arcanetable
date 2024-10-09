@@ -1,14 +1,16 @@
 import { nanoid } from 'nanoid';
-import { Component, For, Show } from 'solid-js';
+import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
 import { Raycaster, Vector3 } from 'three';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
   Menubar,
+  MenubarContent,
   MenubarItem,
   MenubarMenu,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
+  MenubarTrigger,
 } from '~/components/ui/menubar';
 import { CARD_STACK_OFFSET, CARD_THICKNESS, cleanupCard, cloneCard } from '../card';
 import {
@@ -33,6 +35,7 @@ const TokenSearchMenu: Component = props => {
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = () => playAreas.get(provider.awareness.clientID)!;
+  const [viewField, setViewField] = createSignal(false);
 
   function addToBattlefield(referenceCard: Card) {
     let card = cloneCard(referenceCard, nanoid());
@@ -40,28 +43,13 @@ const TokenSearchMenu: Component = props => {
     let battlefield = playArea().battlefieldZone;
     let rayOrigin = new Vector3(40, 60, 65);
     let direction = new Vector3(0, -1, 0);
-
-    let raycaster = new Raycaster(rayOrigin, direction);
-
-    let intersections = raycaster.intersectObject(scene);
-    let position: Vector3;
-    if (intersections[0].object.userData.card) {
-      position = intersections[0].object.position
-        .clone()
-        .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
-    } else {
-      position = battlefield.mesh.worldToLocal(intersections[0].point);
-    }
-    battlefield.addCard(card, { position });
-
-    console.log({ card });
+    battlefield.addCard(card);
 
     sendEvent({
       type: 'createCard',
       payload: {
         userData: card.mesh.userData,
         zoneId: battlefield.id,
-        addOptions: { position },
       },
     });
   }
@@ -73,29 +61,24 @@ const TokenSearchMenu: Component = props => {
           <div class={styles.peekActions} style={`--x: ${tether().x}px; --y: ${tether().y}px;`}>
             <Menubar>
               <MenubarMenu>
-                <MenubarSub>
-                  <MenubarSubTrigger
-                    onClick={() => addToBattlefield(cardsById.get(cardMesh().userData.id))}>
-                    Add
-                  </MenubarSubTrigger>
-                  <MenubarSubContent>
-                    <For each={COUNT_OPTIONS}>
-                      {value => (
-                        <MenubarItem
-                          closeOnSelect={false}
-                          onClick={() =>
-                            doXTimes(
-                              value,
-                              () => addToBattlefield(cardsById.get(cardMesh().userData.id)),
-                              500
-                            )
-                          }>
-                          {value}
-                        </MenubarItem>
-                      )}
-                    </For>
-                  </MenubarSubContent>
-                </MenubarSub>
+                <MenubarTrigger>Add</MenubarTrigger>
+                <MenubarContent>
+                  <For each={COUNT_OPTIONS}>
+                    {value => (
+                      <MenubarItem
+                        closeOnSelect={false}
+                        onClick={() =>
+                          doXTimes(
+                            value,
+                            () => addToBattlefield(cardsById.get(cardMesh().userData.id)),
+                            200
+                          )
+                        }>
+                        {value}
+                      </MenubarItem>
+                    )}
+                  </For>
+                </MenubarContent>
 
                 <MenubarItem
                   onClick={() => {
@@ -131,6 +114,26 @@ const TokenSearchMenu: Component = props => {
                   }}>
                   Dismiss
                 </MenubarItem>
+                <Switch>
+                  <Match when={viewField()}>
+                    <MenubarItem
+                      onClick={() => {
+                        playArea().tokenSearchZone.viewGrid();
+                        setViewField(false);
+                      }}>
+                      View Grid
+                    </MenubarItem>
+                  </Match>
+                  <Match when>
+                    <MenubarItem
+                      onClick={() => {
+                        playArea().tokenSearchZone.viewField();
+                        setViewField(true);
+                      }}>
+                      View Field
+                    </MenubarItem>
+                  </Match>
+                </Switch>
               </MenubarMenu>
             </Menubar>
           </Command>
