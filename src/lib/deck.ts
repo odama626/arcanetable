@@ -95,8 +95,6 @@ export class Deck {
     let positionOffset = 0;
 
     for (let i = 1; i < this.cards.length; i++) {
-      // this.mesh.remove(this.cards[i].mesh);
-      // this.mesh.add(this.cards[i].mesh);
       setCardData(this.cards[i].mesh, 'location', 'deck');
       this.cards[i].mesh.position.set(0, 0, positionOffset);
       positionOffset += CARD_THICKNESS;

@@ -1,4 +1,4 @@
-import { get, set, uniqBy } from 'lodash-es';
+import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
@@ -28,7 +28,6 @@ import {
   focusRenderer,
   gameLog,
   hoverSignal,
-  hydratePathWith,
   init,
   logs,
   playAreas,
@@ -503,9 +502,6 @@ function onDocumentDrop(event) {
     let position = toZone?.mesh?.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
     await toZone.addCard(card, { skipAnimation: true, position });
-
-    // setCardData(target, 'location', toLocation);
-    console.log({ fromLocation, toLocation });
 
     sendEvent({
       type: 'transferCard',
