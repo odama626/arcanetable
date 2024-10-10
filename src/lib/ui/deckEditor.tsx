@@ -1,6 +1,15 @@
-import { nanoid } from 'nanoid';
-import { Component, createEffect, createSignal, For, on, Setter, Show, splitProps } from 'solid-js';
-import { Button } from '~/components/ui/button';
+import { nanoid } from "nanoid";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  on,
+  Setter,
+  Show,
+  splitProps,
+} from "solid-js";
+import { Button } from "~/components/ui/button";
 import {
   Combobox,
   ComboboxContent,
@@ -9,17 +18,17 @@ import {
   ComboboxItem,
   ComboboxItemLabel,
   ComboboxTrigger,
-} from '~/components/ui/combobox';
-import { DialogFooter } from '~/components/ui/dialog';
+} from "~/components/ui/combobox";
+import { DialogFooter } from "~/components/ui/dialog";
 import {
   TextField,
   TextFieldInput,
   TextFieldLabel,
   TextFieldTextArea,
-} from '~/components/ui/text-field';
-import { getCardArtImage, getCardImage } from '../card';
-import { fetchCardInfo, loadCardList } from '../deck';
-import styles from './createDeckMenu.module.css';
+} from "~/components/ui/text-field";
+import { getCardArtImage, getCardImage } from "../card";
+import { fetchCardInfo, loadCardList } from "../deck";
+import styles from "./deckEditor.module.css";
 
 type Deck = any;
 
@@ -31,7 +40,7 @@ interface Props {
   deck?: Deck;
 }
 
-export const DeckEditor: Component<Props> = props => {
+export const DeckEditor: Component<Props> = (props) => {
   const [cardList, setCardList] = createSignal([]);
   const [cardsInPlay, setCardsInPlay] = createSignal(props?.deck?.inPlay ?? []);
   const [isCardsInPlayDirty, setIsCardsInPlayDirty] = createSignal(false);
@@ -44,11 +53,12 @@ export const DeckEditor: Component<Props> = props => {
     const data = Object.fromEntries(formData.entries());
     let cards = cardList();
     let inPlayCards = cardsInPlay();
-    data.deck = cards.filter(card => !inPlayCards.includes(card));
-    data.inPlay = inPlayCards.map(card => splitProps(card, 'detail')[1]);
+    data.deck = cards.filter((card) => !inPlayCards.includes(card));
+    data.inPlay = inPlayCards.map((card) => splitProps(card, "detail")[1]);
 
     let cardForArt =
-      inPlayCards[0] ?? cards.sort((a, b) => a.detail.edhrec_rank - b.detail.edhrec_rank)[0];
+      inPlayCards[0] ??
+      cards.sort((a, b) => a.detail.edhrec_rank - b.detail.edhrec_rank)[0];
 
     data.coverImage = getCardArtImage(cardForArt);
 
@@ -68,20 +78,24 @@ export const DeckEditor: Component<Props> = props => {
           return;
         }
         updateCardList(props.deck.cardList);
-      }
-    )
+      },
+    ),
   );
 
   async function updateCardList(cardList: string) {
     let newCardEntries = loadCardList(cardList);
-    let newCardList = await Promise.all(newCardEntries.map(entry => fetchCardInfo(entry, cache)));
+    let newCardList = await Promise.all(
+      newCardEntries.map((entry) => fetchCardInfo(entry, cache)),
+    );
     setCardList(newCardList);
 
     if (!isCardsInPlayDirty()) {
       setCardsInPlay(
         newCardList.filter(
-          card => card.categories?.filter(cat => cat.startsWith('Commander')).length
-        )
+          (card) =>
+            card.categories?.filter((cat) => cat.startsWith("Commander"))
+              .length,
+        ),
       );
     }
   }
@@ -91,26 +105,33 @@ export const DeckEditor: Component<Props> = props => {
       <div class={styles.container}>
         <div class={styles.innerContainer}>
           <div class={styles.formContainer}>
-            <form class='flex flex-col gap-5' onSubmit={onCreateDeck}>
-              <input type='hidden' value={props?.deck?.id ?? nanoid()} name='id' />
+            <form class="gap-5" onSubmit={onCreateDeck}>
+              <input
+                type="hidden"
+                value={props?.deck?.id ?? nanoid()}
+                name="id"
+              />
 
               <TextField defaultValue={props?.deck?.name}>
-                <TextFieldLabel for='name'>Name</TextFieldLabel>
-                <TextFieldInput required type='text' id='name' name='name' />
+                <TextFieldLabel for="name">Name</TextFieldLabel>
+                <TextFieldInput required type="text" id="name" name="name" />
               </TextField>
 
-              <TextField defaultValue={props?.deck?.cardList}>
-                <TextFieldLabel for='cardList'>Card List</TextFieldLabel>
+              <TextField
+                class="flex flex-col grow"
+                defaultValue={props?.deck?.cardList}
+              >
+                <TextFieldLabel for="cardList">Card List</TextFieldLabel>
                 <TextFieldTextArea
-                  style='white-space: pre;'
-                  onInput={e => {
+                  style="white-space: pre;"
+                  class="grow"
+                  onInput={(e) => {
                     updateCardList(e.currentTarget.value);
                   }}
                   required
-                  id='cardList'
-                  rows='20'
-                  name='cardList'
-                  placeholder='1x Sol Ring'
+                  id="cardList"
+                  name="cardList"
+                  placeholder="1x Sol Ring"
                 />
                 {/* <TextFieldDescription>
                   Card list or drag and drop .dek or text file
@@ -121,33 +142,40 @@ export const DeckEditor: Component<Props> = props => {
                 multiple
                 options={cardList()}
                 value={cardsInPlay()}
-                optionValue={card => {
+                optionValue={(card) => {
                   return card.name;
                 }}
-                onChange={value => {
+                onChange={(value) => {
                   setCardsInPlay(value);
                   setIsCardsInPlayDirty(true);
                 }}
-                optionTextValue={card => {
+                optionTextValue={(card) => {
                   return card.name;
                 }}
-                optionLabel={card => card.name}
-                placeholder='Card in play'
-                itemComponent={props => (
+                optionLabel={(card) => card.name}
+                placeholder="Card in play"
+                itemComponent={(props) => (
                   <ComboboxItem item={props.item}>
-                    <ComboboxItemLabel>{props.item.rawValue.name}</ComboboxItemLabel>
+                    <ComboboxItemLabel>
+                      {props.item.rawValue.name}
+                    </ComboboxItemLabel>
                   </ComboboxItem>
-                )}>
+                )}
+              >
                 <ComboboxControl>
-                  {state => (
+                  {(state) => (
                     <>
                       <div class={styles.multiSelectControl}>
                         <For each={state.selectedOptions()}>
-                          {option => (
+                          {(option) => (
                             <span
                               class={styles.multiSelectItem}
-                              onPointerDown={e => e.stopPropagation()}>
-                              <Button variant='secondary' onClick={() => state.remove(option)}>
+                              onPointerDown={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                variant="secondary"
+                                onClick={() => state.remove(option)}
+                              >
                                 {option.name}
                               </Button>
                             </span>
@@ -166,30 +194,36 @@ export const DeckEditor: Component<Props> = props => {
               <DialogFooter>
                 <Show when={isEditing()}>
                   <Button
-                    variant='secondary'
+                    variant="secondary"
                     onClick={() => {
                       props.onDelete(props?.deck?.id);
                       props.setOpen(false);
-                    }}>
+                    }}
+                  >
                     Delete Deck
                   </Button>
                 </Show>
                 <Button
-                  variant='secondary'
-                  type='button'
+                  variant="secondary"
+                  type="button"
                   onClick={() => {
                     props.setOpen(false);
-                  }}>
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button type='submit'>{isEditing() ? 'Update Deck' : 'Create Deck'}</Button>
+                <Button type="submit">
+                  {isEditing() ? "Update Deck" : "Create Deck"}
+                </Button>
               </DialogFooter>
             </form>
           </div>
-          <div class={styles.cardListScrollContainer} aria-hidden='false'>
-            <div style='position: relative'>
+          <div class={styles.cardListScrollContainer} aria-hidden="false">
+            <div style="position: relative">
               <div class={styles.cardList}>
-                <For each={cardList()}>{card => <img crossOrigin='' src={getCardImage(card)} />}</For>
+                <For each={cardList()}>
+                  {(card) => <img crossOrigin="" src={getCardImage(card)} />}
+                </For>
               </div>
             </div>
           </div>
