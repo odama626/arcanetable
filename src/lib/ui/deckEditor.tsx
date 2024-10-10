@@ -77,6 +77,9 @@ export const DeckEditor: Component<Props> = (props) => {
           setIsCardsInPlayDirty(false);
           return;
         }
+        if (props.deck.inPlay) {
+          setCardsInPlay(props.deck.inPlay);
+        }
         updateCardList(props.deck.cardList);
       },
     ),
@@ -89,7 +92,7 @@ export const DeckEditor: Component<Props> = (props) => {
     );
     setCardList(newCardList);
 
-    if (!isCardsInPlayDirty()) {
+    if (!isCardsInPlayDirty() && !cardsInPlay().length) {
       setCardsInPlay(
         newCardList.filter(
           (card) =>
