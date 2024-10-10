@@ -41,6 +41,10 @@ interface Props {
 }
 
 export const DeckEditor: Component<Props> = (props) => {
+  const [cardListText, setCardListText] = createSignal(
+    props?.deck.cardList ?? "",
+  );
+  const [name, setName] = createSignal(props.deck?.name ?? "");
   const [cardList, setCardList] = createSignal([]);
   const [cardsInPlay, setCardsInPlay] = createSignal(props?.deck?.inPlay ?? []);
   const [isCardsInPlayDirty, setIsCardsInPlayDirty] = createSignal(false);
@@ -72,6 +76,8 @@ export const DeckEditor: Component<Props> = (props) => {
       () => props.open,
       () => {
         if (!props.deck.cardList) {
+          setName("");
+          setCardListText("");
           setCardList([]);
           setCardsInPlay([]);
           setIsCardsInPlayDirty(false);
@@ -80,13 +86,15 @@ export const DeckEditor: Component<Props> = (props) => {
         if (props.deck.inPlay) {
           setCardsInPlay(props.deck.inPlay);
         }
+        setName(props.deck.name);
         updateCardList(props.deck.cardList);
       },
     ),
   );
 
-  async function updateCardList(cardList: string) {
-    let newCardEntries = loadCardList(cardList);
+  async function updateCardList(cardListText: string) {
+    setCardListText(cardListText);
+    let newCardEntries = loadCardList(cardListText);
     let newCardList = await Promise.all(
       newCardEntries.map((entry) => fetchCardInfo(entry, cache)),
     );
@@ -103,26 +111,40 @@ export const DeckEditor: Component<Props> = (props) => {
     }
   }
 
+  function handleDrop(event: DragEvent) {
+    event.preventDefault();
+    let { files } = event.dataTransfer;
+    if (files.length > 0) {
+      let file = files[0];
+      console.log(file);
+      setName(file.name.slice(0, file.name.lastIndexOf(".")));
+      file.text().then((result) => {
+        updateCardList(result);
+      });
+    }
+  }
+
   return (
     <Show when={props.open}>
       <div class={styles.container}>
         <div class={styles.innerContainer}>
           <div class={styles.formContainer}>
-            <form class="gap-5" onSubmit={onCreateDeck}>
+            <form class="gap-5" onSubmit={onCreateDeck} onDrop={handleDrop}>
               <input
                 type="hidden"
                 value={props?.deck?.id ?? nanoid()}
                 name="id"
               />
 
-              <TextField defaultValue={props?.deck?.name}>
+              <TextField value={name()} onChange={(name) => setName(name)}>
                 <TextFieldLabel for="name">Name</TextFieldLabel>
                 <TextFieldInput required type="text" id="name" name="name" />
               </TextField>
 
               <TextField
-                class="flex flex-col grow"
+                class="flex flex-col grow gap-1"
                 defaultValue={props?.deck?.cardList}
+                value={cardListText()}
               >
                 <TextFieldLabel for="cardList">Card List</TextFieldLabel>
                 <TextFieldTextArea
