@@ -117,7 +117,10 @@ export const DeckEditor: Component<Props> = (props) => {
     if (files.length > 0) {
       let file = files[0];
       console.log(file);
-      setName(file.name.slice(0, file.name.lastIndexOf(".")));
+      let name = file.name
+        .slice(0, file.name.lastIndexOf("."))
+        .replace(/^Deck\s\-\s/, "");
+      setName(name);
       file.text().then((result) => {
         updateCardList(result);
       });
