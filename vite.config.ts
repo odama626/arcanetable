@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import path from 'path';
-import mkcert from 'vite-plugin-mkcert'
+// import mkcert from 'vite-plugin-mkcert'
 // import devtools from 'solid-devtools/vite';
 
 export default defineConfig({
@@ -12,7 +12,6 @@ export default defineConfig({
     */
     // devtools(),
     solidPlugin(),
-    mkcert()
   ],
   resolve: {
     alias: {

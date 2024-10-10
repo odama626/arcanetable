@@ -126,12 +126,25 @@ export async function localInit(gameOptions: GameOptions) {
       count = lastEvent.count + 1;
       index--;
     }
-    try {
-      setLogs(index, { type, clientID, payload: structuredClone(payload), count });
-    } catch (e) {
-      console.error(e);
-      console.error(event);
+
+    let logPayload = payload;
+    if (type !== 'join') {
+      let transfer = [];
+      if (payload?.userData?.cardBack) transfer.push(payload.userData.cardBack);
+      try {
+        logPayload = structuredClone(payload, { transfer });
+      } catch (e) {
+        console.error(e);
+        console.error(payload);
+      }
     }
+
+    setLogs(index, {
+      type,
+      clientID,
+      payload: logPayload,
+      count,
+    });
   }
 
   async function processEvents() {
