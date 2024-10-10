@@ -129,13 +129,11 @@ export async function localInit(gameOptions: GameOptions) {
 
     let logPayload = payload;
     if (type !== 'join') {
-      let transfer = [];
-      if (payload?.userData?.cardBack) transfer.push(payload.userData.cardBack);
-      try {
-        logPayload = structuredClone(payload, { transfer });
-      } catch (e) {
-        console.error(e);
-        console.error(payload);
+      if (payload?.userData) {
+        logPayload = {
+          ...logPayload,
+          userData: { ...logPayload.userData, cardBack: undefined },
+        };
       }
     }
 
@@ -371,8 +369,6 @@ function onDocumentClick(event) {
 
   if (!target) return;
 
-  console.log('target', target);
-
   if (target.userData.isAnimating && !['battlefield', 'hand'].includes(target.userData.location))
     return;
 
@@ -569,6 +565,7 @@ function onDocumentMouseMove(event) {
     let intersects = raycaster.intersectObject(scene);
 
     if (!intersects.length) return;
+    console.log(intersects);
 
     for (const target of dragTargets) {
       let intersection = intersects.find(intersect => intersect.object.uuid !== target.uuid);

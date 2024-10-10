@@ -10,8 +10,8 @@ import {
   createCardGeometry,
   getSearchLine,
   initializeCardMesh,
-  updateModifiers,
   setCardData,
+  updateModifiers,
 } from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
@@ -22,7 +22,6 @@ import {
   focusCamera,
   getFocusCameraPositionRelativeTo,
   provider,
-  sendEvent,
   zonesById,
 } from './globals';
 import { Hand } from './hand';
