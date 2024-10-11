@@ -7,11 +7,11 @@
 
 .focusCamera {
   position: fixed;
+  z-index: 100;
 }
 
 .focusCameraContainer {
   :global(canvas) {
-    pointer-events: initial;
     height: 50vh;
   }
 }

@@ -54,7 +54,7 @@ const Overlay: Component = () => {
         e.stopImmediatePropagation();
       }}>
       <div class={styles.top}>
-        <div class='flex flex-wrap justify-start space-x-2 p-2 items-start'>
+        <div class='flex flex-wrap justify-start p-2 gap-2 items-start'>
           <Show when={!isSpectating()}>
             <LocalPlayer {...currentPlayer()?.entry} />
           </Show>

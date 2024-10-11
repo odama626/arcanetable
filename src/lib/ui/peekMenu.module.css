@@ -8,8 +8,21 @@
   transform: translateY(-100%);
 }
 
+.searchContainer {
+  left: 0;
+  right: 0;
+  top: 0;
+  position: fixed;
+  backdrop-filter: blur(2px);
+  background-color: #0005;
+}
+
 .search {
   pointer-events: initial;
   margin: auto;
+  left: 0;
+  right: 0;
   width: 80ch;
+  padding: 1rem 0;
+  box-sizing: content-box;
 }

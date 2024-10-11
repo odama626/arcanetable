@@ -67,7 +67,7 @@ export const LocalPlayer: Component = props => {
           </CollapsibleTrigger>
         </div>
         <Show when={!open()}>
-          <div class='flex gap-5 pt-2'>
+          <div class='flex gap-2 pt-2'>
             <For
               each={Object.entries(props?.counters ?? {})
                 .filter(entry => entry[1] !== 0)
@@ -174,10 +174,10 @@ export const NetworkPlayer: Component = props => {
 
   return (
     <div
-      class='bg-gray-100 p-2 rounded-lg shadow-md w-64 flex-shrink-0'
+      class='bg-gray-100 rounded-lg shadow-md w-64 flex-shrink-0 p-2'
       style='pointer-events: initial'>
       <Collapsible onOpenChange={setOpen} open={open()}>
-        <div class='flex gap-5 items-center justify-around'>
+        <div class='flex gap-5 items-center justify-around' style='min-height: 40px;'>
           {props?.name}
           <div>{props?.life}</div>
           <CollapsibleTrigger>
@@ -187,7 +187,7 @@ export const NetworkPlayer: Component = props => {
           </CollapsibleTrigger>
         </div>
         <Show when={!open()}>
-          <div class='flex gap-5 pt-2'>
+          <div class='flex gap-2 pt-2'>
             <For
               each={Object.entries(props?.counters ?? {})
                 .filter(entry => entry[1] !== 0)

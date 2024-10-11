@@ -92,9 +92,13 @@ const PeekMenu: Component = props => {
           <div class={styles.peekActions} style={`--x: ${tether().x}px; --y: ${tether().y}px;`}>
             <Menubar>
               <MenubarMenu>
-                <MenubarItem onClick={() => drawAfterRevealing(card())}>Reveal & Draw</MenubarItem>
-                <MenubarItem onClick={() => drawWithoutRevealing(card())}>Draw</MenubarItem>
-                <MenubarTrigger>Move To</MenubarTrigger>
+                <MenubarItem class='whitespace-nowrap' onClick={() => drawAfterRevealing(card())}>
+                  Reveal & Draw
+                </MenubarItem>
+                <MenubarItem class='whitespace-nowrap' onClick={() => drawWithoutRevealing(card())}>
+                  Draw
+                </MenubarItem>
+                <MenubarTrigger class='whitespace-nowrap'>Move To</MenubarTrigger>
                 <MenubarContent>
                   <MenubarItem onClick={() => discard(card())}>Discard</MenubarItem>
                   <MenubarItem onClick={() => exile(card())}>Exile</MenubarItem>
@@ -106,124 +110,128 @@ const PeekMenu: Component = props => {
             </Menubar>
           </div>
         </Show>
-        <div class={styles.search}>
-          <h2 class='text-white text-xl text-left mb-1'>
-            Peek — from {userData().previousLocation}
-          </h2>
-          <Command>
-            <CommandInput
-              placeholder='Search'
-              onValueChange={value => {
-                setPeekFilterText(value);
-              }}
-            />
-            <Menubar>
-              <MenubarMenu>
-                <MenubarItem
-                  onClick={async () => {
-                    function doOne() {
-                      let card = playArea().peekZone.cards[0];
-                      playArea().peekZone.removeCard(card.mesh);
-                      playArea().addCardBottomDeck(card);
-                      if (playArea().peekZone.cards.length) {
-                        setTimeout(doOne, 50);
-                      } else {
-                        setTimeout(() => playArea().shuffleDeck(), 100);
+        <div class={styles.searchContainer}>
+          <div class={styles.search}>
+            <h2 class='text-white text-xl text-left mb-4'>
+              Peek — from {userData().previousLocation}
+            </h2>
+            <Command>
+              <CommandInput
+                placeholder='Search'
+                onValueChange={value => {
+                  setPeekFilterText(value);
+                }}
+              />
+              <Menubar>
+                <MenubarMenu>
+                  <MenubarItem
+                    onClick={async () => {
+                      function doOne() {
+                        let card = playArea().peekZone.cards[0];
+                        playArea().peekZone.removeCard(card.mesh);
+                        playArea().addCardBottomDeck(card);
+                        if (playArea().peekZone.cards.length) {
+                          setTimeout(doOne, 50);
+                        } else {
+                          setTimeout(() => playArea().shuffleDeck(), 100);
+                        }
                       }
-                    }
-                    doOne();
-                    setHoverSignal();
-                  }}>
-                  Shuffle into deck
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() =>
-                    doXTimes(cardCount(), () => drawAfterRevealing(playArea().peekZone.cards[0]))
-                  }>
-                  Reveal & Draw All
-                </MenubarItem>
-                <MenubarItem
-                  onClick={() =>
-                    doXTimes(cardCount(), () => drawWithoutRevealing(playArea().peekZone.cards[0]))
-                  }>
-                  Draw All
-                </MenubarItem>
-                <MenubarTrigger>Move All To</MenubarTrigger>
-                <MenubarContent>
-                  <MenubarItem
-                    onClick={() =>
-                      doXTimes(cardCount(), () => discard(playArea().peekZone.cards[0]))
-                    }>
-                    Discard
+                      doOne();
+                      setHoverSignal();
+                    }}>
+                    Shuffle into deck
                   </MenubarItem>
                   <MenubarItem
                     onClick={() =>
-                      doXTimes(cardCount(), () => exile(playArea().peekZone.cards[0]))
+                      doXTimes(cardCount(), () => drawAfterRevealing(playArea().peekZone.cards[0]))
                     }>
-                    Exile
+                    Reveal & Draw All
                   </MenubarItem>
                   <MenubarItem
                     onClick={() =>
-                      doXTimes(cardCount(), () => topOfDeck(playArea().peekZone.cards[0]))
+                      doXTimes(cardCount(), () =>
+                        drawWithoutRevealing(playArea().peekZone.cards[0])
+                      )
                     }>
-                    Top of Deck
+                    Draw All
                   </MenubarItem>
-                  <MenubarItem
-                    onClick={() =>
-                      doXTimes(cardCount(), () => bottomOfDeck(playArea().peekZone.cards[0]))
-                    }>
-                    Bottom of Deck
-                  </MenubarItem>
-                  <MenubarItem
-                    onClick={() =>
-                      doXTimes(cardCount(), () => battlefield(playArea().peekZone.cards[0]))
-                    }>
-                    Battlefield
-                  </MenubarItem>
-                </MenubarContent>
-                <Switch>
-                  <Match when={viewField()}>
+                  <MenubarTrigger>Move All To</MenubarTrigger>
+                  <MenubarContent>
                     <MenubarItem
-                      onClick={() => {
-                        playArea().peekZone.viewGrid();
-                        setViewField(false);
-                      }}>
-                      View Grid
+                      onClick={() =>
+                        doXTimes(cardCount(), () => discard(playArea().peekZone.cards[0]))
+                      }>
+                      Discard
                     </MenubarItem>
-                  </Match>
-                  <Match when>
                     <MenubarItem
-                      onClick={() => {
-                        playArea().peekZone.viewField();
-                        setViewField(true);
-                      }}>
-                      View Field
+                      onClick={() =>
+                        doXTimes(cardCount(), () => exile(playArea().peekZone.cards[0]))
+                      }>
+                      Exile
                     </MenubarItem>
-                  </Match>
-                </Switch>
-                <MenubarItem
-                  onClick={() => {
-                    doXTimes(cardCount(), () => {
-                      let card = playArea().peekZone.cards.at(-1);
-                      playArea().peekZone.removeCard(card.mesh);
-                      let toZoneId = card?.mesh.userData.previousZoneId;
-                      let zone = zonesById.get(card.mesh.userData.previousZoneId);
-                      zone?.addCard(card);
-                      sendEvent({
-                        type: 'transferCard',
-                        payload: {
-                          userData: card?.mesh.userData,
-                          fromZoneId: playArea().peekZone.id,
-                          toZoneId,
-                        },
+                    <MenubarItem
+                      onClick={() =>
+                        doXTimes(cardCount(), () => topOfDeck(playArea().peekZone.cards[0]))
+                      }>
+                      Top of Deck
+                    </MenubarItem>
+                    <MenubarItem
+                      onClick={() =>
+                        doXTimes(cardCount(), () => bottomOfDeck(playArea().peekZone.cards[0]))
+                      }>
+                      Bottom of Deck
+                    </MenubarItem>
+                    <MenubarItem
+                      onClick={() =>
+                        doXTimes(cardCount(), () => battlefield(playArea().peekZone.cards[0]))
+                      }>
+                      Battlefield
+                    </MenubarItem>
+                  </MenubarContent>
+                  <Switch>
+                    <Match when={viewField()}>
+                      <MenubarItem
+                        onClick={() => {
+                          playArea().peekZone.viewGrid();
+                          setViewField(false);
+                        }}>
+                        View Grid
+                      </MenubarItem>
+                    </Match>
+                    <Match when>
+                      <MenubarItem
+                        onClick={() => {
+                          playArea().peekZone.viewField();
+                          setViewField(true);
+                        }}>
+                        View Field
+                      </MenubarItem>
+                    </Match>
+                  </Switch>
+                  <MenubarItem
+                    onClick={() => {
+                      doXTimes(cardCount(), () => {
+                        let card = playArea().peekZone.cards.at(-1);
+                        playArea().peekZone.removeCard(card.mesh);
+                        let toZoneId = card?.mesh.userData.previousZoneId;
+                        let zone = zonesById.get(card.mesh.userData.previousZoneId);
+                        zone?.addCard(card);
+                        sendEvent({
+                          type: 'transferCard',
+                          payload: {
+                            userData: card?.mesh.userData,
+                            fromZoneId: playArea().peekZone.id,
+                            toZoneId,
+                          },
+                        });
                       });
-                    });
-                  }}>
-                  Dismiss
-                </MenubarItem>
-              </MenubarMenu>
-            </Menubar>
-          </Command>
+                    }}>
+                    Dismiss
+                  </MenubarItem>
+                </MenubarMenu>
+              </Menubar>
+            </Command>
+          </div>
         </div>
       </Show>
     </>
