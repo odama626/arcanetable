@@ -64,7 +64,7 @@ const Overlay: Component = () => {
       <div class={styles.focusCamera} style={focusCameraStyle()}>
         <Show
           when={
-            hoverSignal().mesh &&
+            hoverSignal()?.mesh &&
             (isPublic() ||
               isSpectating() ||
               (isOwner() && ['battlefield', 'peek', 'hand'].includes(location())))
