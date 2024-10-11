@@ -5,7 +5,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { cancelAnimation, renderAnimations } from './lib/animations';
-import { cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
+import { CARD_THICKNESS, cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
 import {
   animating,
   camera,
@@ -376,9 +376,14 @@ function onDocumentMouseMove(event) {
       }
       zone.mesh.worldToLocal(pointTarget);
 
-      target.position.copy(
-        pointTarget.add(new THREE.Vector3().fromArray(target.userData.dragOffset))
+      let rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(target.rotation);
+      pointTarget.add(
+        new THREE.Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
       );
+
+      pointTarget.add(new THREE.Vector3(0, 0, CARD_THICKNESS));
+
+      target.position.copy(pointTarget);
     }
 
     setHoverSignal(signal => {

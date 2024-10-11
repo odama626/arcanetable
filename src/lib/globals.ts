@@ -168,8 +168,8 @@ export async function sha1(input) {
   return hashHex;
 }
 export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
-  let distance = 30;
-  let localOffset = new Vector3(target.userData.isFlipped ? -CARD_WIDTH / 2 : 0, 0, 0);
+  let distance = 26;
+  let localOffset = new Vector3(target.userData.isFlipped ? -CARD_WIDTH / 2 : 0, -1, 0);
 
   let targetWorldPosition = target.localToWorld(offset.clone().add(localOffset));
   let worldDirection = target.getWorldDirection(new Vector3());

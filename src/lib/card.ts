@@ -68,14 +68,14 @@ export function createCardGeometry(card: Card) {
     map.colorSpace = SRGBColorSpace;
     mesh.userData.cardBack = new MeshStandardMaterial({
       map,
-      alphaMap: alphaMap,
+      alphaMap,
       color: 0xffffff,
     });
+    mesh.userData.cardBack.transparent = true;
     setCardData(mesh, 'publicCardBack', cardBack);
   }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
-  // mesh.scale.set(0.25, 0.25, 0.25);
   return mesh;
 }
 
@@ -233,7 +233,7 @@ function createLabel(text, color?: string) {
   texture.minFilter = LinearFilter;
   texture.generateMipmaps = false;
   texture.needsUpdate = true;
-  return { texture, width: textCanvas.width / 30 };
+  return { texture, width: textCanvas.width / 31 };
 }
 
 function updateCounter(card: Card, counterId: string, index: number) {
@@ -248,7 +248,6 @@ function updateCounter(card: Card, counterId: string, index: number) {
     mesh.scale.set(7, 3, CARD_THICKNESS);
     card.mesh.add(mesh);
     mesh.transparent = true;
-    // mesh.position.set(CARD_WIDTH / 2 + 3, CARD_HEIGHT / 2 - (index + 1) * 5, zOffset);
     card.modifiers[counter.id] = mesh;
   }
   if (counterValue !== 0) {
@@ -259,7 +258,7 @@ function updateCounter(card: Card, counterId: string, index: number) {
     let label = createLabel(`${counterValue} ${counter.name}`, counter.color);
     mesh.material.map = label.texture;
     mesh.position.set(
-      (CARD_WIDTH / 2 + label.width / 2 - 0.5) * (card.mesh.userData.isFlipped ? -1 : 1),
+      (CARD_WIDTH / 2 + label.width / 2 - 1) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
       zOffset
     );
@@ -334,9 +333,6 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
     vector.fromArray(pointData.array, pointOffset);
     obj.localToWorld(vector);
     raycaster.set(vector.clone().add(direction.clone().multiplyScalar(-1000)), direction);
-    // arrowHelper.position.copy(vector.clone().multiply(new Vector3(0, 10, 0)));
-    // arrowHelper.setDirection(direction);
-    // arrowHelper.setLength(200);
     intersections.push(...raycaster.intersectObject(scene).filter(i => i.object.id !== obj.id));
     if (intersections.length) {
       maxZ = Math.max(intersections[0].object.position.z, maxZ);
@@ -349,5 +345,4 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
   console.log(stack);
 
   return stackCount * CARD_THICKNESS;
-  // return maxZ + CARD_THICKNESS;
 }
