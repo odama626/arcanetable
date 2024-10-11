@@ -84,7 +84,7 @@ export async function localInit(gameOptions: GameOptions) {
 
   var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.intensity = 2;
-  directionalLight.position.set(0, 100, 200);
+  directionalLight.position.set(0, 200, 0);
   directionalLight.shadow.mapSize.set(1024 * 2, 1024 * 2);
   directionalLight.shadow.camera.left = -140;
   directionalLight.shadow.camera.right = 140;

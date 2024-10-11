@@ -97,7 +97,10 @@ export function init({ gameId }) {
   THREE.Cache.enabled = true;
 
   camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
-  camera.position.z = 250;
+  camera.position.z = 200;
+  const matrix = new THREE.Matrix4();
+  matrix.makeRotationX((Math.PI / 2) * -0.4);
+  camera.position.applyMatrix4(matrix);
 
   renderer = new WebGLRenderer();
   renderer.shadowMap.enabled = true;
@@ -130,10 +133,9 @@ export function init({ gameId }) {
   const tableGeometry = new BoxGeometry(200, 200, 5);
   const tableMaterial = new MeshStandardMaterial({ color: 0xdeb887 });
   table = new Mesh(tableGeometry, tableMaterial);
-  table.rotateX(Math.PI * -0.3);
-  table.position.set(0, 0, 50);
   table.receiveShadow = true;
   table.userData.zone = 'battlefield';
+  table.rotateX(Math.PI * -0.5);
   scene.add(table);
   gameLog = ydoc.getArray('gameLog');
 }
@@ -144,6 +146,7 @@ export function startSpectating() {
   provider.awareness.setLocalStateField('isSpectating', true);
   orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.target = table.position;
+
   let curIndex = 0;
   playAreas.forEach((playArea, i) => {
     playArea.mesh.rotation.z = PLAY_AREA_ROTATIONS[curIndex];
