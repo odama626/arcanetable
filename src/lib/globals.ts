@@ -1,4 +1,7 @@
+import get from 'lodash-es/get';
+import set from 'lodash-es/set';
 import { createSignal } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import * as THREE from 'three';
 import {
   ArrowHelper,
@@ -17,16 +20,13 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { Card, CARD_WIDTH } from './card';
 import { PlayArea } from './playArea';
-import { createStore } from 'solid-js/store';
-import get from 'lodash-es/get';
-import set from 'lodash-es/set';
-
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
     console.error(message, ...supplemental);
@@ -66,6 +66,11 @@ export const [scrollTarget, setScrollTarget] = createSignal();
 export let provider: WebsocketProvider | WebrtcProvider;
 export let COUNT_OPTIONS = [1, 2, 3, 5, 7, 10];
 export let [logs, setLogs] = createStore([]);
+export let [processedEvents, setProcessedEvents] = createSignal(0);
+export let [isSpectating, setIsSpectating] = createSignal(false);
+export let [playerCount, setPlayerCount] = createSignal(0);
+export let orbitControls: OrbitControls;
+export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
 
 export function doXTimes(x: number, callback, delay = 100) {
   new Array(x).fill(0).forEach((_, i) => setTimeout(callback, delay * i));
@@ -73,6 +78,7 @@ export function doXTimes(x: number, callback, delay = 100) {
 
 export function headlessInit() {
   clock = new Clock();
+  setProcessedEvents(0);
 }
 
 export function init({ gameId }) {
@@ -135,6 +141,18 @@ export function init({ gameId }) {
   table.userData.zone = 'battlefield';
   scene.add(table);
   gameLog = ydoc.getArray('gameLog');
+}
+
+export function startSpectating() {
+  setIsSpectating(true);
+  setPlayerCount(count => count - 1);
+  orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.target = table.position;
+  let curIndex = 0;
+  playAreas.forEach((playArea, i) => {
+    playArea.mesh.rotation.z = PLAY_AREA_ROTATIONS[curIndex];
+    curIndex++;
+  });
 }
 
 export function sendEvent(event) {

@@ -71,11 +71,13 @@ export class PlayArea {
     let deckCards = (state?.deck?.cards || cards).map(card => initializeCardMesh(card, clientId));
 
     this.deck = new Deck(deckCards, state?.deck?.id);
-    this.hand = new Hand(state?.hand?.id);
+    this.hand = new Hand(state?.hand?.id, this.isLocalPlayArea);
 
-    this.deck.mesh.addEventListener('click', e => {
-      this.draw();
-    });
+    if (this.isLocalPlayArea) {
+      this.deck.mesh.addEventListener('click', e => {
+        this.draw();
+      });
+    }
 
     this.mesh.add(this.deck.mesh);
     this.mesh.add(this.hand.mesh);

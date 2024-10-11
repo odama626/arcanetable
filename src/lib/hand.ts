@@ -11,13 +11,12 @@ export class Hand implements CardZone {
   public id: string;
   public isInteractive: boolean = true;
 
-  constructor(id = nanoid()) {
+  constructor(id = nanoid(), public isLocalHand: boolean) {
     this.mesh = new Group();
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'hand';
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.set(0, -120, 40);
-    // this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.userData.restingPosition = this.mesh.position.clone();
 
     this.id = id;
@@ -67,8 +66,10 @@ export class Hand implements CardZone {
 
     this.adjustHandPosition();
 
-    card.mesh.addEventListener('mousein', this.cardMouseIn);
-    card.mesh.addEventListener('mouseout', this.cardMouseOut);
+    if (this.isLocalHand) {
+      card.mesh.addEventListener('mousein', this.cardMouseIn);
+      card.mesh.addEventListener('mouseout', this.cardMouseOut);
+    }
 
     let restingPosition = new Vector3(index * 5, 0, index * -0.125);
 
@@ -135,6 +136,7 @@ export class Hand implements CardZone {
 
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
+
     cardMesh.removeEventListener('mousein', this.cardMouseIn);
     cardMesh.removeEventListener('mouseout', this.cardMouseOut);
     setCardData(cardMesh, 'resting', undefined);

@@ -4,19 +4,8 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import {
-  animateObject,
-  cancelAnimation,
-  queueAnimationGroup,
-  renderAnimations,
-} from './lib/animations';
-import {
-  Card,
-  cloneCard,
-  createCardGeometry,
-  getCardMeshTetherPoint,
-  setCardData,
-} from './lib/card';
+import { cancelAnimation, renderAnimations } from './lib/animations';
+import { cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
 import {
   animating,
   camera,
@@ -29,7 +18,7 @@ import {
   gameLog,
   hoverSignal,
   init,
-  logs,
+  isSpectating,
   playAreas,
   players,
   provider,
@@ -40,7 +29,6 @@ import {
   setAnimating,
   setDeckIndex,
   setHoverSignal,
-  setLogs,
   setPlayers,
   table,
   updateFocusCamera,
@@ -49,7 +37,7 @@ import {
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
-import { isLogMessageStackable } from './lib/ui/log';
+import { processEvents } from './remoteEvents';
 
 var container;
 
@@ -60,7 +48,6 @@ let outlinePass: OutlinePass;
 let dragTargets: THREE.Object3D[];
 let hand: Hand;
 let time = 0;
-let processedEvents = 0;
 let playArea: PlayArea;
 
 interface GameOptions {
@@ -72,7 +59,6 @@ export async function localInit(gameOptions: GameOptions) {
   document.body.appendChild(container);
   init(gameOptions);
 
-  processedEvents = 0;
   time = 0;
   dragTargets = [];
 
@@ -109,57 +95,6 @@ export async function localInit(gameOptions: GameOptions) {
   scene.add(directionalLight);
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
-
-  // let demo = new THREE.CameraHelper(directionalLight.shadow.camera);
-  // scene.add(demo);
-
-  let processing = false;
-
-  function addLogMessage(event) {
-    if (event.type === 'animateObject') return;
-    let index = logs.length;
-
-    const { type, clientID, payload } = event;
-    let count = 1;
-    let lastEvent = logs[index - 1];
-    if (isLogMessageStackable(lastEvent, event)) {
-      count = lastEvent.count + 1;
-      index--;
-    }
-
-    let logPayload = payload;
-    if (type !== 'join') {
-      if (payload?.userData) {
-        logPayload = {
-          ...logPayload,
-          userData: { ...logPayload.userData, cardBack: undefined },
-        };
-      }
-    }
-
-    setLogs(index, {
-      type,
-      clientID,
-      payload: logPayload,
-      count,
-    });
-  }
-
-  async function processEvents() {
-    if (processing) return;
-    processing = true;
-    try {
-      while (processedEvents < gameLog.length) {
-        const event = gameLog.get(processedEvents);
-        addLogMessage(event);
-        processedEvents++;
-        if (event.clientID === provider.awareness.clientID) continue;
-        await handleEvent(event);
-      }
-    } finally {
-      processing = false;
-    }
-  }
 
   gameLog.observe(processEvents);
 
@@ -205,143 +140,6 @@ export async function loadDeckAndJoin(settings) {
   hand = playArea.hand;
 
   table.add(playArea.mesh);
-}
-
-interface Event {
-  clientID: string;
-  payload: unknown;
-}
-
-let playerCount = 0;
-
-let PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
-
-const EVENTS = {
-  join(event: Event) {
-    let playArea = new PlayArea(event.clientID, event.payload.cards, event.payload);
-
-    table.add(playArea.mesh);
-    playAreas.set(event.clientID, playArea);
-    playerCount++;
-
-    console.log({ playerCount });
-    // playArea.mesh.rotateZ((Math.PI / 2) * playerCount);
-    const rotation = PLAY_AREA_ROTATIONS[playerCount];
-    console.log({ rotation });
-    playArea.mesh.rotateZ(rotation);
-  },
-  queueAnimationGroup(event: Event) {
-    queueAnimationGroup();
-  },
-  draw(event: Event, playArea: PlayArea) {
-    playArea?.draw();
-  },
-  addToHand(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToHand(card);
-  },
-  removeFromHand(event: Event, playArea: PlayArea, card: Card) {
-    playArea.removeFromHand(card.mesh);
-  },
-  addToBattlefield(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToBattlefield(card);
-  },
-  modifyCard(event: Event, playArea: PlayArea, card: Card) {
-    setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
-    playArea.modifyCard(card);
-  },
-  createCounter(event: Event) {
-    setCounters(counters => uniqBy([...counters, event.counter], 'id'));
-  },
-  addCardBottomDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardBottomDeck(card);
-  },
-  addCardTopDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardTopDeck(card);
-  },
-  animateObject(event: Event, _playArea: PlayArea, card: Card) {
-    animateObject(card.mesh, event.payload.animation);
-  },
-  destroy(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.destroy(card.mesh);
-  },
-  async transferCard(event: Event, playArea: PlayArea, card: Card) {
-    let fromZone = zonesById.get(event.payload.fromZoneId);
-    let toZone = zonesById.get(event.payload.toZoneId);
-    await fromZone?.removeCard(card.mesh);
-    let p = event?.payload?.addOptions?.position;
-    let position = p ? new THREE.Vector3(p.x, p.y, p.z) : undefined;
-    await toZone?.addCard(card, { position });
-  },
-  createCard(event: Event, playArea: PlayArea) {
-    // let card = cloneCard(event.payload.card, event.payload.card.id);
-    let card = structuredClone(event.payload.userData.card);
-    card.id = event.payload.userData.id;
-    card.mesh = createCardGeometry(card);
-    card.mesh.userData = event.payload.userData;
-    cardsById.set(card.id, card);
-
-    let zone = zonesById.get(event.payload.zoneId);
-    let p = event.payload.addOptions.position;
-    let position = new THREE.Vector3(p.x, p.y, p.z);
-    zone?.addCard(card, { position });
-  },
-  tap(event: Event, playArea: PlayArea, card: Card) {
-    playArea?.tap(card.mesh);
-  },
-  flip(event: Event, playArea: PlayArea, card: Card) {
-    playArea?.flip(card.mesh);
-  },
-  clone(event: Event, playArea: PlayArea) {
-    playArea?.clone(event.payload.id, event.payload.newId);
-  },
-  peek(event: Event, playArea: PlayArea, card: Card) {
-    playArea.peek(card);
-  },
-  reveal(event: Event, remotePlayArea: PlayArea, card: Card) {
-    expect(!!card, 'card not found');
-    let cardProxy = cloneCard(card, nanoid());
-    // remotePlayArea.peek();
-    setCardData(cardProxy.mesh, 'isPublic', true);
-    playArea.reveal(cardProxy);
-  },
-  exileCard(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.exileCard(card.mesh);
-  },
-  deckFlipTop(event: Event, playArea: PlayArea) {
-    playArea?.deckFlipTop(event.payload.toggle);
-  },
-  shuffleDeck(event: Event, playArea: PlayArea) {
-    return playArea?.shuffleDeck(event.payload.order);
-  },
-  mulligan(event: Event, playArea: PlayArea) {
-    return playArea.mulligan(event.payload.drawCount, event.payload.order);
-  },
-};
-
-async function handleEvent(event) {
-  console.log(event);
-  expect(!!EVENTS[event.type], `${event.type} not implemented`);
-  let playArea = playAreas.get(event.clientID);
-  let card = cardsById.get(event.payload?.userData?.id);
-  await EVENTS[event.type](event, playArea, card);
 }
 
 function onDocumentScroll(event) {
@@ -432,6 +230,7 @@ function onDocumentDragStart(event) {
   event.dataTransfer.dropEffect = 'move';
   raycaster.setFromCamera(mouse, camera);
   let intersects = raycaster.intersectObject(scene);
+  if (isSpectating()) return;
   if (!intersects.length) return;
 
   let intersection = intersects[0];

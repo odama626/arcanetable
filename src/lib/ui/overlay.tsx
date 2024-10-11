@@ -6,6 +6,7 @@ import {
   doXTimes,
   focusRenderer,
   hoverSignal,
+  isSpectating,
   playAreas,
   players,
   provider,
@@ -62,7 +63,12 @@ const Overlay: Component = () => {
       </div>
       <div class={styles.focusCamera} style={focusCameraStyle()}>
         <Show
-          when={isPublic() || (isOwner() && ['battlefield', 'peek', 'hand'].includes(location()))}>
+          when={
+            hoverSignal().mesh &&
+            (isPublic() ||
+              isSpectating() ||
+              (isOwner() && ['battlefield', 'peek', 'hand'].includes(location())))
+          }>
           <div ref={setContainer} class={styles.focusCameraContainer} />
         </Show>
       </div>

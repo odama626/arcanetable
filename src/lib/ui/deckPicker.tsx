@@ -16,6 +16,7 @@ import {
 } from '~/components/ui/number-field';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
 import { createDeckStore } from '../deckStore';
+import { startSpectating } from '../globals';
 import { DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
 
@@ -23,6 +24,7 @@ const DeckPicker: Component = props => {
   const [deckStore, setDeckStore] = createDeckStore();
   const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(0);
   const [editingDeck, setEditingDeck] = createSignal(false);
+
   return (
     <>
       <DeckEditor
@@ -95,7 +97,7 @@ const DeckPicker: Component = props => {
               </For>
             </div>
             <DialogFooter>
-              <Button onClick={() => props.setIsSpectating(true)} variant='ghost'>
+              <Button onClick={() => startSpectating()} variant='ghost'>
                 Spectate
               </Button>
               <Button variant='outline' type='button' onClick={() => setEditingDeck(true)}>

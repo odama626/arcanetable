@@ -64,8 +64,10 @@ export function createCardGeometry(card: Card) {
     card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris
   );
   if (mesh.userData.isDoubleSided) {
+    let map = textureLoader.load(card.detail.card_faces[1].image_uris.large);
+    map.colorSpace = SRGBColorSpace;
     mesh.userData.cardBack = new MeshStandardMaterial({
-      map: textureLoader.load(card.detail.card_faces[1].image_uris.large),
+      map,
       alphaMap: alphaMap,
       color: 0xffffff,
     });

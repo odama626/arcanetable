@@ -2,7 +2,7 @@ import { useBeforeLeave } from '@solidjs/router';
 import { Component, createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { cleanup, players } from '~/lib/globals';
+import { cleanup, isSpectating, players } from '~/lib/globals';
 import DeckPicker from '~/lib/ui/deckPicker';
 import Overlay from '~/lib/ui/overlay';
 import { loadDeckAndJoin, localInit } from '~/main3d';
@@ -11,7 +11,6 @@ const GamePage: Component = props => {
   const [deckIndex, setDeckIndex] = createSignal(props.location.query.deck);
   const [inviteDismissed, setInviteDismissed] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
-  const [isSpectating, setIsSpectating] = createSignal(false);
 
   console.log({ props });
   let url = new URL(document.location);
@@ -42,7 +41,6 @@ const GamePage: Component = props => {
             setDeckIndex(settings.deckIndex);
             loadDeckAndJoin(settings);
           }}
-          setIsSpectating={setIsSpectating}
         />
       </Show>
       <Show when={deckIndex() !== undefined && players().length < 2 && !inviteDismissed()}>
