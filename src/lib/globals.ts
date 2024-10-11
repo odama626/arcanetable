@@ -87,8 +87,6 @@ export function init({ gameId }) {
   } else {
     provider = new WebrtcProvider(gameId, ydoc, { signaling: [`signaling.arcanetable.app`] });
   }
-
-  console.log(import.meta.env);
   headlessInit();
 
   loadingManager = new LoadingManager();
@@ -106,11 +104,8 @@ export function init({ gameId }) {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.domElement.draggable = true;
-  // renderer.setClearColor(0x9d9eae)
   renderer.setClearColor(0x05050e);
 
-  // let focusWidth = 750;
-  // let focusHeight = 700;
   let focusHeight = window.innerHeight * 0.5;
   let focusWidth = (focusHeight / 700) * 750;
 
@@ -146,6 +141,7 @@ export function init({ gameId }) {
 export function startSpectating() {
   setIsSpectating(true);
   setPlayerCount(count => count - 1);
+  provider.awareness.setLocalStateField('isSpectating', true);
   orbitControls = new OrbitControls(camera, renderer.domElement);
   orbitControls.target = table.position;
   let curIndex = 0;

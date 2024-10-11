@@ -43,8 +43,6 @@ export class PlayArea {
     this.mesh = new Group();
     this.isLocalPlayArea = clientId === provider.awareness.clientID;
 
-    console.log({ state });
-
     this.battlefieldZone = new CardArea('battlefield', state?.battlefield?.id);
 
     this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek');
@@ -84,7 +82,6 @@ export class PlayArea {
     this.mesh.add(this.battlefieldZone.mesh);
 
     if (state?.battlefield?.cards) {
-      console.log(state.battlefield?.cards);
       state.battlefield.cards.forEach(mesh => {
         let card = initializeCardMesh(mesh.userData.card, clientId);
         this.battlefieldZone.addCard(card, {
@@ -179,7 +176,6 @@ export class PlayArea {
     card = card ?? this.deck.draw()!;
     this.peekZone.isPublic = false;
     setCardData(card.mesh, 'isPublic', false);
-    console.log({ card });
     let previousZone = zonesById.get(card.mesh.userData.zoneId);
     previousZone?.removeCard?.(card.mesh);
     this.peekZone.addCard(card);
@@ -371,10 +367,7 @@ export class PlayArea {
 
   static async FromDeck(clientId, deck: string) {
     let deckList = deck?.deck ?? loadCardList(deck.cardList);
-    console.log({ deckList });
     let cards = await loadDeckList(deckList);
-
-    console.log({ cards, deck });
 
     const playArea = new PlayArea(clientId, cards);
 

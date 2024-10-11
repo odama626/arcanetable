@@ -364,7 +364,6 @@ function onDocumentMouseMove(event) {
     let intersects = raycaster.intersectObject(scene);
 
     if (!intersects.length) return;
-    console.log(intersects);
 
     for (const target of dragTargets) {
       let intersection = intersects.find(intersect => intersect.object.uuid !== target.uuid);

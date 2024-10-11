@@ -186,8 +186,6 @@ export class Deck {
 
       setCardData(card.mesh, 'isPublic', isVisible);
 
-      console.log({ isVisible, position: card.mesh.position.clone() });
-
       animateObject(card.mesh, {
         duration: 0.2,
         path: new CatmullRomCurve3([

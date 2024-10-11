@@ -24,10 +24,6 @@ import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
-  createEffect(() => {
-    console.log(counters());
-  });
-
   return (
     <Menubar>
       <MenubarMenu>

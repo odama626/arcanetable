@@ -47,13 +47,7 @@ export class CardArea implements CardZone {
     const initialPosition = card.mesh.getWorldPosition(new Vector3());
     this.mesh.worldToLocal(initialPosition);
 
-    if (position) {
-      position;
-      console.log({ position: position.clone() });
-      // position.z = CARD_THICKNESS;
-    } else {
-      // let rayOrigin = new Vector3(40, 60, 65);
-
+    if (!position) {
       let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 10));
       let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
       let raycaster = new Raycaster(rayOrigin, direction);

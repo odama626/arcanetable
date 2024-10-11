@@ -55,8 +55,13 @@ const Overlay: Component = () => {
       }}>
       <div class={styles.top}>
         <div class='flex flex-wrap justify-start space-x-2 p-2 items-start'>
-          <LocalPlayer {...currentPlayer()?.entry} />
-          <For each={players().filter(player => player.id !== provider.awareness.clientID)}>
+          <Show when={!isSpectating()}>
+            <LocalPlayer {...currentPlayer()?.entry} />
+          </Show>
+          <For
+            each={players().filter(
+              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating
+            )}>
             {player => <NetworkPlayer {...player?.entry} />}
           </For>
         </div>
