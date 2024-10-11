@@ -121,7 +121,7 @@ const EVENTS = {
     let toZone = zonesById.get(event.payload.toZoneId);
     await fromZone?.removeCard(card.mesh);
     let p = event?.payload?.addOptions?.position;
-    let position = p ? new THREE.Vector3(p.x, p.y, p.z) : undefined;
+    let position = p ? new Vector3(p.x, p.y, p.z) : undefined;
     await toZone?.addCard(card, { position });
   },
   createCard(event: Event, playArea: PlayArea) {
