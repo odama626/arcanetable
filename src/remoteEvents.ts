@@ -1,22 +1,23 @@
 import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
-import { queueAnimationGroup, animateObject } from './lib/animations';
-import { Card, setCardData, createCardGeometry, cloneCard } from './lib/card';
+import { Vector3 } from 'three';
+import { animateObject, queueAnimationGroup } from './lib/animations';
+import { Card, cloneCard, createCardGeometry, setCardData } from './lib/card';
 import {
-  playAreas,
-  zonesById,
   cardsById,
+  expect,
   gameLog,
   logs,
+  PLAY_AREA_ROTATIONS,
+  playAreas,
+  playerCount,
+  processedEvents,
   provider,
   setLogs,
-  processedEvents,
-  setProcessedEvents,
   setPlayerCount,
-  playerCount,
-  expect,
+  setProcessedEvents,
   table,
-  PLAY_AREA_ROTATIONS,
+  zonesById,
 } from './lib/globals';
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
@@ -135,7 +136,7 @@ const EVENTS = {
 
     let p = event.payload?.addOptions?.position;
     if (p) {
-      options.position = new THREE.Vector3(p.x, p.y, p.z);
+      options.position = new Vector3(p.x, p.y, p.z);
     }
 
     zone?.addCard(card, options);
@@ -157,6 +158,7 @@ const EVENTS = {
     let cardProxy = cloneCard(card, nanoid());
     // remotePlayArea.peek();
     setCardData(cardProxy.mesh, 'isPublic', true);
+    const playArea = playAreas.get(provider.awareness.clientID)!
     playArea.reveal(cardProxy);
   },
   exileCard(event: Event, playArea: PlayArea, card: Card) {
