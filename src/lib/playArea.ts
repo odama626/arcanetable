@@ -45,7 +45,7 @@ export class PlayArea {
 
     this.battlefieldZone = new CardArea('battlefield', state?.battlefield?.id);
 
-    this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek');
+    this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek', state?.peekZone?.id);
     this.revealZone = new CardGrid(this.isLocalPlayArea, 'reveal');
     this.tokenSearchZone = new CardGrid(this.isLocalPlayArea, 'tokenSearch');
     this.graveyardZone = new CardStack('graveyard', state?.graveyard?.id);
@@ -343,6 +343,7 @@ export class PlayArea {
       graveyard: this.graveyardZone.getSerializable(),
       exile: this.exileZone.getSerializable(),
       battlefield: this.battlefieldZone.getSerializable(),
+      peekZone: this.peekZone.getSerializable(),
       hand: this.hand.getSerializable(),
       deck: this.deck.getSerializable(),
       cards: this.cards.map(card => {

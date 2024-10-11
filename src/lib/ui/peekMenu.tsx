@@ -14,8 +14,10 @@ import {
   hoverSignal,
   playAreas,
   provider,
+  sendEvent,
   setHoverSignal,
   setPeekFilterText,
+  zonesById,
 } from '../globals';
 import styles from './peekMenu.module.css';
 
@@ -105,7 +107,9 @@ const PeekMenu: Component = props => {
           </div>
         </Show>
         <div class={styles.search}>
-          <h2 class='text-white text-xl text-left mb-1'>Peek</h2>
+          <h2 class='text-white text-xl text-left mb-1'>
+            Peek — from {userData().previousLocation}
+          </h2>
           <Command>
             <CommandInput
               placeholder='Search'
@@ -197,6 +201,26 @@ const PeekMenu: Component = props => {
                     </MenubarItem>
                   </Match>
                 </Switch>
+                <MenubarItem
+                  onClick={() => {
+                    doXTimes(cardCount(), () => {
+                      let card = playArea().peekZone.cards.at(-1);
+                      playArea().peekZone.removeCard(card.mesh);
+                      let toZoneId = card?.mesh.userData.previousZoneId;
+                      let zone = zonesById.get(card.mesh.userData.previousZoneId);
+                      zone?.addCard(card);
+                      sendEvent({
+                        type: 'transferCard',
+                        payload: {
+                          userData: card?.mesh.userData,
+                          fromZoneId: playArea().peekZone.id,
+                          toZoneId,
+                        },
+                      });
+                    });
+                  }}>
+                  Dismiss
+                </MenubarItem>
               </MenubarMenu>
             </Menubar>
           </Command>

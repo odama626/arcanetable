@@ -201,6 +201,10 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     cardMesh.userData.wasPublic = cardMesh.userData.isPublic;
   }
 
+  if (field === `zoneId`) {
+    cardMesh.userData.previousZoneId = cardMesh.userData.zoneId
+  }
+
   cardMesh.userData[field] = value;
 
   // after setting value

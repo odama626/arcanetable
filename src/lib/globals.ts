@@ -272,3 +272,13 @@ export function hydratePathWith<T>(obj: any, path: string[], hydrator: (value: a
     set(obj, path, hydrator(get(obj, path)));
   }
 }
+
+export function isVectorEqual(a: Vector3, b: Vector3) {
+  if (!a || !b) return false;
+  let ab = a.toArray();
+  let bb = b.toArray();
+  for (let i in ab) {
+    if (ab[i] !== bb[i]) return false;
+  }
+  return true;
+}
