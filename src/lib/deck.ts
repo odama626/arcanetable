@@ -159,22 +159,26 @@ export class Deck {
         position: new Vector3(70, -55, this.cards.length * CARD_THICKNESS + 2.5),
       },
     });
-
-    this.cards.map((card, i) => {
-      let z = card.mesh.position.clone().z;
-      animateObject(card.mesh, {
-        duration: 0.4,
-        path: new CatmullRomCurve3([
-          card.mesh.position.clone(),
-          new Vector3((i % 2) * 20 - 10, 0, card.mesh.position.z),
-          new Vector3((i % 2) * 20 - 10, 0, i * CARD_THICKNESS),
-          new Vector3(0, 0, i * CARD_THICKNESS),
-        ]),
-        to: {
-          rotation: new Euler(0, 0, 0),
-        },
-      });
-    });
+    await Promise.all(
+      this.cards.map((card, i) => {
+        return new Promise<void>(resolve => {
+          let z = card.mesh.position.clone().z;
+          animateObject(card.mesh, {
+            duration: 0.4,
+            path: new CatmullRomCurve3([
+              card.mesh.position.clone(),
+              new Vector3((i % 2) * 20 - 10, 0, card.mesh.position.z),
+              new Vector3((i % 2) * 20 - 10, 0, i * CARD_THICKNESS),
+              new Vector3(0, 0, i * CARD_THICKNESS),
+            ]),
+            to: {
+              rotation: new Euler(0, 0, 0),
+            },
+            onComplete: resolve,
+          });
+        });
+      })
+    );
     queueAnimationGroup();
   }
 

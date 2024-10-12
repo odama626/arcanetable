@@ -491,7 +491,7 @@ function render3d() {
 
   hightlightHover(intersects);
 
-  if (hoverSignal()?.mesh) {
+  if (hoverSignal()?.mesh && hoverSignal()?.mesh.userData.location !== 'hand') {
     setHoverSignal(signal => ({
       ...signal,
       tether: getCardMeshTetherPoint(signal.mesh),

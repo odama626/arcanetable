@@ -17,6 +17,7 @@ import { Card, CARD_HEIGHT, CARD_WIDTH } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import {
   cardsById,
+  doXTimes,
   focusCamera,
   getFocusCameraPositionRelativeTo,
   provider,
@@ -112,6 +113,7 @@ export class PlayArea {
         setCardData(card.mesh, 'isInteractive', true);
         setCardData(card.mesh, 'location', 'tokenSearch');
         setCardData(card.mesh, 'clientId', provider.awareness.clientID);
+        setCardData(card.mesh, 'isToken', true);
         card.detail.search = getSearchLine(card.detail);
         cardsById.set(card.id, card);
         return card;
@@ -156,17 +158,24 @@ export class PlayArea {
 
   async mulligan(drawCount: number, existingOrder?: number[]) {
     let cardsInHand = this.hand.cards;
-    cardsInHand.forEach(card => {
-      this.removeFromHand(card.mesh);
-      this.deck.addCardBottom(card);
-    });
+    await doXTimes(
+      cardsInHand.length,
+      () => {
+        let card = this.hand.cards[0];
+        this.hand.removeCard(card.mesh);
+        this.deck.addCardBottom(card);
+      },
+      50
+    );
     let order = await this.deck.shuffle(existingOrder);
     this.emitEvent('mulligan', { order, drawCount });
 
-    new Array(drawCount).fill(0).forEach((_, i) =>
-      setTimeout(() => {
+    doXTimes(
+      drawCount,
+      () => {
         this.hand.addCard(this.deck.draw());
-      }, 100 * i)
+      },
+      50
     );
   }
 

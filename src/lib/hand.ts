@@ -61,7 +61,7 @@ export class Hand implements CardZone {
 
     this.mesh.add(card.mesh);
     this.cards.push(card);
-    this.cardMap.set(card.mesh.uuid, card);
+    this.cardMap.set(card.id, card);
 
     let index = this.cards.length - 1;
 
@@ -132,7 +132,7 @@ export class Hand implements CardZone {
   removeCard(cardMesh: Object3D) {
     let worldPosition = new Vector3();
     cardMesh.getWorldPosition(worldPosition);
-
+    let cardIndex = this.cards.findIndex(c => c.id === cardMesh.userData.id);
     let globalRotation = getGlobalRotation(cardMesh);
 
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
@@ -142,13 +142,11 @@ export class Hand implements CardZone {
     cardMesh.removeEventListener('mouseout', this.cardMouseOut);
     setCardData(cardMesh, 'resting', undefined);
     this.mesh.remove(cardMesh);
-    let card = this.cardMap.get(cardMesh.uuid);
-    let index = this.cards.findIndex(c => c === card);
-    this.cards = this.cards.filter(c => c !== card);
-    this.cardMap.delete(cardMesh.uuid);
+    this.cards.splice(cardIndex, 1);
+    this.cardMap.delete(cardMesh.userData.id);
 
     this.adjustHandPosition();
-    for (let i = index; i < this.cards.length; i++) {
+    for (let i = cardIndex; i < this.cards.length; i++) {
       let cardMesh = this.cards[i].mesh;
       if (cardMesh.userData.location !== 'hand') continue;
       cardMesh.userData.resting.position = new Vector3(i * 5, 0, i * -0.125);

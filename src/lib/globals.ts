@@ -72,8 +72,16 @@ export let [playerCount, setPlayerCount] = createSignal(0);
 export let orbitControls: OrbitControls;
 export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
 
-export function doXTimes(x: number, callback, delay = 100) {
-  new Array(x).fill(0).forEach((_, i) => setTimeout(callback, delay * i));
+export function doXTimes(x: number, callback, delay = 100): Promise<void> {
+  if (x < 1) return Promise.resolve();
+  return new Promise<void>(resolve => {
+    new Array(x).fill(0).forEach((_, i) =>
+      setTimeout(() => {
+        callback();
+        if (i === x - 1) resolve();
+      }, delay * i)
+    );
+  });
 }
 
 export function headlessInit() {

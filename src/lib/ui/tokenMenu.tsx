@@ -10,6 +10,7 @@ import {
   MenubarTrigger,
 } from '~/components/ui/menubar';
 import { cleanupCard, cloneCard } from '../card';
+import { Card } from '../constants';
 import {
   cardsById,
   COUNT_OPTIONS,
