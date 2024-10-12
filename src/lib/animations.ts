@@ -16,6 +16,7 @@ export interface AnimationOpts {
   path?: CatmullRomCurve3;
   duration: number;
   start?: number;
+  completeOnCancel?: boolean;
   onComplete?: () => void;
 }
 
@@ -64,10 +65,11 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
   };
 
   if (animationMap.has(obj.uuid)) {
-    renderAnimation(animationMap.get(obj.uuid), 1);
+    let animation = animationMap.get(obj.uuid);
+    if (animation.completeOnCancel) renderAnimation(animationMap.get(obj.uuid), 1);
     cancelAnimation(obj);
 
-    animatingObjects.delete(animationMap.get(obj.uuid));
+    animatingObjects.delete(animation);
     animationMap.delete(obj.uuid);
   }
 
@@ -116,7 +118,7 @@ export function renderAnimations(time: number) {
     let t = Math.max(0, Math.min((time - animation.start) / animation.duration, 1));
     if (renderAnimation(animation, t)) {
       animatingObjects.delete(animation);
-      animationMap.delete(animation.obj.uuid)
+      animationMap.delete(animation.obj.uuid);
     }
   }
   if (animatingObjects.size < 1 && animationGroupQueue.length > 1) {

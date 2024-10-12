@@ -52,6 +52,7 @@ export class Deck {
     this.mesh.position.copy(new Vector3(70, -55, this.cards.length * 0.125 + 2.5));
 
     animateObject(this.mesh, {
+      completeOnCancel: true,
       path: new CatmullRomCurve3([
         this.mesh.position.clone(),
         this.mesh.position.clone().add(new Vector3(0, 0, 5)),
@@ -61,6 +62,7 @@ export class Deck {
     });
 
     animateObject(card.mesh, {
+      completeOnCancel: true,
       path,
       duration: 0.2,
       to: {
@@ -101,6 +103,7 @@ export class Deck {
     promises.push(
       new Promise<void>(resolve => {
         animateObject(card.mesh, {
+          completeOnCancel: true,
           path,
           duration: 0.2,
           to: {
@@ -160,6 +163,7 @@ export class Deck {
   async animateReorder() {
     queueAnimationGroup();
     animateObject(this.mesh, {
+      completeOnCancel: true,
       duration: 0.2,
       to: {
         position: new Vector3(70, -55, this.cards.length * CARD_THICKNESS + 2.5),
@@ -170,6 +174,7 @@ export class Deck {
         return new Promise<void>(resolve => {
           let z = card.mesh.position.clone().z;
           animateObject(card.mesh, {
+            completeOnCancel: true,
             duration: 0.4,
             path: new CatmullRomCurve3([
               card.mesh.position.clone(),
@@ -197,6 +202,7 @@ export class Deck {
       setCardData(card.mesh, 'isPublic', isVisible);
 
       animateObject(card.mesh, {
+        completeOnCancel: true,
         duration: 0.2,
         path: new CatmullRomCurve3([
           card.mesh.position.clone(),
