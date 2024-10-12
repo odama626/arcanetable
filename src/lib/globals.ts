@@ -6,7 +6,6 @@ import * as THREE from 'three';
 import {
   ArrowHelper,
   BoxGeometry,
-  CameraHelper,
   Clock,
   Euler,
   LoadingManager,
@@ -26,8 +25,8 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { Card, CARD_WIDTH } from './card';
-import { PlayArea } from './playArea';
+import { Card, CARD_WIDTH } from './constants';
+import type { PlayArea } from './playArea';
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
     console.error(message, ...supplemental);

@@ -1,7 +1,8 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { Card, setCardData } from './card';
+import { setCardData } from './card';
+import { Card } from './constants';
 import { cardsById, CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class Hand implements CardZone {

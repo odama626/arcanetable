@@ -10,25 +10,12 @@ import {
   Texture,
   Vector3,
 } from 'three';
+import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
 import { cardsById, cleanupFromNode, getProjectionVec, scene, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
 
-export interface Card {
-  mesh: Mesh;
-  id: string;
-  modifiers: {
-    pt: Mesh;
-    [id: string]: Mesh;
-  };
-}
-
 let cardBackTexture: Texture;
 let alphaMap: Texture;
-
-export const CARD_WIDTH = 63 / 4;
-export const CARD_HEIGHT = 88 / 4;
-export const CARD_THICKNESS = 0.5 / 4;
-export const CARD_STACK_OFFSET = 2;
 
 export function createCardGeometry(card: Card) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
@@ -202,7 +189,7 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
   }
 
   if (field === `zoneId`) {
-    cardMesh.userData.previousZoneId = cardMesh.userData.zoneId
+    cardMesh.userData.previousZoneId = cardMesh.userData.zoneId;
   }
 
   cardMesh.userData[field] = value;

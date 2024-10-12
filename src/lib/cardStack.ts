@@ -10,9 +10,10 @@ import {
   MeshStandardMaterial,
   Vector3,
 } from 'three';
-import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, setCardData } from './card';
-import { CardZone, getGlobalRotation, zonesById } from './globals';
 import { animateObject } from './animations';
+import { setCardData } from './card';
+import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH } from './constants';
+import { CardZone, getGlobalRotation, zonesById } from './globals';
 
 export class CardStack implements CardZone {
   public mesh: Mesh;

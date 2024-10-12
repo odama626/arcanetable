@@ -3,9 +3,6 @@ import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
 import {
-  Card,
-  CARD_HEIGHT,
-  CARD_WIDTH,
   cloneCard,
   createCardGeometry,
   getSearchLine,
@@ -16,6 +13,7 @@ import {
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
+import { Card, CARD_HEIGHT, CARD_WIDTH } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import {
   cardsById,

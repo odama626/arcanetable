@@ -1,10 +1,10 @@
-import { CatmullRomCurve3, Euler, Group, Mesh, Quaternion, Vector3 } from 'three';
-import { Card, CARD_THICKNESS, CARD_WIDTH, getSearchLine, setCardData } from './card';
-import { cardsById, expect, sha1, zonesById } from './globals';
-import { animateObject } from './animations';
-import { queueAnimationGroup } from './animations';
-import { deck as deckParser } from './deckParser';
 import { nanoid } from 'nanoid';
+import { CatmullRomCurve3, Euler, Group, Mesh, Quaternion, Vector3 } from 'three';
+import { animateObject, queueAnimationGroup } from './animations';
+import { getSearchLine, setCardData } from './card';
+import { Card, CARD_THICKNESS, CARD_WIDTH } from './constants';
+import { deck as deckParser } from './deckParser';
+import { cardsById, expect, zonesById } from './globals';
 
 export class Deck {
   public mesh: Group;

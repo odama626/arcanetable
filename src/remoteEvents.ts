@@ -2,7 +2,8 @@ import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
 import { Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './lib/animations';
-import { Card, cloneCard, createCardGeometry, setCardData } from './lib/card';
+import { cloneCard, createCardGeometry, setCardData } from './lib/card';
+import { Card } from './lib/constants';
 import {
   cardsById,
   expect,
@@ -158,7 +159,7 @@ const EVENTS = {
     let cardProxy = cloneCard(card, nanoid());
     // remotePlayArea.peek();
     setCardData(cardProxy.mesh, 'isPublic', true);
-    const playArea = playAreas.get(provider.awareness.clientID)!
+    const playArea = playAreas.get(provider.awareness.clientID)!;
     playArea.reveal(cardProxy);
   },
   exileCard(event: Event, playArea: PlayArea, card: Card) {

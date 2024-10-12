@@ -1,18 +1,15 @@
 import { nanoid } from 'nanoid';
 import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
-import { Raycaster, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
   Menubar,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
-  MenubarSub,
-  MenubarSubContent,
-  MenubarSubTrigger,
   MenubarTrigger,
 } from '~/components/ui/menubar';
-import { CARD_STACK_OFFSET, CARD_THICKNESS, cleanupCard, cloneCard } from '../card';
+import { cleanupCard, cloneCard } from '../card';
 import {
   cardsById,
   COUNT_OPTIONS,
@@ -20,7 +17,6 @@ import {
   hoverSignal,
   playAreas,
   provider,
-  scene,
   sendEvent,
   setHoverSignal,
   setPeekFilterText,

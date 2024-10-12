@@ -3,7 +3,8 @@ import { createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { Card, CARD_HEIGHT, CARD_WIDTH, setCardData } from './card';
+import { setCardData } from './card';
+import { Card, CARD_HEIGHT, CARD_WIDTH } from './constants';
 import {
   CardZone,
   getGlobalRotation,

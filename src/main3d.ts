@@ -5,7 +5,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { cancelAnimation, renderAnimations } from './lib/animations';
-import { CARD_THICKNESS, cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
+import { cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
+import { CARD_THICKNESS } from './lib/constants';
 import {
   animating,
   camera,

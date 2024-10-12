@@ -7,7 +7,7 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from '~/components/ui/menubar';
-import { Card } from '../card';
+import { Card } from '../constants';
 import {
   cardsById,
   doXTimes,
