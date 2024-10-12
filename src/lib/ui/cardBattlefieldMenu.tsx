@@ -26,7 +26,7 @@ import { counters, setIsCounterDialogOpen } from './counterDialog';
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   return (
     <Menubar>
-      <MenubarMenu>
+      <MenubarMenu overlap>
         <MenubarTrigger>Actions</MenubarTrigger>
         <MenubarContent>
           <MenubarItem
@@ -49,7 +49,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
             }}>
             Exile
           </MenubarItem>
-          <MenubarSub>
+          <MenubarSub overlap>
             <MenubarSubTrigger>Counters</MenubarSubTrigger>
             <MenubarSubContent>
               <MenubarItem closeOnSelect={false} style='font-family: monospace;'>
@@ -99,7 +99,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
-          <MenubarSub>
+          <MenubarSub overlap>
             <MenubarSubTrigger onClick={() => props.playArea.clone(props.cardMesh?.userData.id)}>
               Clone
             </MenubarSubTrigger>

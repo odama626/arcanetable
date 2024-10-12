@@ -65,7 +65,7 @@ const MenubarContent = <T extends ValidComponent = "div">(
         class={cn(
           "z-50 min-w-48 origin-[var(--kb-menu-content-transform-origin)] animate-content-hide overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[expanded]:animate-content-show",
           local.class
-        )}
+        )} style='margin-top: -10px; margin-left:-5px;'
         {...others}
       />
     </MenubarPrimitive.Portal>
