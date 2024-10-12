@@ -52,7 +52,7 @@ export class CardGrid implements CardZone {
       this.scrollContainer.addEventListener('scroll', event => {
         let position = this.scrollContainer.position
           .clone()
-          .add(new Vector3(0, event.event.deltaY * 0.5, 0));
+          .add(new Vector3(0, event.event.deltaY * 0.25, 0));
 
         position.y = Math.min(position.y, this.maxScroll);
         position.y = Math.max(position.y, this.minScroll);

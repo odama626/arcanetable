@@ -210,21 +210,25 @@ const PeekMenu: Component = props => {
                   </Switch>
                   <MenubarItem
                     onClick={() => {
-                      doXTimes(cardCount(), () => {
-                        let card = playArea().peekZone.cards.at(-1);
-                        playArea().peekZone.removeCard(card.mesh);
-                        let toZoneId = card?.mesh.userData.previousZoneId;
-                        let zone = zonesById.get(card.mesh.userData.previousZoneId);
-                        zone?.addCard(card);
-                        sendEvent({
-                          type: 'transferCard',
-                          payload: {
-                            userData: card?.mesh.userData,
-                            fromZoneId: playArea().peekZone.id,
-                            toZoneId,
-                          },
-                        });
-                      });
+                      doXTimes(
+                        cardCount(),
+                        () => {
+                          let card = playArea().peekZone.cards.at(-1);
+                          playArea().peekZone.removeCard(card.mesh);
+                          let toZoneId = card?.mesh.userData.previousZoneId;
+                          let zone = zonesById.get(card.mesh.userData.previousZoneId);
+                          zone?.addCard(card);
+                          sendEvent({
+                            type: 'transferCard',
+                            payload: {
+                              userData: card?.mesh.userData,
+                              fromZoneId: playArea().peekZone.id,
+                              toZoneId,
+                            },
+                          });
+                        },
+                        50
+                      );
                     }}>
                     Dismiss
                   </MenubarItem>

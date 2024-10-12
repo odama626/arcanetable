@@ -52,7 +52,9 @@ const DeckPicker: Component = props => {
 
               props.onSelectDeck(data);
             }}>
-            <TextField>
+            <TextField
+              defaultValue={localStorage.getItem('arcanetable-name') ?? ''}
+              onChange={value => localStorage.setItem('arcanetable-name', value)}>
               <TextFieldLabel for='name'>Name</TextFieldLabel>
               <TextFieldInput required type='text' id='name' name='name' />
             </TextField>
