@@ -381,7 +381,7 @@ function onDocumentMouseMove(event) {
         new THREE.Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
       );
 
-      pointTarget.add(new THREE.Vector3(0, 0, CARD_THICKNESS));
+      pointTarget.add(new THREE.Vector3(0, 0, CARD_THICKNESS / 2));
 
       target.position.copy(pointTarget);
     }

@@ -245,6 +245,10 @@ export class PlayArea {
   }
 
   flip(cardMesh: Mesh) {
+    let focusCameraTarget = getFocusCameraPositionRelativeTo(
+      cardMesh,
+      new Vector3(CARD_WIDTH / 4, 0, 0)
+    );
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
     this.emitEvent('flip', { userData: cardMesh.userData });
 
@@ -253,11 +257,6 @@ export class PlayArea {
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
     rotation.z *= -1;
-
-    let focusCameraTarget = getFocusCameraPositionRelativeTo(
-      cardMesh,
-      new Vector3(CARD_WIDTH / 4, 0, 0)
-    );
 
     animateObject(cardMesh, {
       duration: 0.4,

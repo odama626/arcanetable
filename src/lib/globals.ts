@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import {
   ArrowHelper,
   BoxGeometry,
+  CameraHelper,
   Clock,
   Euler,
   LoadingManager,
@@ -120,15 +121,14 @@ export function init({ gameId }) {
 
   focusCamera = new PerspectiveCamera(50, focusWidth / focusHeight, 1, 2000);
 
-  // let helper = new CameraHelper(focusCamera);
-
   scene = new Scene();
 
   scene.add(arrowHelper);
 
-  focusRayCaster = new Raycaster();
-
+  // let helper = new CameraHelper(focusCamera);
   // scene.add(helper);
+
+  focusRayCaster = new Raycaster();
 
   const tableGeometry = new BoxGeometry(200, 200, 5);
   const tableMaterial = new MeshStandardMaterial({ color: 0xdeb887 });
