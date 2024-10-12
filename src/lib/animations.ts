@@ -64,10 +64,9 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
   };
 
   if (animationMap.has(obj.uuid)) {
-    let animation = animationMap.get(obj.uuid);
-    if (animation.onComplete) {
-      animation.onComplete();
-    }
+    renderAnimation(animationMap.get(obj.uuid), 1);
+    cancelAnimation(obj);
+
     animatingObjects.delete(animationMap.get(obj.uuid));
     animationMap.delete(obj.uuid);
   }
@@ -79,36 +78,45 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
 
 export function cancelAnimation(obj: Object3D) {
   const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
+  let animation = animationMap.get(obj.uuid);
   animationMap.delete(obj.uuid);
-  animatingObjects.delete(obj.uuid);
-  setCardData(obj, 'isAnimating', false);
+  animatingObjects.delete(animation);
+}
+
+function renderAnimation(animation, delta: number): boolean {
+  if (animation.path) {
+    animation.path.getPointAt(delta, animation.obj.position);
+  }
+
+  if (animation.to?.position) {
+    animation.obj.position.copy(
+      animation.from!.position!.clone().lerp(animation.to.position, delta)
+    );
+  }
+  if (animation.to?.rotation) {
+    animation.obj.rotation.setFromQuaternion(
+      animation.from!.quarternion!.clone().slerp(animation.to.quarternion!.clone(), delta)
+    );
+  }
+
+  if (delta >= 1) {
+    setCardData(animation.obj, 'isAnimating', false);
+    if (animation.onComplete) {
+      animation.onComplete();
+    }
+    return true;
+  }
+  return false;
 }
 
 export function renderAnimations(time: number) {
   expect(animationGroupQueue.length > 0, `animationGroupQueue empty!`);
-  const { animatingObjects } = animationGroupQueue[0];
+  const { animatingObjects, animationMap } = animationGroupQueue[0];
   for (const animation of animatingObjects) {
     let t = Math.max(0, Math.min((time - animation.start) / animation.duration, 1));
-
-    if (animation.path) {
-      animation.path.getPointAt(t, animation.obj.position);
-    }
-
-    if (animation.to?.position) {
-      animation.obj.position.copy(animation.from!.position!.clone().lerp(animation.to.position, t));
-    }
-    if (animation.to?.rotation) {
-      animation.obj.rotation.setFromQuaternion(
-        animation.from!.quarternion!.clone().slerp(animation.to.quarternion!.clone(), t)
-      );
-    }
-
-    if (t >= 1) {
-      setCardData(animation.obj, 'isAnimating', false);
-      if (animation.onComplete) {
-        animation.onComplete();
-      }
+    if (renderAnimation(animation, t)) {
       animatingObjects.delete(animation);
+      animationMap.delete(animation.obj.uuid)
     }
   }
   if (animatingObjects.size < 1 && animationGroupQueue.length > 1) {

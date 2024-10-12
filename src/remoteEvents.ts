@@ -6,6 +6,7 @@ import { cloneCard, createCardGeometry, setCardData } from './lib/card';
 import { Card } from './lib/constants';
 import {
   cardsById,
+  doXTimes,
   expect,
   gameLog,
   logs,
@@ -30,17 +31,37 @@ interface Event {
 }
 
 let processing = false;
+let events = [];
+let timing = 100;
 
 export async function processEvents() {
   if (processing) return;
   processing = true;
   try {
     while (processedEvents() < gameLog.length) {
-      const event = gameLog.get(processedEvents());
-      addLogMessage(event);
+      const srcEvent = gameLog.get(processedEvents());
       setProcessedEvents(e => e + 1);
-      if (event.clientID === provider.awareness.clientID) continue;
-      await handleEvent(event);
+      if (srcEvent.type === 'bulk') {
+        console.log(srcEvent);
+        timing = srcEvent.timing;
+        events = srcEvent.events.map(e => {
+          e.clientID = srcEvent.clientID;
+          return e;
+        });
+      } else {
+        timing = 100;
+        events = [srcEvent];
+      }
+
+      while (events.length > 0) {
+        let event = events.shift();
+        addLogMessage(event);
+        if (event.clientID === provider.awareness.clientID) break;
+        await handleEvent(event);
+        if (events.length > 0) {
+          await new Promise(resolve => setTimeout(resolve, timing));
+        }
+      }
     }
   } finally {
     processing = false;

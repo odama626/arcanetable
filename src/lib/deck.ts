@@ -71,14 +71,12 @@ export class Deck {
 
   async addCardTop(card: Card) {
     setCardData(card.mesh, 'location', 'deck');
-    setCardData(card.mesh, 'isPublic', false);
     setCardData(card.mesh, 'zoneId', this.id);
 
-    cardsById.set(card.id, card);
-
     if (this.cards[0]?.mesh.userData.isPublic) {
-      await this.flipTop();
+      this.flipTop();
     }
+    setCardData(card.mesh, 'isPublic', false);
 
     this.cards.unshift(card);
 
@@ -94,7 +92,7 @@ export class Deck {
     let promises = [];
     let positionOffset = 0;
 
-    for (let i = 1; i < this.cards.length; i++) {
+    for (let i = 0; i < this.cards.length; i++) {
       setCardData(this.cards[i].mesh, 'location', 'deck');
       this.cards[i].mesh.position.set(0, 0, positionOffset);
       positionOffset += CARD_THICKNESS;
@@ -115,11 +113,16 @@ export class Deck {
       })
     );
 
-    await Promise.all(promises);
-
     if (this.isTopPublic) {
-      await this.flipTop();
+      promises.push(this.flipTop());
     }
+
+    Promise.all(promises).then(() => {
+      // this is a hack. the animation library should be able to get the cards where they belong
+      this.cards.forEach((card, i) => {
+        card.mesh.position.set(0, 0, i * CARD_THICKNESS);
+      });
+    });
   }
 
   addCard(card: Card) {
@@ -149,6 +152,9 @@ export class Deck {
   removeCard(cardMesh: Mesh) {
     let index = this.cards.findIndex(card => card.id === cardMesh.userData.id);
     if (index > -1) this.cards.splice(index, 1);
+    if (this.isTopPublic && !this.cards[0]?.mesh.userData.isPublic) {
+      this.flipTop();
+    }
   }
 
   async animateReorder() {

@@ -182,9 +182,9 @@ export class PlayArea {
   peek(card?: Card) {
     card = card ?? this.deck.draw()!;
     this.peekZone.isPublic = false;
-    setCardData(card.mesh, 'isPublic', false);
     let previousZone = zonesById.get(card.mesh.userData.zoneId);
     previousZone?.removeCard?.(card.mesh);
+    setCardData(card.mesh, 'isPublic', false);
     this.peekZone.addCard(card);
     this.emitEvent('peek', { userData: card.mesh.userData });
   }

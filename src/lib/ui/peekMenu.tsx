@@ -209,8 +209,19 @@ const PeekMenu: Component = props => {
                     </Match>
                   </Switch>
                   <MenubarItem
-                    onClick={() => {
-                      doXTimes(
+                    onClick={async () => {
+                      let events = playArea()
+                        .peekZone.cards.map(card => ({
+                          type: 'transferCard',
+                          payload: {
+                            userData: card.mesh.userData,
+                            toZoneId: card.mesh.userData.previousZoneId,
+                            fromZoneId: card.mesh.userData.zoneId,
+                          },
+                        }))
+                        .reverse();
+                      sendEvent({ type: 'bulk', timing: 50, events: events });
+                      await doXTimes(
                         cardCount(),
                         () => {
                           let card = playArea().peekZone.cards.at(-1);
@@ -218,14 +229,6 @@ const PeekMenu: Component = props => {
                           let toZoneId = card?.mesh.userData.previousZoneId;
                           let zone = zonesById.get(card.mesh.userData.previousZoneId);
                           zone?.addCard(card);
-                          sendEvent({
-                            type: 'transferCard',
-                            payload: {
-                              userData: card?.mesh.userData,
-                              fromZoneId: playArea().peekZone.id,
-                              toZoneId,
-                            },
-                          });
                         },
                         50
                       );
