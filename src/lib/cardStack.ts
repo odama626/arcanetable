@@ -11,7 +11,7 @@ import {
   Vector3,
 } from 'three';
 import { animateObject } from './animations';
-import { setCardData } from './card';
+import { getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH } from './constants';
 import { CardZone, getGlobalRotation, zonesById } from './globals';
 
@@ -24,6 +24,7 @@ export class CardStack implements CardZone {
     let edges = new EdgesGeometry(geometry);
     let lineSegments = new LineSegments(edges, new LineBasicMaterial({ color: 0xffffff }));
     lineSegments.scale.set(1.1, 1.1, 1);
+    lineSegments.userData.isOrnament = true;
     material.opacity = 0;
     material.transparent = true;
     this.mesh = new Mesh(geometry, material);
@@ -33,9 +34,12 @@ export class CardStack implements CardZone {
     zonesById.set(id, this);
   }
 
-  getSerializable(): { id: string } {
+  getSerializable() {
     return {
       id: this.id,
+      cards: this.mesh.children
+        .filter(child => !child.userData.isOrnament)
+        .map(getSerializableCard),
     };
   }
 

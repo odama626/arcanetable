@@ -5,6 +5,7 @@ import {
   LinearFilter,
   Mesh,
   MeshStandardMaterial,
+  Object3D,
   Raycaster,
   SRGBColorSpace,
   Texture,
@@ -336,4 +337,13 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
   console.log(stack);
 
   return stackCount * CARD_THICKNESS;
+}
+
+export function getSerializableCard(cardMesh: Object3D) {
+  return {
+    id: cardMesh.userData.id,
+    userData: cardMesh.userData,
+    position: cardMesh.position.toArray(),
+    rotation: cardMesh.position.toArray(),
+  };
 }

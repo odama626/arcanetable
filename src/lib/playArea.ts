@@ -13,7 +13,7 @@ import {
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
-import { Card, CARD_HEIGHT, CARD_WIDTH } from './constants';
+import { Card, CARD_HEIGHT, CARD_WIDTH, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import {
   cardsById,
@@ -24,6 +24,23 @@ import {
   zonesById,
 } from './globals';
 import { Hand } from './hand';
+
+interface RemoteZoneState {
+  id: string;
+  cards: SerializableCard[];
+}
+
+interface State {
+  isLocalPlayer?: boolean;
+  clientId?: number;
+  graveyard?: RemoteZoneState;
+  exile?: RemoteZoneState;
+  battlefield?: RemoteZoneState;
+  peekZone?: RemoteZoneState;
+  hand?: RemoteZoneState;
+  deck?: RemoteZoneState;
+  cards?: Card[];
+}
 
 export class PlayArea {
   public deck: Deck;
@@ -37,18 +54,19 @@ export class PlayArea {
   public isLocalPlayArea: boolean;
   public revealZone;
   public tokenSearchZone;
+  public availableTokens?: Card[];
 
-  constructor(public clientId: number, public cards: Card[], state?) {
+  constructor(public clientId: number, public cards: Card[], state: State) {
     this.mesh = new Group();
-    this.isLocalPlayArea = clientId === provider.awareness.clientID;
+    this.isLocalPlayArea = !!state.isLocalPlayer;
 
-    this.battlefieldZone = new CardArea('battlefield', state?.battlefield?.id);
+    this.battlefieldZone = new CardArea('battlefield', state.battlefield?.id);
 
-    this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek', state?.peekZone?.id);
+    this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek', state.peekZone?.id);
     this.revealZone = new CardGrid(this.isLocalPlayArea, 'reveal');
     this.tokenSearchZone = new CardGrid(this.isLocalPlayArea, 'tokenSearch');
-    this.graveyardZone = new CardStack('graveyard', state?.graveyard?.id);
-    this.exileZone = new CardStack('exile', state?.exile?.id);
+    this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
+    this.exileZone = new CardStack('exile', state.exile?.id);
 
     this.exileZone.mesh.position.set(88, -55, 2.5);
     this.graveyardZone.mesh.position.set(70, -80, 2.5);
@@ -92,20 +110,21 @@ export class PlayArea {
   }
 
   async openTokenMenu() {
-    let cardsInPlay = this.cards; //this.battlefieldZone.children.map(card => cardsById.get(card.userData.id));
+    if (!this.availableTokens) {
+      let cardsInPlay = this.cards;
+      let allTokens = new Set(
+        cardsInPlay
+          .map(card => (card.detail.all_parts ?? []).filter(part => part.component === 'token'))
+          .flat()
+          .map(part => part.uri)
+      );
 
-    let allTokens = new Set(
-      cardsInPlay
-        .map(card => (card.detail.all_parts ?? []).filter(part => part.component === 'token'))
-        .flat()
-        .map(part => part.uri)
-    );
+      this.availableTokens = await Promise.all(
+        [...allTokens].map(uri => fetch(uri, { cache: 'force-cache' }).then(r => r.json()))
+      ).then(cards => uniqBy(cards, 'oracle_id'));
+    }
 
-    let availableTokens = await Promise.all(
-      [...allTokens].map(uri => fetch(uri, { cache: 'force-cache' }).then(r => r.json()))
-    );
-
-    let availableCards = uniqBy(availableTokens, 'oracle_id')
+    let availableCards = this.availableTokens
       .map(detail => {
         let card = { detail, id: nanoid() };
         card.mesh = createCardGeometry(structuredClone(card));
@@ -344,7 +363,7 @@ export class PlayArea {
     this.exileZone.addCard(card);
   }
 
-  getLocalState() {
+  getLocalState(): State {
     return {
       graveyard: this.graveyardZone.getSerializable(),
       exile: this.exileZone.getSerializable(),
@@ -352,13 +371,7 @@ export class PlayArea {
       peekZone: this.peekZone.getSerializable(),
       hand: this.hand.getSerializable(),
       deck: this.deck.getSerializable(),
-      cards: this.cards.map(card => {
-        const { mesh, ...rest } = card;
-        return {
-          ...rest,
-          userData: mesh?.userData,
-        };
-      }),
+      cards: this.cards,
     };
   }
 
@@ -372,11 +385,11 @@ export class PlayArea {
     });
   }
 
-  static async FromDeck(clientId, deck: string) {
+  static async FromDeck(clientId: number, deck) {
     let deckList = deck?.deck ?? loadCardList(deck.cardList);
     let cards = await loadDeckList(deckList);
 
-    const playArea = new PlayArea(clientId, cards);
+    const playArea = new PlayArea(clientId, cards, { isLocalPlayer: true });
 
     if (deck?.inPlay) {
       let cardsInPlay = await loadDeckList(deck?.inPlay);
@@ -394,8 +407,8 @@ export class PlayArea {
     return playArea;
   }
 
-  static FromNetworkState(state) {
-    let playArea = new PlayArea(state.clientId, state.cards, state);
+  static FromNetworkState(state: State) {
+    let playArea = new PlayArea(state.clientId!, state.cards!, state);
 
     return playArea;
   }

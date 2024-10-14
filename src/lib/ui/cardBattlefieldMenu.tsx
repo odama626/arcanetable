@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { Mesh } from 'three';
 import { Button } from '~/components/ui/button';
 import {

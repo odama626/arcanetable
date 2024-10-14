@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { setCardData } from './card';
+import { getSerializableCard, setCardData } from './card';
 import { Card } from './constants';
 import { cardsById, CardZone, getGlobalRotation, zonesById } from './globals';
 
@@ -41,13 +41,7 @@ export class Hand implements CardZone {
   getSerializable() {
     return {
       id: this.id,
-      cards: this.cards.map(card => {
-        let { mesh, ...rest } = card;
-        return {
-          ...rest,
-          userData: mesh.userData,
-        };
-      }),
+      cards: this.cards.map(card => getSerializableCard(card.mesh)),
     };
   }
 
