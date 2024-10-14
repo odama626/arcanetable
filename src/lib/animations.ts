@@ -41,6 +41,16 @@ export function queueAnimationGroup(emit?: boolean) {
 export function animateObject(obj: Object3D, opts: AnimationOpts) {
   expect(animationGroupQueue.length > 0, `animationGroupQueue empty!`);
   const { animationMap, animatingObjects } = animationGroupQueue.at(-1)!;
+
+  if (animationMap.has(obj.uuid)) {
+    let animation = animationMap.get(obj.uuid);
+    if (animation.completeOnCancel) renderAnimation(animationMap.get(obj.uuid), 1);
+    cancelAnimation(obj);
+
+    animatingObjects.delete(animation);
+    animationMap.delete(obj.uuid);
+  }
+
   if (!opts.from) {
     opts.from = {};
   }
@@ -63,15 +73,6 @@ export function animateObject(obj: Object3D, opts: AnimationOpts) {
     ...opts,
     start: clock.elapsedTime,
   };
-
-  if (animationMap.has(obj.uuid)) {
-    let animation = animationMap.get(obj.uuid);
-    if (animation.completeOnCancel) renderAnimation(animationMap.get(obj.uuid), 1);
-    cancelAnimation(obj);
-
-    animatingObjects.delete(animation);
-    animationMap.delete(obj.uuid);
-  }
 
   setCardData(obj, 'isAnimating', true);
   animationMap.set(obj.uuid, animation);

@@ -341,6 +341,7 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
 
 export function getSerializableCard(cardMesh: Object3D) {
   return {
+    detail: cardMesh.userData.card.detail,
     id: cardMesh.userData.id,
     userData: cardMesh.userData,
     position: cardMesh.position.toArray(),

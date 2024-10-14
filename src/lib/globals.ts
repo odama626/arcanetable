@@ -87,6 +87,8 @@ export function doXTimes(x: number, callback, delay = 100): Promise<void> {
 export function headlessInit() {
   clock = new Clock();
   setProcessedEvents(0);
+  loadingManager = new LoadingManager();
+  textureLoader = new TextureLoader(loadingManager);
 }
 
 export function init({ gameId }) {
@@ -97,11 +99,9 @@ export function init({ gameId }) {
   }
   headlessInit();
 
-  loadingManager = new LoadingManager();
   loadingManager.onProgress = function (item, loaded, total) {
     console.log(item, loaded, total);
   };
-  textureLoader = new TextureLoader(loadingManager);
   THREE.Cache.enabled = true;
 
   camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);

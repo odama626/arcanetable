@@ -189,7 +189,7 @@ export class PlayArea {
     let order = await this.deck.shuffle(existingOrder);
     this.emitEvent('mulligan', { order, drawCount });
 
-    doXTimes(
+    await doXTimes(
       drawCount,
       () => {
         this.hand.addCard(this.deck.draw());
