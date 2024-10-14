@@ -15,7 +15,7 @@ import { getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS } from './constants';
 import { CardZone, getGlobalRotation, zonesById } from './globals';
 
-export class CardArea implements CardZone {
+export class CardArea implements CardZone<{ positionArray?: [number, number, number] }> {
   public mesh: Mesh;
 
   constructor(public zone: string, public id: string = nanoid()) {
@@ -38,11 +38,12 @@ export class CardArea implements CardZone {
     this.mesh.position.setZ(2.5);
   }
 
-  addCard(card: Card, { skipAnimation, position } = {}) {
+  addCard(card: Card, { skipAnimation = false, positionArray } = {}) {
     const initialPosition = card.mesh.getWorldPosition(new Vector3());
     this.mesh.worldToLocal(initialPosition);
+    let position: Vector3;
 
-    if (!position) {
+    if (!positionArray) {
       let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 10));
       let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
       let raycaster = new Raycaster(rayOrigin, direction);
@@ -55,6 +56,8 @@ export class CardArea implements CardZone {
       } else {
         position = this.mesh.worldToLocal(intersections[0].point);
       }
+    } else {
+      position = new Vector3().fromArray(positionArray);
     }
 
     setCardData(card.mesh, 'zoneId', this.id);

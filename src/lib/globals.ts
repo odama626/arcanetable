@@ -34,10 +34,11 @@ export function expect(test: boolean, message: string, ...supplemental: any) {
   }
 }
 
-export interface CardZone {
+export interface CardZone<AddOptions = {} & { skipAnimation?: boolean }> {
+  id: string;
   mesh: Object3D;
-  removeCard?(cardMesh: Mesh): void;
-  addCard(card: Card, opts?: { skipAnimation?: boolean; position?: Vector3 }): void;
+  removeCard(cardMesh: Mesh): void;
+  addCard(card: Card, opts?: AddOptions): void;
   getSerializable(): { id: string };
 }
 
@@ -81,6 +82,15 @@ export function doXTimes(x: number, callback, delay = 100): Promise<void> {
         if (i === x - 1) resolve();
       }, delay * i)
     );
+  });
+}
+
+export function doAfter(x: number, callback: Function): Promise<void> {
+  return new Promise<void>(resolve => {
+    setTimeout(async () => {
+      await callback();
+      resolve();
+    }, x);
   });
 }
 

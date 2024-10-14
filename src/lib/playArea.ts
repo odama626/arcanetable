@@ -103,7 +103,7 @@ export class PlayArea {
         let card = initializeCardMesh(mesh.userData.card, clientId);
         this.battlefieldZone.addCard(card, {
           skipAnimation: true,
-          position: new Vector3().fromArray(mesh.position),
+          positionArray: mesh.position,
         });
       });
     }
@@ -398,7 +398,7 @@ export class PlayArea {
         let initializedCard = initializeCardMesh(card, clientId);
         playArea.battlefieldZone.addCard(initializedCard, {
           skipAnimation: true,
-          position: new Vector3(100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125),
+          positionArray: [100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125],
         });
       });
     }

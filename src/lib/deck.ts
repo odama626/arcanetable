@@ -4,9 +4,9 @@ import { animateObject, queueAnimationGroup } from './animations';
 import { getSearchLine, getSerializableCard, setCardData } from './card';
 import { Card, CARD_THICKNESS, CARD_WIDTH } from './constants';
 import { deck as deckParser } from './deckParser';
-import { cardsById, expect, zonesById } from './globals';
+import { CardZone, expect, zonesById } from './globals';
 
-export class Deck {
+export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;
   public isTopPublic = false;
   public id: string;
@@ -128,8 +128,12 @@ export class Deck {
     });
   }
 
-  addCard(card: Card) {
-    return this.addCardTop(card);
+  addCard(card: Card, { location = 'top' } = {}) {
+    if (location === 'top') {
+      return this.addCardTop(card);
+    } else {
+      return this.addCardBottom(card);
+    }
   }
 
   async shuffle(order?: number[]) {

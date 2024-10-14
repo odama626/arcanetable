@@ -10,6 +10,7 @@ import {
 import { Card } from '../constants';
 import {
   cardsById,
+  doAfter,
   doXTimes,
   hoverSignal,
   playAreas,
@@ -20,6 +21,7 @@ import {
   zonesById,
 } from '../globals';
 import styles from './peekMenu.module.css';
+import { transferCard } from '../transferCard';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -33,56 +35,32 @@ const PeekMenu: Component = props => {
   const [viewField, setViewField] = createSignal(false);
 
   function drawAfterRevealing(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().addToHand(card);
+    drawWithoutRevealing(card);
     playArea().reveal(card);
-    if (!playArea().peekZone.cards.length) {
-      setHoverSignal();
-    }
   }
 
   function drawWithoutRevealing(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().addToHand(card);
-    if (!playArea().peekZone.cards.length) {
-      setHoverSignal();
-    }
+    transferCard(card, playArea().peekZone, playArea().hand);
   }
 
   function discard(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().destroy(card.mesh);
-    if (!playArea().peekZone.cards.length) {
-      setHoverSignal();
-    }
+    transferCard(card, playArea().peekZone, playArea().graveyardZone);
   }
 
   function exile(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().exileCard(card.mesh);
-    if (!playArea().peekZone.cards.length) {
-      setHoverSignal();
-    }
+    transferCard(card, playArea().peekZone, playArea().exileZone);
   }
 
   function topOfDeck(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().addCardTopDeck(card);
-    setHoverSignal();
+    transferCard(card, playArea().peekZone, playArea().deck);
   }
 
   function bottomOfDeck(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().addCardBottomDeck(card);
-    setHoverSignal();
+    transferCard(card, playArea().peekZone, playArea().deck, { location: 'bottom' });
   }
 
   function battlefield(card: Card) {
-    playArea().peekZone.removeCard(card.mesh);
-    playArea().addToBattlefield(card);
-    if (!playArea().peekZone.cards.length) {
-      setHoverSignal();
-    }
+    transferCard(card, playArea().peekZone, playArea().battlefieldZone);
   }
 
   return (
@@ -126,17 +104,14 @@ const PeekMenu: Component = props => {
                 <MenubarMenu>
                   <MenubarItem
                     onClick={async () => {
-                      function doOne() {
+                      await doXTimes(cardCount(), () => {
                         let card = playArea().peekZone.cards[0];
-                        playArea().peekZone.removeCard(card.mesh);
-                        playArea().addCardBottomDeck(card);
-                        if (playArea().peekZone.cards.length) {
-                          setTimeout(doOne, 50);
-                        } else {
-                          setTimeout(() => playArea().shuffleDeck(), 100);
-                        }
-                      }
-                      doOne();
+                        transferCard(card, playArea().peekZone, playArea().deck, {
+                          location: 'bottom',
+                        });
+                      });
+                      await doAfter(100, () => playArea().shuffleDeck());
+
                       setHoverSignal();
                     }}>
                     Shuffle into deck

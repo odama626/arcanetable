@@ -6,7 +6,6 @@ import { cloneCard, createCardGeometry, setCardData } from './lib/card';
 import { Card } from './lib/constants';
 import {
   cardsById,
-  doXTimes,
   expect,
   gameLog,
   logs,
@@ -57,7 +56,8 @@ export async function processEvents() {
         let event = events.shift();
         addLogMessage(event);
         if (event.clientID === provider.awareness.clientID) break;
-        await handleEvent(event);
+        let playArea = playAreas.get(event.clientID);
+        await handleEvent(event, playArea);
         if (events.length > 0) {
           await new Promise(resolve => setTimeout(resolve, timing));
         }
@@ -68,10 +68,10 @@ export async function processEvents() {
   }
 }
 
-export async function handleEvent(event) {
+export async function handleEvent(event, playArea) {
   console.log(event);
   expect(!!EVENTS[event.type], `${event.type} not implemented`);
-  let playArea = playAreas.get(event.clientID);
+  // let playArea = playAreas.get(event.clientID);
   let card = cardsById.get(event.payload?.userData?.id);
   await EVENTS[event.type](event, playArea, card);
 }
@@ -142,9 +142,10 @@ const EVENTS = {
     let fromZone = zonesById.get(event.payload.fromZoneId);
     let toZone = zonesById.get(event.payload.toZoneId);
     await fromZone?.removeCard(card.mesh);
-    let p = event?.payload?.addOptions?.position;
-    let position = p ? new Vector3(p.x, p.y, p.z) : undefined;
-    await toZone?.addCard(card, { position });
+
+    let { skipAnimation, ...addOptions } = event.payload.addOptions;
+
+    await toZone?.addCard(card, addOptions);
   },
   createCard(event: Event, playArea: PlayArea) {
     let card = structuredClone(event.payload.userData.card);

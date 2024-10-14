@@ -51,7 +51,7 @@ export class CardStack implements CardZone {
     });
   }
 
-  addCard(card: Card, { skipAnimation } = {}) {
+  addCard(card: Card, { skipAnimation = false } = {}) {
     if (!card) return;
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);

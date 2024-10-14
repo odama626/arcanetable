@@ -11,6 +11,7 @@ import {
   getProjectionVec,
   isVectorEqual,
   peekFilterText,
+  setHoverSignal,
   setScrollTarget,
   zonesById,
 } from './globals';
@@ -284,6 +285,7 @@ export class CardGrid implements CardZone {
 
     if (this.cards.length < 1) {
       setCardGridStore('active', false);
+      setHoverSignal();
     }
     if (this.filteredCards) {
       this.filteredCards = this.filteredCards.filter(card => card.id !== cardMesh.userData.id);
