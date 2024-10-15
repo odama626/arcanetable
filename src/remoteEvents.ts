@@ -6,7 +6,6 @@ import { cloneCard, createCardGeometry, setCardData } from './lib/card';
 import { Card } from './lib/constants';
 import {
   cardsById,
-  doXTimes,
   expect,
   gameLog,
   logs,
@@ -57,7 +56,8 @@ export async function processEvents() {
         let event = events.shift();
         addLogMessage(event);
         if (event.clientID === provider.awareness.clientID) break;
-        await handleEvent(event);
+        let playArea = playAreas.get(event.clientID);
+        await handleEvent(event, playArea);
         if (events.length > 0) {
           await new Promise(resolve => setTimeout(resolve, timing));
         }
@@ -68,10 +68,9 @@ export async function processEvents() {
   }
 }
 
-export async function handleEvent(event) {
+export async function handleEvent(event, playArea) {
   console.log(event);
   expect(!!EVENTS[event.type], `${event.type} not implemented`);
-  let playArea = playAreas.get(event.clientID);
   let card = cardsById.get(event.payload?.userData?.id);
   await EVENTS[event.type](event, playArea, card);
 }
@@ -85,7 +84,6 @@ const EVENTS = {
     setPlayerCount(count => count + 1);
 
     console.log({ playerCount: playerCount() });
-    // playArea.mesh.rotateZ((Math.PI / 2) * playerCount);
     const rotation = PLAY_AREA_ROTATIONS[playerCount()];
     playArea.mesh.rotateZ(rotation);
   },
@@ -95,21 +93,6 @@ const EVENTS = {
   draw(event: Event, playArea: PlayArea) {
     playArea?.draw();
   },
-  addToHand(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToHand(card);
-  },
-  removeFromHand(event: Event, playArea: PlayArea, card: Card) {
-    playArea.removeFromHand(card.mesh);
-  },
-  addToBattlefield(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToBattlefield(card);
-  },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
     playArea.modifyCard(card);
@@ -117,34 +100,17 @@ const EVENTS = {
   createCounter(event: Event) {
     setCounters(counters => uniqBy([...counters, event.counter], 'id'));
   },
-  addCardBottomDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardBottomDeck(card);
-  },
-  addCardTopDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardTopDeck(card);
-  },
   animateObject(event: Event, _playArea: PlayArea, card: Card) {
     animateObject(card.mesh, event.payload.animation);
-  },
-  destroy(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.destroy(card.mesh);
   },
   async transferCard(event: Event, playArea: PlayArea, card: Card) {
     let fromZone = zonesById.get(event.payload.fromZoneId);
     let toZone = zonesById.get(event.payload.toZoneId);
     await fromZone?.removeCard(card.mesh);
-    let p = event?.payload?.addOptions?.position;
-    let position = p ? new Vector3(p.x, p.y, p.z) : undefined;
-    await toZone?.addCard(card, { position });
+
+    let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
+
+    await toZone?.addCard(card, addOptions);
   },
   createCard(event: Event, playArea: PlayArea) {
     let card = structuredClone(event.payload.userData.card);
@@ -172,9 +138,6 @@ const EVENTS = {
   clone(event: Event, playArea: PlayArea) {
     playArea?.clone(event.payload.id, event.payload.newId);
   },
-  peek(event: Event, playArea: PlayArea, card: Card) {
-    playArea.peek(card);
-  },
   reveal(event: Event, remotePlayArea: PlayArea, card: Card) {
     expect(!!card, 'card not found');
     let cardProxy = cloneCard(card, nanoid());
@@ -182,12 +145,6 @@ const EVENTS = {
     setCardData(cardProxy.mesh, 'isPublic', true);
     const playArea = playAreas.get(provider.awareness.clientID)!;
     playArea.reveal(cardProxy);
-  },
-  exileCard(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.exileCard(card.mesh);
   },
   deckFlipTop(event: Event, playArea: PlayArea) {
     playArea?.deckFlipTop(event.payload.toggle);

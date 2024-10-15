@@ -1,23 +1,17 @@
-import { Mesh } from 'three';
 import { expect, test } from 'vitest';
 import { Deck } from './deck';
 import { headlessInit } from './globals';
-import { renderAnimations } from './animations';
-
-function createDeckList() {
-  return new Array(20).fill(0).map((_, i) => ({ id: i, mesh: new Mesh() }));
-}
+import { createMockDecklist, useAnimations } from './testingUtils';
 
 headlessInit();
+useAnimations();
 
 test('deck sort', async () => {
-  const deck = new Deck(createDeckList());
-  const remoteDeck = new Deck(createDeckList());
+  const deck = new Deck(createMockDecklist());
+  const remoteDeck = new Deck(createMockDecklist());
 
   let order = await deck.shuffle();
   let secondOrder = await remoteDeck.shuffle(order);
-
-  renderAnimations(20000);
 
   expect(order).toEqual(secondOrder);
   expect(deck.cards.map(card => card.mesh.position.toArray())).toEqual(

@@ -308,9 +308,9 @@ function onDocumentDrop(event) {
     }
 
     let card = cardsById.get(target.userData.id);
-    let position = toZone?.mesh?.worldToLocal(intersection.point);
+    let position = toZone.mesh.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
-    await toZone.addCard(card, { skipAnimation: true, position });
+    await toZone.addCard(card, { skipAnimation: true, positionArray: position.toArray() });
 
     sendEvent({
       type: 'transferCard',
@@ -318,7 +318,7 @@ function onDocumentDrop(event) {
         userData: card?.mesh.userData,
         fromZoneId,
         toZoneId,
-        addOptions: { skipAnimation: true, position },
+        addOptions: { skipAnimation: true, positionArray: position.toArray() },
       },
     });
 

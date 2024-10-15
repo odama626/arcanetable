@@ -62,45 +62,21 @@ export function parseLogEntry(entry) {
     case 'transferCard': {
       let fromZone = zonesById.get(data.fromZoneId);
       let toZone = zonesById.get(data.toZoneId);
+      let destination = userData.location;
+      if (toZone?.mesh.userData.zone === 'deck' && entry.addOptions?.location === 'bottom')
+        destination = `Bottom of ${destination}`;
 
       return (
         <>
           moved <strong>{cardReference()}</strong> from{' '}
-          <strong>{fromZone?.mesh.userData.zone}</strong> to{' '}
-          <strong>{toZone?.mesh.userData.zone}</strong>
-        </>
-      );
-    }
-    case 'peek': {
-      return (
-        <>
-          peeked at <strong>{cardReference()}</strong> from{' '}
-          <strong>{userData?.previousLocation}</strong>
+          <strong>{fromZone?.mesh.userData.zone}</strong> to <strong>{destination}</strong>
         </>
       );
     }
     case 'animateObject':
-    case 'removeFromHand':
       return null;
     case 'tap':
       return `${userData.isTapped ? 'tapped' : 'untapped'} ${card.detail.name}`;
-    case 'addToHand':
-    case 'destroy':
-    case 'exileCard':
-    case 'addToBattlefield':
-      return (
-        <>
-          moved <strong>{cardReference()}</strong> from <strong>{userData.previousLocation}</strong>{' '}
-          to <strong>{userData.location}</strong>
-        </>
-      );
-    case 'addCardBottomDeck':
-      return (
-        <>
-          moved <strong>{cardReference()}</strong> from <strong>{userData.previousLocation}</strong>{' '}
-          to <strong>Bottom of {userData.location}</strong>
-        </>
-      );
     case 'shuffleDeck':
       return 'shuffled';
     case 'mulligan':

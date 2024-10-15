@@ -22,8 +22,11 @@ import {
 import { cardsById, COUNT_OPTIONS, doXTimes, setHoverSignal } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
+import { transferCard } from '../transferCard';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
+  let card = () => cardsById.get(props.cardMesh?.userData.id)!;
+
   return (
     <Menubar>
       <MenubarMenu overlap>
@@ -37,14 +40,14 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
           </MenubarItem>
           <MenubarItem
             onClick={() => {
-              props.playArea.destroy(props.cardMesh);
+              transferCard(card(), props.playArea.battlefieldZone, props.playArea.graveyardZone);
               setHoverSignal();
             }}>
             Destroy
           </MenubarItem>
           <MenubarItem
             onClick={() => {
-              props.playArea.exileCard(props.cardMesh);
+              transferCard(card(),props.playArea.battlefieldZone, props.playArea.exileZone)
               setHoverSignal();
             }}>
             Exile

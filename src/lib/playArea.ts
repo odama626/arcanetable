@@ -103,7 +103,7 @@ export class PlayArea {
         let card = initializeCardMesh(mesh.userData.card, clientId);
         this.battlefieldZone.addCard(card, {
           skipAnimation: true,
-          position: new Vector3().fromArray(mesh.position),
+          positionArray: mesh.position,
         });
       });
     }
@@ -160,21 +160,6 @@ export class PlayArea {
     this.emitEvent('draw');
   }
 
-  addToHand(card: Card) {
-    this.hand.addCard(card);
-    this.emitEvent('addToHand', { userData: card.mesh.userData });
-  }
-
-  addToBattlefield(card: Card) {
-    this.battlefieldZone.addCard(card);
-    this.emitEvent('addToBattlefield', { userData: card.mesh.userData });
-  }
-
-  removeFromHand(cardMesh: Mesh) {
-    this.hand.removeCard(cardMesh);
-    this.emitEvent('removeFromHand', { userData: cardMesh.userData });
-  }
-
   async mulligan(drawCount: number, existingOrder?: number[]) {
     let cardsInHand = this.hand.cards;
     await doXTimes(
@@ -196,16 +181,6 @@ export class PlayArea {
       },
       50
     );
-  }
-
-  peek(card?: Card) {
-    card = card ?? this.deck.draw()!;
-    this.peekZone.isPublic = false;
-    let previousZone = zonesById.get(card.mesh.userData.zoneId);
-    previousZone?.removeCard?.(card.mesh);
-    setCardData(card.mesh, 'isPublic', false);
-    this.peekZone.addCard(card);
-    this.emitEvent('peek', { userData: card.mesh.userData });
   }
 
   reveal(card: Card) {
@@ -259,12 +234,6 @@ export class PlayArea {
     this.emitEvent('deckFlipTop', { toggle, userData: card.mesh.userData });
   }
 
-  destroyTopDeck() {
-    let card = this.deck.draw();
-    if (!card) throw new Error('no card to draw');
-    this.destroy(card.mesh);
-  }
-
   async shuffleDeck(existingOrder?: number[]) {
     let order = await this.deck.shuffle(existingOrder);
     this.emitEvent('shuffleDeck', { order });
@@ -304,16 +273,6 @@ export class PlayArea {
     }
   }
 
-  addCardTopDeck(card: Card) {
-    this.deck.addCardTop(card);
-    this.emitEvent('addCardTopDeck', { userData: card.mesh.userData });
-  }
-
-  addCardBottomDeck(card: Card) {
-    this.deck.addCardBottom(card);
-    this.emitEvent('addCardBottomDeck', { userData: card.mesh.userData });
-  }
-
   tap(cardMesh: Mesh) {
     return new Promise<void>(onComplete => {
       let angleDelta = cardMesh.userData.isTapped ? 0 : -Math.PI / 2;
@@ -340,27 +299,6 @@ export class PlayArea {
     let card = cardsById.get(id)!;
     let newCard = cloneCard(card, newId);
     card.mesh.parent?.add(newCard.mesh);
-  }
-
-  destroy(cardMesh: Mesh) {
-    let card = cardsById.get(cardMesh.userData.id)!;
-    let zone = zonesById.get(cardMesh.userData.zoneId);
-
-    // if (zone?.removeCard) zone.removeCard(card.mesh);
-    this.graveyardZone.addCard(card);
-    this.emitEvent('destroy', { userData: cardMesh.userData });
-  }
-
-  exileTopDeck() {
-    let card = this.deck.draw();
-    if (!card) throw new Error('no card to draw');
-    this.exileCard(card.mesh);
-  }
-
-  exileCard(cardMesh: Mesh) {
-    this.emitEvent('exileCard', { userData: cardMesh.userData });
-    let card = cardsById.get(cardMesh.userData.id)!;
-    this.exileZone.addCard(card);
   }
 
   getLocalState(): State {
@@ -398,7 +336,7 @@ export class PlayArea {
         let initializedCard = initializeCardMesh(card, clientId);
         playArea.battlefieldZone.addCard(initializedCard, {
           skipAnimation: true,
-          position: new Vector3(100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125),
+          positionArray: [100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125],
         });
       });
     }

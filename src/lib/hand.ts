@@ -45,7 +45,7 @@ export class Hand implements CardZone {
     };
   }
 
-  addCard(card: Card, { skipAnimation } = {}) {
+  addCard(card: Card, { skipAnimation = false } = {}) {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
