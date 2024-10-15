@@ -71,7 +71,6 @@ export async function processEvents() {
 export async function handleEvent(event, playArea) {
   console.log(event);
   expect(!!EVENTS[event.type], `${event.type} not implemented`);
-  // let playArea = playAreas.get(event.clientID);
   let card = cardsById.get(event.payload?.userData?.id);
   await EVENTS[event.type](event, playArea, card);
 }
@@ -85,7 +84,6 @@ const EVENTS = {
     setPlayerCount(count => count + 1);
 
     console.log({ playerCount: playerCount() });
-    // playArea.mesh.rotateZ((Math.PI / 2) * playerCount);
     const rotation = PLAY_AREA_ROTATIONS[playerCount()];
     playArea.mesh.rotateZ(rotation);
   },
@@ -95,20 +93,8 @@ const EVENTS = {
   draw(event: Event, playArea: PlayArea) {
     playArea?.draw();
   },
-  addToHand(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToHand(card);
-  },
   removeFromHand(event: Event, playArea: PlayArea, card: Card) {
     playArea.removeFromHand(card.mesh);
-  },
-  addToBattlefield(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addToBattlefield(card);
   },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
@@ -116,18 +102,6 @@ const EVENTS = {
   },
   createCounter(event: Event) {
     setCounters(counters => uniqBy([...counters, event.counter], 'id'));
-  },
-  addCardBottomDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardBottomDeck(card);
-  },
-  addCardTopDeck(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea.addCardTopDeck(card);
   },
   animateObject(event: Event, _playArea: PlayArea, card: Card) {
     animateObject(card.mesh, event.payload.animation);
@@ -143,7 +117,7 @@ const EVENTS = {
     let toZone = zonesById.get(event.payload.toZoneId);
     await fromZone?.removeCard(card.mesh);
 
-    let { skipAnimation, ...addOptions } = event.payload.addOptions;
+    let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
 
     await toZone?.addCard(card, addOptions);
   },

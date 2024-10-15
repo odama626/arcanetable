@@ -160,16 +160,6 @@ export class PlayArea {
     this.emitEvent('draw');
   }
 
-  addToHand(card: Card) {
-    this.hand.addCard(card);
-    this.emitEvent('addToHand', { userData: card.mesh.userData });
-  }
-
-  addToBattlefield(card: Card) {
-    this.battlefieldZone.addCard(card);
-    this.emitEvent('addToBattlefield', { userData: card.mesh.userData });
-  }
-
   removeFromHand(cardMesh: Mesh) {
     this.hand.removeCard(cardMesh);
     this.emitEvent('removeFromHand', { userData: cardMesh.userData });
@@ -302,16 +292,6 @@ export class PlayArea {
         to: focusCameraTarget,
       });
     }
-  }
-
-  addCardTopDeck(card: Card) {
-    this.deck.addCardTop(card);
-    this.emitEvent('addCardTopDeck', { userData: card.mesh.userData });
-  }
-
-  addCardBottomDeck(card: Card) {
-    this.deck.addCardBottom(card);
-    this.emitEvent('addCardBottomDeck', { userData: card.mesh.userData });
   }
 
   tap(cardMesh: Mesh) {
