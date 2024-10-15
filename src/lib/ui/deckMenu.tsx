@@ -12,12 +12,25 @@ import {
 } from '~/components/ui/menubar';
 import { COUNT_OPTIONS, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
+import { transferCard } from '../transferCard';
 
 const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   function getNextLandIndex() {
     return props.playArea.deck.cards.findIndex(card =>
       card.detail.type_line.toLowerCase().includes('land')
     );
+  }
+
+  function discardTopDeck() {
+    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.graveyardZone);
+  }
+
+  function exileTopDeck() {
+    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.exileZone);
+  }
+
+  function peekTopDeck() {
+    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.peekZone);
   }
 
   return (
@@ -40,66 +53,54 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
-            <MenubarSubTrigger onClick={() => props.playArea.destroyTopDeck()}>
-              Discard
-            </MenubarSubTrigger>
+            <MenubarSubTrigger onClick={discardTopDeck}>Discard</MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
                   <MenubarItem
                     closeOnSelect={false}
-                    onClick={() => doXTimes(value, () => props.playArea.destroyTopDeck())}>
+                    onClick={() => doXTimes(value, discardTopDeck)}>
                     {value}
                   </MenubarItem>
                 )}
               </For>
               <MenubarItem
                 closeOnSelect={false}
-                onClick={() =>
-                  doXTimes(getNextLandIndex() + 1, () => props.playArea.destroyTopDeck())
-                }>
+                onClick={() => doXTimes(getNextLandIndex() + 1, discardTopDeck)}>
                 To next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
-            <MenubarSubTrigger onClick={() => props.playArea.exileTopDeck()}>
-              Exile
-            </MenubarSubTrigger>
+            <MenubarSubTrigger onClick={exileTopDeck}>Exile</MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() => doXTimes(value, () => props.playArea.exileTopDeck())}>
+                  <MenubarItem closeOnSelect={false} onClick={() => doXTimes(value, exileTopDeck)}>
                     {value}
                   </MenubarItem>
                 )}
               </For>
               <MenubarItem
                 closeOnSelect={false}
-                onClick={() =>
-                  doXTimes(getNextLandIndex() + 1, () => props.playArea.exileTopDeck())
-                }>
+                onClick={() => doXTimes(getNextLandIndex() + 1, exileTopDeck)}>
                 To next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub>
-            <MenubarSubTrigger onClick={() => props.playArea.peek()}>Peek</MenubarSubTrigger>
+            <MenubarSubTrigger onClick={peekTopDeck}>Peek</MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() => doXTimes(value, () => props.playArea.peek())}>
+                  <MenubarItem closeOnSelect={false} onClick={() => doXTimes(value, peekTopDeck)}>
                     {value}
                   </MenubarItem>
                 )}
               </For>
               <MenubarItem
                 onClick={() => {
-                  doXTimes(props.playArea.deck.cards.length, () => props.playArea.peek(), 50);
+                  doXTimes(props.playArea.deck.cards.length, peekTopDeck, 50);
                 }}>
                 All
               </MenubarItem>
@@ -115,8 +116,8 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
                     onClick={() =>
                       doXTimes(value, () => {
                         let card = props.playArea.deck.cards[0];
-                        props.playArea.peek();
                         props.playArea.reveal(card);
+                        peekTopDeck();
                       })
                     }>
                     {value}
@@ -129,8 +130,8 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
                     props.playArea.deck.cards.length,
                     () => {
                       let card = props.playArea.deck.cards[0];
-                      props.playArea.peek();
                       props.playArea.reveal(card);
+                      peekTopDeck();
                     },
                     50
                   );

@@ -147,9 +147,6 @@ const EVENTS = {
   clone(event: Event, playArea: PlayArea) {
     playArea?.clone(event.payload.id, event.payload.newId);
   },
-  peek(event: Event, playArea: PlayArea, card: Card) {
-    playArea.peek(card);
-  },
   reveal(event: Event, remotePlayArea: PlayArea, card: Card) {
     expect(!!card, 'card not found');
     let cardProxy = cloneCard(card, nanoid());

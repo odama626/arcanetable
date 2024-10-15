@@ -63,25 +63,17 @@ export function parseLogEntry(entry) {
       let fromZone = zonesById.get(data.fromZoneId);
       let toZone = zonesById.get(data.toZoneId);
       let destination = userData.location;
-      if (toZone?.mesh.userData.zone === 'deck' && entry.addOptions.location === 'bottom')
+      if (toZone?.mesh.userData.zone === 'deck' && entry.addOptions?.location === 'bottom')
         destination = `Bottom of ${destination}`;
 
       return (
         <>
           moved <strong>{cardReference()}</strong> from{' '}
-          <strong>{fromZone?.mesh.userData.zone}</strong> to{' '}
-          <strong>{destination}</strong>
+          <strong>{fromZone?.mesh.userData.zone}</strong> to <strong>{destination}</strong>
         </>
       );
     }
-    case 'peek': {
-      return (
-        <>
-          peeked at <strong>{cardReference()}</strong> from{' '}
-          <strong>{userData?.previousLocation}</strong>
-        </>
-      );
-    }
+
     case 'animateObject':
     case 'removeFromHand':
       return null;

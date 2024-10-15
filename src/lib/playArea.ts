@@ -188,15 +188,7 @@ export class PlayArea {
     );
   }
 
-  peek(card?: Card) {
-    card = card ?? this.deck.draw()!;
-    this.peekZone.isPublic = false;
-    let previousZone = zonesById.get(card.mesh.userData.zoneId);
-    previousZone?.removeCard?.(card.mesh);
-    setCardData(card.mesh, 'isPublic', false);
-    this.peekZone.addCard(card);
-    this.emitEvent('peek', { userData: card.mesh.userData });
-  }
+
 
   reveal(card: Card) {
     if (provider.awareness.clientID !== card?.mesh.userData.clientId) {
@@ -247,12 +239,6 @@ export class PlayArea {
   async deckFlipTop(toggle = false) {
     let card = await this.deck.flipTop(toggle);
     this.emitEvent('deckFlipTop', { toggle, userData: card.mesh.userData });
-  }
-
-  destroyTopDeck() {
-    let card = this.deck.draw();
-    if (!card) throw new Error('no card to draw');
-    this.destroy(card.mesh);
   }
 
   async shuffleDeck(existingOrder?: number[]) {
@@ -329,12 +315,6 @@ export class PlayArea {
     // if (zone?.removeCard) zone.removeCard(card.mesh);
     this.graveyardZone.addCard(card);
     this.emitEvent('destroy', { userData: cardMesh.userData });
-  }
-
-  exileTopDeck() {
-    let card = this.deck.draw();
-    if (!card) throw new Error('no card to draw');
-    this.exileCard(card.mesh);
   }
 
   exileCard(cardMesh: Mesh) {

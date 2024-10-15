@@ -107,7 +107,7 @@ const Overlay: Component = () => {
         </div>
       </Show>
       <div class={styles.mainMenu}>
-        <Menubar style='height: auto; white-space: nowrap;' class='flex-col'>
+        <Menubar style='height: auto; white-space: nowrap;' class={`${styles.menu} flex-col`}>
           <MenubarMenu>
             <MenubarItem
               class='w-full flex justify-center'
