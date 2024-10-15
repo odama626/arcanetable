@@ -160,11 +160,6 @@ export class PlayArea {
     this.emitEvent('draw');
   }
 
-  removeFromHand(cardMesh: Mesh) {
-    this.hand.removeCard(cardMesh);
-    this.emitEvent('removeFromHand', { userData: cardMesh.userData });
-  }
-
   async mulligan(drawCount: number, existingOrder?: number[]) {
     let cardsInHand = this.hand.cards;
     await doXTimes(
@@ -187,8 +182,6 @@ export class PlayArea {
       50
     );
   }
-
-
 
   reveal(card: Card) {
     if (provider.awareness.clientID !== card?.mesh.userData.clientId) {
@@ -306,21 +299,6 @@ export class PlayArea {
     let card = cardsById.get(id)!;
     let newCard = cloneCard(card, newId);
     card.mesh.parent?.add(newCard.mesh);
-  }
-
-  destroy(cardMesh: Mesh) {
-    let card = cardsById.get(cardMesh.userData.id)!;
-    let zone = zonesById.get(cardMesh.userData.zoneId);
-
-    // if (zone?.removeCard) zone.removeCard(card.mesh);
-    this.graveyardZone.addCard(card);
-    this.emitEvent('destroy', { userData: cardMesh.userData });
-  }
-
-  exileCard(cardMesh: Mesh) {
-    this.emitEvent('exileCard', { userData: cardMesh.userData });
-    let card = cardsById.get(cardMesh.userData.id)!;
-    this.exileZone.addCard(card);
   }
 
   getLocalState(): State {

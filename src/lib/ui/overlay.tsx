@@ -1,5 +1,6 @@
 import { createEffect, createSignal, For, Match, Show, Switch, type Component } from 'solid-js';
 
+import { Mesh } from 'three';
 import { Menubar, MenubarItem, MenubarMenu } from '../../components/ui/menubar';
 import {
   cardsById,
@@ -11,6 +12,7 @@ import {
   players,
   provider,
 } from '../globals';
+import { transferCard } from '../transferCard';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
@@ -114,7 +116,7 @@ const Overlay: Component = () => {
               onClick={() => {
                 let tappedCards = playArea().battlefieldZone.mesh.children.filter(
                   mesh => mesh.userData.isTapped
-                );
+                ) as Mesh[];
 
                 tappedCards.forEach(card => playArea().tap(card));
               }}>
@@ -131,9 +133,7 @@ const Overlay: Component = () => {
                 let cards = playArea().hand.cards;
                 doXTimes(cards.length, () => {
                   let card = playArea().hand.cards[0];
-
-                  playArea().removeFromHand(card.mesh);
-                  playArea().destroy(card.mesh);
+                  transferCard(card, playArea().hand, playArea().graveyardZone);
                 });
               }}>
               Discard Hand
@@ -145,8 +145,7 @@ const Overlay: Component = () => {
                 doXTimes(cards.length, () => {
                   let card = playArea().hand.cards[0];
 
-                  playArea().removeFromHand(card.mesh);
-                  playArea().exileCard(card.mesh);
+                  transferCard(card, playArea().hand, playArea().exileZone);
                 });
               }}>
               Exile Hand

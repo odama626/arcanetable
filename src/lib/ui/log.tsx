@@ -73,20 +73,10 @@ export function parseLogEntry(entry) {
         </>
       );
     }
-
     case 'animateObject':
-    case 'removeFromHand':
       return null;
     case 'tap':
       return `${userData.isTapped ? 'tapped' : 'untapped'} ${card.detail.name}`;
-    case 'destroy':
-    case 'exileCard':
-      return (
-        <>
-          moved <strong>{cardReference()}</strong> from <strong>{userData.previousLocation}</strong>{' '}
-          to <strong>{userData.location}</strong>
-        </>
-      );
     case 'shuffleDeck':
       return 'shuffled';
     case 'mulligan':

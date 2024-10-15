@@ -93,9 +93,6 @@ const EVENTS = {
   draw(event: Event, playArea: PlayArea) {
     playArea?.draw();
   },
-  removeFromHand(event: Event, playArea: PlayArea, card: Card) {
-    playArea.removeFromHand(card.mesh);
-  },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
     playArea.modifyCard(card);
@@ -105,12 +102,6 @@ const EVENTS = {
   },
   animateObject(event: Event, _playArea: PlayArea, card: Card) {
     animateObject(card.mesh, event.payload.animation);
-  },
-  destroy(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.destroy(card.mesh);
   },
   async transferCard(event: Event, playArea: PlayArea, card: Card) {
     let fromZone = zonesById.get(event.payload.fromZoneId);
@@ -154,12 +145,6 @@ const EVENTS = {
     setCardData(cardProxy.mesh, 'isPublic', true);
     const playArea = playAreas.get(provider.awareness.clientID)!;
     playArea.reveal(cardProxy);
-  },
-  exileCard(event: Event, playArea: PlayArea, card: Card) {
-    if (card.mesh.userData.location === 'peek') {
-      playArea.peekZone.removeCard(card.mesh);
-    }
-    playArea?.exileCard(card.mesh);
   },
   deckFlipTop(event: Event, playArea: PlayArea) {
     playArea?.deckFlipTop(event.payload.toggle);
