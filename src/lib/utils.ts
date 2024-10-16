@@ -4,6 +4,7 @@ import { get, set } from 'lodash-es';
 import { twMerge } from 'tailwind-merge';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { CARD_WIDTH } from './constants';
+import { provider } from './globals';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -60,7 +61,10 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
   let worldDirection = target.getWorldDirection(new Vector3());
   let rotation = getGlobalRotation(target);
 
-  if (target.userData.isFlipped) {
+  let isOwner = target.userData.clientId === provider.awareness.clientID;
+  let isDoubleSided = target.userData.isDoubleSided;
+
+  if (target.userData.isFlipped && !(isOwner && !isDoubleSided)) {
     worldDirection.multiply(new Vector3(-1, -1, -1));
     rotation.y += Math.PI;
     rotation.z *= -1;

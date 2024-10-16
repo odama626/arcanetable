@@ -136,7 +136,7 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
   }
 
   if (cardMesh.userData.location === 'battlefield') {
-    if (cardMesh.userData.isPublic) {
+    if (!cardMesh.userData.isFlipped) {
       if (cardMesh.userData.isTapped) {
         targetVertex = 15;
       } else {

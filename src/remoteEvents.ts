@@ -109,6 +109,9 @@ const EVENTS = {
     await fromZone?.removeCard(card.mesh);
 
     let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
+    if (event.payload.cardUserData) {
+      Object.assign(card.mesh.userData, event.payload.cardUserData);
+    }
 
     await toZone?.addCard(card, addOptions);
   },

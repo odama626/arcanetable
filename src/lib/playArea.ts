@@ -17,6 +17,7 @@ import { Card, CARD_HEIGHT, CARD_WIDTH, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import { cardsById, doXTimes, focusCamera, provider } from './globals';
 import { Hand } from './hand';
+import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
 
 interface RemoteZoneState {
@@ -194,9 +195,7 @@ export class PlayArea {
           let card = cardsById.get(child.userData.id);
 
           setTimeout(() => {
-            this.graveyardZone.removeCard(card.mesh);
-            this.peekZone.addCard(card);
-            this.emitEvent('peek', { userData: card?.mesh.userData });
+            transferCard(card, this.graveyardZone, this.peekZone);
             resolve();
           }, (this.graveyardZone.mesh.children.length - i) * 50);
         });
@@ -213,9 +212,7 @@ export class PlayArea {
           let card = cardsById.get(child.userData.id);
 
           setTimeout(() => {
-            this.exileZone.removeCard(card.mesh);
-            this.peekZone.addCard(card);
-            this.emitEvent('peek', { userData: card?.mesh.userData });
+            transferCard(card, this.exileZone, this.peekZone);
             resolve();
           }, (this.exileZone.mesh.children.length - i) * 50);
         });

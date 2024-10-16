@@ -5,14 +5,18 @@ export async function transferCard<AddOptions>(
   card: Card,
   fromZone: CardZone<any>,
   toZone: CardZone<AddOptions>,
-  addOptions?: AddOptions
+  addOptions?: AddOptions,
+  cardUserData?: any
 ) {
   await fromZone.removeCard?.(card.mesh);
   if (card.mesh.userData.isToken) {
     if (toZone.zone !== 'battlefield') {
-      console.log('destroy');
       addOptions.destroy = true;
     }
+  }
+
+  if (cardUserData) {
+    Object.assign(card.mesh.userData, cardUserData);
   }
   await toZone.addCard(card, addOptions);
 
@@ -23,6 +27,7 @@ export async function transferCard<AddOptions>(
       fromZoneId: fromZone.id,
       toZoneId: toZone.id,
       addOptions,
+      cardUserData,
     },
   });
 }

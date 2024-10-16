@@ -22,6 +22,7 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
+import MoveMenu from './moveMenu';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -127,36 +128,18 @@ const Overlay: Component = () => {
               onClick={() => playArea().openTokenMenu()}>
               Add Tokens
             </MenubarItem>
-            <MenubarItem
-              class='w-full flex justify-center'
-              onClick={() => {
-                let cards = playArea().hand.cards;
-                doXTimes(cards.length, () => {
-                  let card = playArea().hand.cards[0];
-                  transferCard(card, playArea().hand, playArea().graveyardZone);
-                });
-              }}>
-              Discard Hand
-            </MenubarItem>
-            <MenubarItem
-              class='w-full flex justify-center'
-              onClick={() => {
-                let cards = playArea().hand.cards;
-                doXTimes(cards.length, () => {
-                  let card = playArea().hand.cards[0];
-
-                  transferCard(card, playArea().hand, playArea().exileZone);
-                });
-              }}>
-              Exile Hand
-            </MenubarItem>
-            <MenubarItem
-              class='w-full flex justify-center'
-              onClick={() => {
-                playArea().hand.cards.forEach(card => playArea().reveal(card));
-              }}>
-              Reveal Hand
-            </MenubarItem>
+            <MoveMenu
+              text='Move Battlefield To'
+              cards={playArea().battlefieldZone.cards}
+              playArea={playArea()}
+              fromZone={playArea().battlefieldZone}
+            />
+            <MoveMenu
+              text='Move Hand To'
+              cards={playArea().hand.cards}
+              playArea={playArea()}
+              fromZone={playArea().hand}
+            />
             <MenubarItem onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}
             </MenubarItem>

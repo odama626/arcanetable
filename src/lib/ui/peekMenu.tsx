@@ -23,6 +23,7 @@ import {
 import styles from './peekMenu.module.css';
 import { transferCard } from '../transferCard';
 import { Button } from '~/components/ui/button';
+import MoveMenu from './moveMenu';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -44,26 +45,6 @@ const PeekMenu: Component = props => {
     transferCard(card, playArea().peekZone, playArea().hand);
   }
 
-  function discard(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().graveyardZone);
-  }
-
-  function exile(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().exileZone);
-  }
-
-  function topOfDeck(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().deck);
-  }
-
-  function bottomOfDeck(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().deck, { location: 'bottom' });
-  }
-
-  function battlefield(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().battlefieldZone);
-  }
-
   return (
     <>
       <Show when={location() === 'peek' && isOwner()}>
@@ -83,14 +64,12 @@ const PeekMenu: Component = props => {
                   onClick={() => drawWithoutRevealing(card())}>
                   Draw
                 </Button>
-                <MenubarTrigger class='whitespace-nowrap'>Move To</MenubarTrigger>
-                <MenubarContent>
-                  <MenubarItem onClick={() => discard(card())}>Discard</MenubarItem>
-                  <MenubarItem onClick={() => exile(card())}>Exile</MenubarItem>
-                  <MenubarItem onClick={() => topOfDeck(card())}>Top of Deck</MenubarItem>
-                  <MenubarItem onClick={() => bottomOfDeck(card())}>Bottom of Deck</MenubarItem>
-                  <MenubarItem onClick={() => battlefield(card())}>Battlefield</MenubarItem>
-                </MenubarContent>
+                <MoveMenu
+                  text='Move To'
+                  cards={[card()]}
+                  playArea={playArea()}
+                  fromZone={playArea().peekZone}
+                />
               </MenubarMenu>
             </Menubar>
           </div>
@@ -140,39 +119,12 @@ const PeekMenu: Component = props => {
                     }>
                     Draw All
                   </Button>
-                  <MenubarTrigger>Move All To</MenubarTrigger>
-                  <MenubarContent>
-                    <MenubarItem
-                      onClick={() =>
-                        doXTimes(cardCount(), () => discard(playArea().peekZone.cards[0]))
-                      }>
-                      Discard
-                    </MenubarItem>
-                    <MenubarItem
-                      onClick={() =>
-                        doXTimes(cardCount(), () => exile(playArea().peekZone.cards[0]))
-                      }>
-                      Exile
-                    </MenubarItem>
-                    <MenubarItem
-                      onClick={() =>
-                        doXTimes(cardCount(), () => topOfDeck(playArea().peekZone.cards[0]))
-                      }>
-                      Top of Deck
-                    </MenubarItem>
-                    <MenubarItem
-                      onClick={() =>
-                        doXTimes(cardCount(), () => bottomOfDeck(playArea().peekZone.cards[0]))
-                      }>
-                      Bottom of Deck
-                    </MenubarItem>
-                    <MenubarItem
-                      onClick={() =>
-                        doXTimes(cardCount(), () => battlefield(playArea().peekZone.cards[0]))
-                      }>
-                      Battlefield
-                    </MenubarItem>
-                  </MenubarContent>
+                  <MoveMenu
+                    text='Move All To'
+                    cards={playArea().peekZone.cards}
+                    playArea={playArea()}
+                    fromZone={playArea().peekZone}
+                  />
                   <Switch>
                     <Match when={viewField()}>
                       <Button

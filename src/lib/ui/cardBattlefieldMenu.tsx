@@ -19,10 +19,10 @@ import {
   NumberFieldIncrementTrigger,
   NumberFieldInput,
 } from '~/components/ui/number-field';
-import { cardsById, COUNT_OPTIONS, doXTimes, setHoverSignal } from '../globals';
+import { cardsById, COUNT_OPTIONS, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
-import { transferCard } from '../transferCard';
+import MoveMenu from './moveMenu';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   let card = () => cardsById.get(props.cardMesh?.userData.id)!;
@@ -37,20 +37,6 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
               props.playArea.flip(props.cardMesh);
             }}>
             Flip
-          </MenubarItem>
-          <MenubarItem
-            onClick={() => {
-              transferCard(card(), props.playArea.battlefieldZone, props.playArea.graveyardZone);
-              setHoverSignal();
-            }}>
-            Destroy
-          </MenubarItem>
-          <MenubarItem
-            onClick={() => {
-              transferCard(card(),props.playArea.battlefieldZone, props.playArea.exileZone)
-              setHoverSignal();
-            }}>
-            Exile
           </MenubarItem>
           <MenubarSub overlap>
             <MenubarSubTrigger>Counters</MenubarSubTrigger>
@@ -121,6 +107,14 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
             </MenubarSubContent>
           </MenubarSub>
         </MenubarContent>
+      </MenubarMenu>
+      <MenubarMenu>
+        <MoveMenu
+          text='Move To'
+          cards={[card()]}
+          fromZone={props.playArea.battlefieldZone}
+          playArea={props.playArea}
+        />
       </MenubarMenu>
     </Menubar>
   );

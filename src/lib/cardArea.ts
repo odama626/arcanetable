@@ -18,6 +18,7 @@ import { getGlobalRotation } from './utils';
 
 export class CardArea implements CardZone<{ positionArray?: [number, number, number] }> {
   public mesh: Mesh;
+  public cards: Card[];
 
   constructor(public zone: string, public id: string = nanoid()) {
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
@@ -25,6 +26,7 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    this.cards = [];
     // this.mesh.position.set(12.5, -65, 0);
     this.mesh.position.setY(-50);
     this.mesh.receiveShadow = true;
@@ -67,15 +69,21 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     setCardData(card.mesh, 'isInteractive', true);
     setCardData(card.mesh, 'isInGrid', false);
     this.mesh.add(card.mesh);
+    this.cards.push(card);
 
     let initialRotation = card.mesh.rotation;
     if (card.mesh.parent) {
       initialRotation = new Euler().setFromQuaternion(card.mesh.parent.quaternion.invert());
     }
 
+    let rotation = new Euler();
+    if (card.mesh.userData.isFlipped) {
+      rotation.y += Math.PI;
+    }
+
     if (skipAnimation) {
       card.mesh.position.copy(position);
-      card.mesh.rotation.set(0, 0, 0);
+      card.mesh.rotation.copy(rotation);
     } else {
       animateObject(card.mesh, {
         duration: 0.2,
@@ -84,7 +92,7 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
           position: initialPosition,
         },
         to: {
-          rotation: new Euler(),
+          rotation,
           position,
         },
       });
@@ -100,6 +108,8 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
     this.mesh.remove(cardMesh);
+    let index = this.cards.findIndex(c => c.id === cardMesh.userData.id);
+    this.cards.splice(index, 1);
   }
 
   getSerializable() {
