@@ -1,4 +1,4 @@
-import { Mesh } from 'three';
+import { Mesh, Object3D } from 'three';
 
 export const CARD_WIDTH = 63 / 4;
 export const CARD_HEIGHT = 88 / 4;
@@ -21,4 +21,11 @@ export interface SerializableCard {
   position: [number, number, number];
   rotation: [number, number, number];
 }
-
+export interface CardZone<AddOptions = {} & { skipAnimation?: boolean; destroy?: boolean }> {
+  id: string;
+  zone: string;
+  mesh: Object3D;
+  removeCard(cardMesh: Mesh): void;
+  addCard(card: Card, opts?: AddOptions): void;
+  getSerializable(): { id: string };
+}

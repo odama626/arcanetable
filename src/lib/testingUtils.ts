@@ -1,5 +1,7 @@
+import { Mesh } from 'three';
 import { beforeEach } from 'vitest';
 import { renderAnimations } from './animations';
+import { Card } from './constants';
 import { clock, expect } from './globals';
 import { Mesh } from 'three';
 import { Card } from './constants';

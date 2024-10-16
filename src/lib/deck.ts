@@ -1,10 +1,10 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Mesh, Quaternion, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
-import { getSearchLine, getSerializableCard, setCardData } from './card';
-import { Card, CARD_THICKNESS, CARD_WIDTH } from './constants';
+import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
+import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
-import { CardZone, expect, zonesById } from './globals';
+import { expect, setHoverSignal, zonesById } from './globals';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;

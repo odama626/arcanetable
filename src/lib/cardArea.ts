@@ -12,8 +12,9 @@ import {
 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
-import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS } from './constants';
-import { CardZone, getGlobalRotation, zonesById } from './globals';
+import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './constants';
+import { zonesById } from './globals';
+import { getGlobalRotation } from './utils';
 
 export class CardArea implements CardZone<{ positionArray?: [number, number, number] }> {
   public mesh: Mesh;

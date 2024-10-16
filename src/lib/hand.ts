@@ -1,9 +1,10 @@
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { getSerializableCard, setCardData } from './card';
-import { Card } from './constants';
-import { cardsById, CardZone, getGlobalRotation, zonesById } from './globals';
+import { cleanupCard, getSerializableCard, setCardData } from './card';
+import { Card, CardZone } from './constants';
+import { cardsById, setHoverSignal, zonesById } from './globals';
+import { getGlobalRotation } from './utils';
 
 export class Hand implements CardZone {
   public mesh: Group;

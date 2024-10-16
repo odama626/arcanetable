@@ -12,8 +12,9 @@ import {
   Vector3,
 } from 'three';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
-import { cardsById, cleanupFromNode, getProjectionVec, scene, textureLoader } from './globals';
+import { cardsById, getProjectionVec, scene, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
+import { cleanupFromNode } from './utils';
 
 let cardBackTexture: Texture;
 let alphaMap: Texture;
@@ -159,7 +160,7 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
 }
 
 export function cleanupCard(card: card) {
-  card.mesh.geometry.dispose();
+  cleanupFromNode(card.mesh);
   cardsById.delete(card.id);
 }
 

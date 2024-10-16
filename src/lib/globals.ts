@@ -1,5 +1,3 @@
-import get from 'lodash-es/get';
-import set from 'lodash-es/set';
 import { createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import * as THREE from 'three';
@@ -7,13 +5,11 @@ import {
   ArrowHelper,
   BoxGeometry,
   Clock,
-  Euler,
   LoadingManager,
   Mesh,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
-  Quaternion,
   Raycaster,
   Scene,
   TextureLoader,
@@ -25,21 +21,14 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { Card, CARD_WIDTH } from './constants';
+import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
+import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
     console.error(message, ...supplemental);
     throw new Error(message);
   }
-}
-
-export interface CardZone<AddOptions = {} & { skipAnimation?: boolean }> {
-  id: string;
-  mesh: Object3D;
-  removeCard(cardMesh: Mesh): void;
-  addCard(card: Card, opts?: AddOptions): void;
-  getSerializable(): { id: string };
 }
 
 export let clock: Clock;
@@ -52,7 +41,7 @@ export let focusRenderer: WebGLRenderer;
 export let focusCamera: PerspectiveCamera;
 export let [hoverSignal, setHoverSignal] = createSignal();
 export let cardsById = new Map<string, Card>();
-export let zonesById = new Map<string, CardZone>();
+export let zonesById = new Map<string, CardZone<unknown>>();
 export let playAreas = new Map<number, PlayArea>();
 export let [peekFilterText, setPeekFilterText] = createSignal('');
 export const ydoc = new Doc();
@@ -176,69 +165,6 @@ export function sendEvent(event) {
   gameLog.push([event]);
 }
 
-export async function sha1(input) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
-export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vector3) {
-  let distance = 26;
-  let localOffset = new Vector3(target.userData.isFlipped ? -CARD_WIDTH / 2 : 0, -1, 0);
-
-  let targetWorldPosition = target.localToWorld(offset.clone().add(localOffset));
-  let worldDirection = target.getWorldDirection(new Vector3());
-  let rotation = getGlobalRotation(target);
-
-  if (target.userData.isFlipped) {
-    worldDirection.multiply(new Vector3(-1, -1, -1));
-    rotation.y += Math.PI;
-    rotation.z *= -1;
-  }
-
-  let position = targetWorldPosition.add(
-    worldDirection.multiply(new Vector3(distance, distance, distance))
-  );
-
-  return {
-    position,
-    rotation,
-  };
-}
-
-export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
-  if (focusCamera.userData.isAnimating) return;
-
-  let { position, rotation } = getFocusCameraPositionRelativeTo(target, offset);
-
-  focusCamera.position.copy(position);
-
-  focusCamera.lookAt(target.getWorldPosition(new Vector3()));
-  focusCamera.rotation.copy(rotation);
-}
-
-export function getProjectionVec(vec: Vector3) {
-  let canvas = renderer.domElement;
-  let projectionVec = vec.clone();
-  projectionVec.project(camera);
-  projectionVec.x = Math.round(
-    (0.5 + projectionVec.x / 2) * (canvas.width / window.devicePixelRatio)
-  );
-  projectionVec.y = Math.round(
-    (0.5 - projectionVec.y / 2) * (canvas.height / window.devicePixelRatio)
-  );
-  return projectionVec;
-}
-
-export function getGlobalRotation(mesh: Object3D) {
-  let initialQuart = new Quaternion();
-  mesh.getWorldQuaternion(initialQuart);
-  let euler = new Euler().setFromQuaternion(initialQuart);
-  return euler;
-}
-
 export function cleanup() {
   cardsById.clear();
   zonesById.clear();
@@ -258,44 +184,27 @@ export function cleanup() {
   focusRenderer.dispose();
   focusRenderer.domElement.remove();
 
-  cleanupFromNode(scene);
+  cleanupFromNode(scene, true);
 }
+export function getProjectionVec(vec: Vector3) {
+  let canvas = renderer.domElement;
+  let projectionVec = vec.clone();
+  projectionVec.project(camera);
+  projectionVec.x = Math.round(
+    (0.5 + projectionVec.x / 2) * (canvas.width / window.devicePixelRatio)
+  );
+  projectionVec.y = Math.round(
+    (0.5 - projectionVec.y / 2) * (canvas.height / window.devicePixelRatio)
+  );
+  return projectionVec;
+}
+export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
+  if (focusCamera.userData.isAnimating) return;
 
-export function cleanupFromNode(root: Object3D) {
-  root.traverse(object => {
-    if (!object.isMesh) return;
-    object.geometry.dispose();
-    if (object.material.isMaterial) {
-      cleanMaterial(object.material);
-    } else {
-      for (const material of object.material) cleanMaterial(material);
-    }
-    if (root !== scene) root.remove(object);
-  });
-}
-export function cleanMaterial(material: Material) {
-  material.dispose();
+  let { position, rotation } = getFocusCameraPositionRelativeTo(target, offset);
 
-  // dispose textures
-  for (const key of Object.keys(material)) {
-    const value = material[key];
-    if (value && typeof value === 'object' && 'minFilter' in value) {
-      value.dispose();
-    }
-  }
-}
-export function hydratePathWith<T>(obj: any, path: string[], hydrator: (value: any) => T) {
-  if (get(obj, path)) {
-    set(obj, path, hydrator(get(obj, path)));
-  }
-}
+  focusCamera.position.copy(position);
 
-export function isVectorEqual(a: Vector3, b: Vector3) {
-  if (!a || !b) return false;
-  let ab = a.toArray();
-  let bb = b.toArray();
-  for (let i in ab) {
-    if (ab[i] !== bb[i]) return false;
-  }
-  return true;
+  focusCamera.lookAt(target.getWorldPosition(new Vector3()));
+  focusCamera.rotation.copy(rotation);
 }

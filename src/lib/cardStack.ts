@@ -11,9 +11,10 @@ import {
   Vector3,
 } from 'three';
 import { animateObject } from './animations';
-import { getSerializableCard, setCardData } from './card';
-import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH } from './constants';
-import { CardZone, getGlobalRotation, zonesById } from './globals';
+import { cleanupCard, getSerializableCard, setCardData } from './card';
+import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
+import { setHoverSignal, zonesById } from './globals';
+import { getGlobalRotation } from './utils';
 
 export class CardStack implements CardZone {
   public mesh: Mesh;

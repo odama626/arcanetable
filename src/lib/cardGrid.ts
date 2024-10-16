@@ -4,17 +4,15 @@ import { createStore } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
-import { Card, CARD_HEIGHT, CARD_WIDTH } from './constants';
+import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone } from './constants';
 import {
-  CardZone,
-  getGlobalRotation,
   getProjectionVec,
-  isVectorEqual,
   peekFilterText,
   setHoverSignal,
   setScrollTarget,
   zonesById,
 } from './globals';
+import { getGlobalRotation, isVectorEqual } from './utils';
 
 const CARDS_PER_ROW = 5;
 export const [cardGridStore, setCardGridStore] = createStore({

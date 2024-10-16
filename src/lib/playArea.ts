@@ -15,15 +15,9 @@ import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Card, CARD_HEIGHT, CARD_WIDTH, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
-import {
-  cardsById,
-  doXTimes,
-  focusCamera,
-  getFocusCameraPositionRelativeTo,
-  provider,
-  zonesById,
-} from './globals';
+import { cardsById, doXTimes, focusCamera, provider } from './globals';
 import { Hand } from './hand';
+import { getFocusCameraPositionRelativeTo } from './utils';
 
 interface RemoteZoneState {
   id: string;

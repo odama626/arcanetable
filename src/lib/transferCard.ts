@@ -1,5 +1,5 @@
-import { Card } from './constants';
-import { CardZone, sendEvent } from './globals';
+import { Card, CardZone } from './constants';
+import { sendEvent } from './globals';
 
 export async function transferCard<AddOptions>(
   card: Card,

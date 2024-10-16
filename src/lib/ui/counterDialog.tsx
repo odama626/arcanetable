@@ -9,7 +9,8 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
-import { deckIndex, sendEvent, sha1 } from '../globals';
+import { deckIndex, sendEvent } from '../globals';
+import { sha1 } from '../utils';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal([]);
