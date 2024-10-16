@@ -22,6 +22,7 @@ import {
 } from '../globals';
 import styles from './peekMenu.module.css';
 import { transferCard } from '../transferCard';
+import { Button } from '~/components/ui/button';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -70,12 +71,18 @@ const PeekMenu: Component = props => {
           <div class={styles.peekActions} style={`--x: ${tether().x}px; --y: ${tether().y}px;`}>
             <Menubar>
               <MenubarMenu>
-                <MenubarItem class='whitespace-nowrap' onClick={() => drawAfterRevealing(card())}>
+                <Button
+                  variant='ghost'
+                  class='whitespace-nowrap'
+                  onClick={() => drawAfterRevealing(card())}>
                   Reveal & Draw
-                </MenubarItem>
-                <MenubarItem class='whitespace-nowrap' onClick={() => drawWithoutRevealing(card())}>
+                </Button>
+                <Button
+                  variant='ghost'
+                  class='whitespace-nowrap'
+                  onClick={() => drawWithoutRevealing(card())}>
                   Draw
-                </MenubarItem>
+                </Button>
                 <MenubarTrigger class='whitespace-nowrap'>Move To</MenubarTrigger>
                 <MenubarContent>
                   <MenubarItem onClick={() => discard(card())}>Discard</MenubarItem>
@@ -102,7 +109,8 @@ const PeekMenu: Component = props => {
               />
               <Menubar>
                 <MenubarMenu>
-                  <MenubarItem
+                  <Button
+                    variant='ghost'
                     onClick={async () => {
                       await doXTimes(cardCount(), () => {
                         let card = playArea().peekZone.cards[0];
@@ -115,21 +123,23 @@ const PeekMenu: Component = props => {
                       setHoverSignal();
                     }}>
                     Shuffle into deck
-                  </MenubarItem>
-                  <MenubarItem
+                  </Button>
+                  <Button
+                    variant='ghost'
                     onClick={() =>
                       doXTimes(cardCount(), () => drawAfterRevealing(playArea().peekZone.cards[0]))
                     }>
                     Reveal & Draw All
-                  </MenubarItem>
-                  <MenubarItem
+                  </Button>
+                  <Button
+                    variant='ghost'
                     onClick={() =>
                       doXTimes(cardCount(), () =>
                         drawWithoutRevealing(playArea().peekZone.cards[0])
                       )
                     }>
                     Draw All
-                  </MenubarItem>
+                  </Button>
                   <MenubarTrigger>Move All To</MenubarTrigger>
                   <MenubarContent>
                     <MenubarItem
@@ -165,25 +175,28 @@ const PeekMenu: Component = props => {
                   </MenubarContent>
                   <Switch>
                     <Match when={viewField()}>
-                      <MenubarItem
+                      <Button
+                        variant='ghost'
                         onClick={() => {
                           playArea().peekZone.viewGrid();
                           setViewField(false);
                         }}>
                         View Grid
-                      </MenubarItem>
+                      </Button>
                     </Match>
                     <Match when>
-                      <MenubarItem
+                      <Button
+                        variant='ghost'
                         onClick={() => {
                           playArea().peekZone.viewField();
                           setViewField(true);
                         }}>
                         View Field
-                      </MenubarItem>
+                      </Button>
                     </Match>
                   </Switch>
-                  <MenubarItem
+                  <Button
+                    variant='ghost'
                     onClick={async () => {
                       let events = playArea()
                         .peekZone.cards.map(card => ({
@@ -209,7 +222,7 @@ const PeekMenu: Component = props => {
                       );
                     }}>
                     Dismiss
-                  </MenubarItem>
+                  </Button>
                 </MenubarMenu>
               </Menubar>
             </Command>

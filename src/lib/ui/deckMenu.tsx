@@ -38,6 +38,12 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
       <MenubarMenu>
         <MenubarTrigger>Actions</MenubarTrigger>
         <MenubarContent>
+          <MenubarItem
+            onClick={() => {
+              doXTimes(props.playArea.deck.cards.length, peekTopDeck, 25);
+            }}>
+            Search
+          </MenubarItem>
           <MenubarSub overlap>
             <MenubarSubTrigger onClick={() => props.playArea.draw()}>Draw</MenubarSubTrigger>
             <MenubarSubContent>

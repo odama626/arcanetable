@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
 import { Vector3 } from 'three';
+import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
   Menubar,
@@ -77,13 +78,14 @@ const TokenSearchMenu: Component = props => {
                   </For>
                 </MenubarContent>
 
-                <MenubarItem
+                <Button
+                  variant='ghost'
                   onClick={() => {
                     playArea().tokenSearchZone.removeCard(cardMesh());
                     cleanupCard(cardsById.get(cardMesh().userData.id));
                   }}>
                   Dismiss
-                </MenubarItem>
+                </Button>
               </MenubarMenu>
             </Menubar>
           </div>
@@ -98,7 +100,8 @@ const TokenSearchMenu: Component = props => {
             />
             <Menubar>
               <MenubarMenu>
-                <MenubarItem
+                <Button
+                  variant='ghost'
                   onClick={() => {
                     let cards = playArea().tokenSearchZone.cards;
 
@@ -110,25 +113,27 @@ const TokenSearchMenu: Component = props => {
                     setHoverSignal();
                   }}>
                   Dismiss
-                </MenubarItem>
+                </Button>
                 <Switch>
                   <Match when={viewField()}>
-                    <MenubarItem
+                    <Button
+                      variant='ghost'
                       onClick={() => {
                         playArea().tokenSearchZone.viewGrid();
                         setViewField(false);
                       }}>
                       View Grid
-                    </MenubarItem>
+                    </Button>
                   </Match>
                   <Match when>
-                    <MenubarItem
+                    <Button
+                      variant='ghost'
                       onClick={() => {
                         playArea().tokenSearchZone.viewField();
                         setViewField(true);
                       }}>
                       View Field
-                    </MenubarItem>
+                    </Button>
                   </Match>
                 </Switch>
               </MenubarMenu>

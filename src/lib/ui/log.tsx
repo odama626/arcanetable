@@ -30,6 +30,7 @@ export function isLogMessageStackable(previous, next) {
   let prevUserData = previous.payload?.userData;
   let nextUserData = next.payload?.userData;
   if (!prevUserData || !nextUserData) return false;
+  if (next.type === 'reveal') return false;
 
   let isCardNameVisible = userData => userData.isPublic || userData.wasPublic;
 
@@ -83,6 +84,8 @@ export function parseLogEntry(entry) {
       return `mulliganed and drew ${entry.payload.drawCount} cards`;
     case 'createCounter':
       return null;
+    case 'reveal':
+      return <>revealed <strong>{card.detail.name}</strong></>
 
     default:
       return `${entry.type} ${cardReference()}`;
