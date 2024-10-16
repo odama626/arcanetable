@@ -3,8 +3,6 @@ import { beforeEach } from 'vitest';
 import { renderAnimations } from './animations';
 import { Card } from './constants';
 import { clock, expect } from './globals';
-import { Mesh } from 'three';
-import { Card } from './constants';
 
 export function useAnimations() {
   let time = 0;

@@ -52,7 +52,7 @@ export class CardStack implements CardZone {
     });
   }
 
-  addCard(card: Card, { skipAnimation = false } = {}) {
+  addCard(card: Card, { skipAnimation = false, destroy = false } = {}) {
     if (!card) return;
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
@@ -81,6 +81,13 @@ export class CardStack implements CardZone {
       },
       to: {
         rotation: new Euler(),
+      },
+      onComplete: () => {
+        if (destroy) {
+          this.removeCard(card.mesh);
+          cleanupCard(card);
+          setHoverSignal();
+        }
       },
     });
   }

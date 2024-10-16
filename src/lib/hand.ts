@@ -10,18 +10,18 @@ export class Hand implements CardZone {
   public mesh: Group;
   public cards: Card[] = [];
   private cardMap: Map<string, Card>;
-  public id: string;
   public isInteractive: boolean = true;
+  public zone;
 
-  constructor(id = nanoid(), public isLocalHand: boolean) {
+  constructor(public id = nanoid(), public isLocalHand: boolean) {
     this.mesh = new Group();
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'hand';
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.set(0, -120, 40);
     this.mesh.userData.restingPosition = this.mesh.position.clone();
+    this.zone = 'hand';
 
-    this.id = id;
     zonesById.set(this.id, this);
 
     this.cardMap = new Map<string, Card>();
@@ -46,7 +46,7 @@ export class Hand implements CardZone {
     };
   }
 
-  addCard(card: Card, { skipAnimation = false } = {}) {
+  addCard(card: Card, { skipAnimation = false, destroy = false } = {}) {
     let initialPosition = new Vector3();
     card.mesh.getWorldPosition(initialPosition);
     this.mesh.worldToLocal(initialPosition);
@@ -80,6 +80,11 @@ export class Hand implements CardZone {
       setCardData(card.mesh, 'location', 'hand');
       card.mesh.position.copy(restingPosition);
       card.mesh.rotation.set(0, 0, 0);
+      if (destroy) {
+        this.removeCard(card.mesh);
+        cleanupCard(card);
+        setHoverSignal();
+      }
     } else {
       setCardData(card.mesh, 'location', 'hand');
       this.isInteractive = false;
@@ -98,6 +103,11 @@ export class Hand implements CardZone {
         },
         duration: 0.5,
         onComplete: () => {
+          if (destroy) {
+            this.removeCard(card.mesh);
+            cleanupCard(card);
+            setHoverSignal();
+          }
           this.isInteractive = true;
         },
       });

@@ -9,17 +9,17 @@ import { expect, setHoverSignal, zonesById } from './globals';
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;
   public isTopPublic = false;
-  public id: string;
+  public zone: string;
 
-  constructor(public cards: Card[], id = nanoid()) {
+  constructor(public cards: Card[], public id = nanoid()) {
     this.mesh = new Group();
-    this.id = id;
     zonesById.set(this.id, this);
 
     this.mesh.rotation.set(0, Math.PI, 0);
     this.mesh.position.set(70, -55, cards.length * 0.125 + 2.5);
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'deck';
+    this.zone = 'deck';
 
     cards.forEach((card, i) => {
       setCardData(card.mesh, 'location', 'deck');
@@ -30,7 +30,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     });
   }
 
-  addCardBottom(card: Card) {
+  addCardBottom(card: Card, { destroy = false } = {}) {
     setCardData(card.mesh, 'isPublic', false);
     setCardData(card.mesh, 'zoneId', this.id);
     setCardData(card.mesh, 'location', 'deck');
@@ -68,10 +68,17 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       to: {
         rotation: new Euler(0, 0, 0),
       },
+      onComplete: () => {
+        if (destroy) {
+          this.removeCard(card.mesh);
+          cleanupCard(card);
+          setHoverSignal();
+        }
+      },
     });
   }
 
-  async addCardTop(card: Card) {
+  async addCardTop(card: Card, { destroy = false } = {}) {
     setCardData(card.mesh, 'location', 'deck');
     setCardData(card.mesh, 'zoneId', this.id);
 
@@ -109,7 +116,12 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
           to: {
             rotation: new Euler(0, 0, 0),
           },
-          onComplete() {
+          onComplete: () => {
+            if (destroy) {
+              this.removeCard(card.mesh);
+              cleanupCard(card);
+              setHoverSignal();
+            }
             resolve();
           },
         });
@@ -128,11 +140,11 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     });
   }
 
-  addCard(card: Card, { location = 'top' } = {}) {
+  addCard(card: Card, { location = 'top', ...rest } = {}) {
     if (location === 'top') {
-      return this.addCardTop(card);
+      return this.addCardTop(card, rest);
     } else {
-      return this.addCardBottom(card);
+      return this.addCardBottom(card, rest);
     }
   }
 

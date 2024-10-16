@@ -8,7 +8,14 @@ export async function transferCard<AddOptions>(
   addOptions?: AddOptions
 ) {
   await fromZone.removeCard?.(card.mesh);
+  if (card.mesh.userData.isToken) {
+    if (toZone.zone !== 'battlefield') {
+      console.log('destroy');
+      addOptions.destroy = true;
+    }
+  }
   await toZone.addCard(card, addOptions);
+
   sendEvent({
     type: 'transferCard',
     payload: {
