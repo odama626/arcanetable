@@ -4,7 +4,6 @@ import { Mesh } from 'three';
 import { Menubar, MenubarItem, MenubarMenu } from '../../components/ui/menubar';
 import {
   cardsById,
-  doXTimes,
   focusRenderer,
   hoverSignal,
   isSpectating,
@@ -12,17 +11,16 @@ import {
   players,
   provider,
 } from '../globals';
-import { transferCard } from '../transferCard';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
 import Log from './log';
+import MoveMenu from './moveMenu';
 import styles from './overlay.module.css';
 import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
-import MoveMenu from './moveMenu';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -104,6 +102,12 @@ const Overlay: Component = () => {
                     Reveal
                   </MenubarItem>
                 </MenubarMenu>
+                <MoveMenu
+                  text='Move To'
+                  cards={[cardsById.get(cardMesh().userData.id)]}
+                  playArea={playArea()}
+                  fromZone={playArea().hand}
+                />
               </Menubar>
             </Match>
           </Switch>
