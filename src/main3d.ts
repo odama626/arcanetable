@@ -487,7 +487,14 @@ function render3d() {
 
   raycaster.setFromCamera(mouse, camera);
 
-  let intersects = raycaster.intersectObject(scene);
+  let intersects = raycaster.intersectObject(scene).filter(hit => {
+    if (
+      hit.object?.userData.clientId !== provider.awareness.clientID &&
+      !hit.object?.userData.isPublic
+    )
+      return false;
+    return true;
+  });
 
   hightlightHover(intersects);
 
