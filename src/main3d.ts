@@ -37,6 +37,7 @@ import {
 } from './lib/globals';
 import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
+import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
 import { processEvents } from './remoteEvents';
 
@@ -294,32 +295,13 @@ function onDocumentDrop(event) {
       return;
     }
 
-    if (!fromZone?.removeCard) {
-      console.warn(`fromZone removeCard doesn't exist`, target.userData.zoneId);
-    }
-
-    if (fromZone?.removeCard) {
-      await fromZone.removeCard(target);
-    } else {
-      console.warn('fromZone missing');
-      if (fromLocation !== toLocation) {
-        target.parent?.remove(target);
-      }
-    }
-
     let card = cardsById.get(target.userData.id);
     let position = toZone.mesh.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
-    await toZone.addCard(card, { skipAnimation: true, positionArray: position.toArray() });
 
-    sendEvent({
-      type: 'transferCard',
-      payload: {
-        userData: card?.mesh.userData,
-        fromZoneId,
-        toZoneId,
-        addOptions: { skipAnimation: true, positionArray: position.toArray() },
-      },
+    await transferCard(card, fromZone, toZone, {
+      skipAnimation: true,
+      positionArray: position.toArray(),
     });
 
     setHoverSignal(signal => {
