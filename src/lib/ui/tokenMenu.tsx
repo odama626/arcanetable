@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid';
 import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
-import { Vector3 } from 'three';
 import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
@@ -39,8 +38,8 @@ const TokenSearchMenu: Component = props => {
     let card = cloneCard(referenceCard, nanoid());
 
     let battlefield = playArea().battlefieldZone;
-    let rayOrigin = new Vector3(40, 60, 65);
-    let direction = new Vector3(0, -1, 0);
+    let tokenZone = playArea().tokenSearchZone;
+    tokenZone.mesh.localToWorld(card.mesh.position);
     battlefield.addCard(card);
 
     sendEvent({
@@ -65,13 +64,10 @@ const TokenSearchMenu: Component = props => {
                     {value => (
                       <MenubarItem
                         closeOnSelect={false}
-                        onClick={() =>
-                          doXTimes(
-                            value,
-                            () => addToBattlefield(cardsById.get(cardMesh().userData.id)),
-                            200
-                          )
-                        }>
+                        onClick={() => {
+                          let card = cardsById.get(cardMesh().userData.id)!;
+                          doXTimes(value, () => addToBattlefield(card), 50);
+                        }}>
                         {value}
                       </MenubarItem>
                     )}
@@ -90,55 +86,57 @@ const TokenSearchMenu: Component = props => {
             </Menubar>
           </div>
         </Show>
-        <div class={styles.search}>
-          <Command>
-            <CommandInput
-              placeholder='Search'
-              onValueChange={value => {
-                setPeekFilterText(value);
-              }}
-            />
-            <Menubar>
-              <MenubarMenu>
-                <Button
-                  variant='ghost'
-                  onClick={() => {
-                    let cards = playArea().tokenSearchZone.cards;
+        <div class={styles.searchContainer}>
+          <div class={styles.search}>
+            <Command>
+              <CommandInput
+                placeholder='Search'
+                onValueChange={value => {
+                  setPeekFilterText(value);
+                }}
+              />
+              <Menubar>
+                <MenubarMenu>
+                  <Button
+                    variant='ghost'
+                    onClick={() => {
+                      let cards = playArea().tokenSearchZone.cards;
 
-                    cards.forEach(card => {
-                      playArea().tokenSearchZone.removeCard(card.mesh);
-                      card.mesh.geometry.dispose();
-                      cardsById.delete(card.id);
-                    });
-                    setHoverSignal();
-                  }}>
-                  Dismiss
-                </Button>
-                <Switch>
-                  <Match when={viewField()}>
-                    <Button
-                      variant='ghost'
-                      onClick={() => {
-                        playArea().tokenSearchZone.viewGrid();
-                        setViewField(false);
-                      }}>
-                      View Grid
-                    </Button>
-                  </Match>
-                  <Match when>
-                    <Button
-                      variant='ghost'
-                      onClick={() => {
-                        playArea().tokenSearchZone.viewField();
-                        setViewField(true);
-                      }}>
-                      View Field
-                    </Button>
-                  </Match>
-                </Switch>
-              </MenubarMenu>
-            </Menubar>
-          </Command>
+                      cards.forEach(card => {
+                        playArea().tokenSearchZone.removeCard(card.mesh);
+                        card.mesh.geometry.dispose();
+                        cardsById.delete(card.id);
+                      });
+                      setHoverSignal();
+                    }}>
+                    Dismiss
+                  </Button>
+                  <Switch>
+                    <Match when={viewField()}>
+                      <Button
+                        variant='ghost'
+                        onClick={() => {
+                          playArea().tokenSearchZone.viewGrid();
+                          setViewField(false);
+                        }}>
+                        View Grid
+                      </Button>
+                    </Match>
+                    <Match when>
+                      <Button
+                        variant='ghost'
+                        onClick={() => {
+                          playArea().tokenSearchZone.viewField();
+                          setViewField(true);
+                        }}>
+                        View Field
+                      </Button>
+                    </Match>
+                  </Switch>
+                </MenubarMenu>
+              </Menubar>
+            </Command>
+          </div>
         </div>
       </Show>
     </>
