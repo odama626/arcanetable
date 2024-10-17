@@ -14,16 +14,33 @@ import {
   NumberFieldInput,
   NumberFieldLabel,
 } from '~/components/ui/number-field';
-import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
+import {
+  labelVariants,
+  TextField,
+  TextFieldInput,
+  TextFieldLabel,
+} from '~/components/ui/text-field';
 import { createDeckStore } from '../deckStore';
 import { startSpectating } from '../globals';
 import { DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
+import PencilIcon from '../icons/pencil-solid.svg';
+import { cn } from '../utils';
 
 const DeckPicker: Component = props => {
   const [deckStore, setDeckStore] = createDeckStore();
   const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(0);
   const [editingDeck, setEditingDeck] = createSignal(false);
+  const [startingLife, setStartingLife] = createSignal(40);
+
+  function selectDeck(index: number) {
+    setSelectedDeckIndex(index);
+    let deck = deckStore.decks[index];
+    if (deck.startingLife) {
+      console.log({ deck });
+      setStartingLife(deck.startingLife);
+    }
+  }
 
   return (
     <>
@@ -32,7 +49,7 @@ const DeckPicker: Component = props => {
         setOpen={setEditingDeck}
         deck={editingDeck()}
         onChange={deck => {
-          setDeckStore('decks', decks => decks.filter(d => d.id !== deck.id).concat(deck));
+          setDeckStore('decks', decks => [deck, ...decks.filter(d => d.id !== deck.id)]);
         }}
         onDelete={id => {
           setDeckStore('decks', decks => decks.filter(deck => deck.id !== id));
@@ -44,6 +61,7 @@ const DeckPicker: Component = props => {
             <DialogTitle>Start Session</DialogTitle>
           </DialogHeader>
           <form
+            class='flex flex-col gap-5'
             onSubmit={e => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -58,7 +76,7 @@ const DeckPicker: Component = props => {
               <TextFieldLabel for='name'>Name</TextFieldLabel>
               <TextFieldInput required type='text' id='name' name='name' />
             </TextField>
-            <NumberField defaultValue={40}>
+            <NumberField value={startingLife()} onChange={setStartingLife}>
               <NumberFieldLabel>Starting Life</NumberFieldLabel>
               <div class='relative'>
                 <NumberFieldInput name='startingLife' />
@@ -66,40 +84,56 @@ const DeckPicker: Component = props => {
                 <NumberFieldDecrementTrigger />
               </div>
             </NumberField>
-            <h2>Select a deck</h2>
-            <input type='hidden' name='deckIndex' value={selectedDeckIndex()} />
-            <div class='grid grid-cols-3 gap-4 w-11/12 my-4 m-auto'>
-              <For each={deckStore.decks}>
-                {(deck, i) => (
-                  <div
-                    style='position: relative; aspect-ratio: 626/457;'
-                    class='relative rounded-lg overflow-hidden shadow-lg'
-                    classList={{ [styles.selectedRadioItem]: selectedDeckIndex() === i() }}>
-                    <button
-                      style='width: 100%; height: 100%;f'
-                      type='button'
-                      onClick={() => setSelectedDeckIndex(i())}>
-                      <div
-                        class='bg-cover'
-                        style={`background-image: url(${
-                          deck.coverImage ?? '/arcane-table-back.webp'
-                        }); height: 100%;`}></div>
-                      <div class='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4'>
-                        <h3 class='text-white text-xl font-semibold'>{deck.name}</h3>
-                      </div>
-                    </button>
-                    <div class='absolute top-2 right-2'>
-                      <button type='button' onClick={() => setEditingDeck(deck)}>
-                        ✏️
+            <div>
+              <label class={cn(labelVariants())}>Select a deck</label>
+              <input type='hidden' name='deckIndex' value={selectedDeckIndex()} />
+              <div class='grid grid-cols-3 gap-4 my-2'>
+                <For each={deckStore.decks}>
+                  {(deck, i) => (
+                    <div
+                      style='position: relative; aspect-ratio: 626/457;'
+                      class='relative rounded-lg overflow-hidden shadow-lg'
+                      classList={{ [styles.selectedRadioItem]: selectedDeckIndex() === i() }}>
+                      <button
+                        style='width: 100%; height: 100%;'
+                        type='button'
+                        onClick={() => selectDeck(i())}>
+                        <div
+                          class='bg-cover'
+                          style={`background-image: url(${
+                            deck.coverImage ?? '/arcane-table-back.webp'
+                          }); height: 100%;`}></div>
+                        <div class='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent py-4 px-2 text-left'>
+                          <h3 class='text-white text-xl font-semibold'>{deck.name}</h3>
+                          <div class='flex flex-row gap-2 pt-2'>
+                            <For each={deck.tags}>
+                              {tag => (
+                                <span class='text-white rounded-full bg-slate-500 px-2 py-1 text-xs'>
+                                  {tag.name}
+                                </span>
+                              )}
+                            </For>
+                          </div>
+                        </div>
                       </button>
+                      <div class='absolute top-2 right-2'>
+                        <button type='button' onClick={() => setEditingDeck(deck)}>
+                          <PencilIcon style='height: 1.25rem; fill: white; stroke: black; stroke-width: 2px;' />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </For>
+                  )}
+                </For>
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={() => startSpectating()} variant='ghost'>
                 Spectate
+              </Button>
+              <Button
+                variant='ghost'
+                onClick={() => setEditingDeck(deckStore.decks[selectedDeckIndex()])}>
+                Edit Deck
               </Button>
               <Button variant='outline' type='button' onClick={() => setEditingDeck(true)}>
                 Create Deck

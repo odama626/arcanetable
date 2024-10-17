@@ -275,8 +275,6 @@ function onDocumentDrop(event) {
     let fromZoneId = target.userData.zoneId;
     let fromZone = zonesById.get(fromZoneId);
     let toZone = zonesById.get(toZoneId);
-    let fromLocation = target.userData.location;
-    let toLocation = intersection.object.userData.location ?? intersection.object.userData.zone;
 
     if (fromZoneId && fromZoneId === toZoneId) {
       sendEvent({
