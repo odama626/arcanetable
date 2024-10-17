@@ -15,6 +15,7 @@ import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from
 import { cardsById, getProjectionVec, scene, textureLoader } from './globals';
 import { counters } from './ui/counterDialog';
 import { cleanupFromNode } from './utils';
+import { splitProps } from 'solid-js';
 
 let cardBackTexture: Texture;
 let alphaMap: Texture;
@@ -24,6 +25,7 @@ export function createCardGeometry(card: Card) {
   cardBackTexture = cardBackTexture || textureLoader.load('/arcane-table-back.webp');
   cardBackTexture.colorSpace = SRGBColorSpace;
   let cardBack = new MeshStandardMaterial({ map: cardBackTexture });
+  let { mesh: _, modifiers, ...shared } = card;
 
   cardBack.transparent = true;
 
@@ -45,7 +47,7 @@ export function createCardGeometry(card: Card) {
   });
   const mesh = new Mesh(geometry, materials);
   setCardData(mesh, 'isInteractive', true);
-  setCardData(mesh, 'card', card);
+  setCardData(mesh, 'card', shared);
   setCardData(mesh, 'id', card.id);
   setCardData(
     mesh,
@@ -80,13 +82,24 @@ export function cloneCard(card: Card, newId: string): Card {
 
   newCard.id = newId;
   newCard.mesh = createCardGeometry(newCard);
-  newCard.mesh.userData = structuredClone(card.mesh.userData);
+  if (card.mesh) {
+    const [transferable, _, cloneable] = splitProps(
+      card.mesh.userData,
+      ['cardBack', 'publicCardBack'],
+      ['resting']
+    );
+    console.log({ cloneable });
+    newCard.mesh.userData = structuredClone(cloneable);
+    Object.assign(newCard.mesh.userData, transferable);
+
+    newCard.mesh.position
+      .copy(card.mesh.position)
+      .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
+    newCard.mesh.rotation.copy(card.mesh.rotation);
+  }
   setCardData(newCard.mesh, 'id', newCard.id);
-  newCard.mesh.position
-    .copy(card.mesh.position)
-    .add(new Vector3(CARD_STACK_OFFSET, -CARD_STACK_OFFSET, CARD_THICKNESS));
-  newCard.mesh.rotation.copy(card.mesh.rotation);
   updateModifiers(newCard);
+  newCard.detail.search = card.detail.search ?? getSearchLine(newCard.detail);
   cardsById.set(newCard.id, newCard);
   return newCard;
 }

@@ -121,15 +121,12 @@ export class PlayArea {
 
     let availableCards = this.availableTokens
       .map(detail => {
-        let card = { detail, id: nanoid() };
-        card.mesh = createCardGeometry(structuredClone(card));
+        let card = cloneCard({ detail }, nanoid());
         setCardData(card.mesh, 'isPublic', true);
         setCardData(card.mesh, 'isInteractive', true);
         setCardData(card.mesh, 'location', 'tokenSearch');
         setCardData(card.mesh, 'clientId', provider.awareness.clientID);
         setCardData(card.mesh, 'isToken', true);
-        card.detail.search = getSearchLine(card.detail);
-        cardsById.set(card.id, card);
         return card;
       })
       .sort((a, b) => a.detail.name.localeCompare(b.detail.name));

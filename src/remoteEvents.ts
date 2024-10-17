@@ -116,11 +116,8 @@ const EVENTS = {
     await toZone?.addCard(card, addOptions);
   },
   createCard(event: Event, playArea: PlayArea) {
-    let card = structuredClone(event.payload.userData.card);
-    card.id = event.payload.userData.id;
-    card.mesh = createCardGeometry(card);
-    card.mesh.userData = event.payload.userData;
-    cardsById.set(card.id, card);
+    
+    let card = cloneCard({ detail: event.payload.userData.card.detail }, event.payload.userData.id);
 
     let zone = zonesById.get(event.payload.zoneId);
     let options = {};
