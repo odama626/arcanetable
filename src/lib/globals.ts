@@ -1,3 +1,4 @@
+import ColorHash from 'color-hash';
 import { createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import * as THREE from 'three';
@@ -61,6 +62,8 @@ export let [isSpectating, setIsSpectating] = createSignal(false);
 export let [playerCount, setPlayerCount] = createSignal(0);
 export let orbitControls: OrbitControls;
 export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
+export const colorHashLight = new ColorHash({ lightness: 0.7 });
+export const colorHashDark = new ColorHash({ lightness: 0.3 });
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();

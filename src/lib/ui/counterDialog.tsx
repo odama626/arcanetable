@@ -1,4 +1,3 @@
-import ColorHash from 'color-hash';
 import { createSignal } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
@@ -9,13 +8,11 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
-import { deckIndex, sendEvent } from '../globals';
+import { colorHashLight, deckIndex, sendEvent } from '../globals';
 import { sha1 } from '../utils';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal([]);
-
-const colorHash = new ColorHash({ lightness: 0.7 });
 
 function createCounter(counter) {
   setCounters(counters => [...counters, counter]);
@@ -40,7 +37,7 @@ const CounterDialog: Component = props => {
           async function create() {
             let id = await sha1(formData.get('name'));
             formData.set('id', id);
-            formData.set('color', colorHash.hex(formData.get('name')));
+            formData.set('color', colorHashLight.hex(formData.get('name')));
 
             const counter = Object.fromEntries(formData.entries());
             createCounter(counter);

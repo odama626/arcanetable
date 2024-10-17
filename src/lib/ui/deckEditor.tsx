@@ -5,13 +5,20 @@ import {
   Combobox,
   ComboboxContent,
   ComboboxControl,
-  ComboboxHiddenSelect,
   ComboboxInput,
   ComboboxItem,
   ComboboxItemLabel,
   ComboboxTrigger,
 } from '~/components/ui/combobox';
 import { DialogFooter } from '~/components/ui/dialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '~/components/ui/hover-card';
+import {
+  NumberField,
+  NumberFieldDecrementTrigger,
+  NumberFieldIncrementTrigger,
+  NumberFieldInput,
+  NumberFieldLabel,
+} from '~/components/ui/number-field';
 import {
   labelVariants,
   TextField,
@@ -21,20 +28,12 @@ import {
   TextFieldTextArea,
 } from '~/components/ui/text-field';
 import { getCardArtImage, getCardImage } from '../card';
-import { fetchCardInfo, loadCardList } from '../deck';
-import styles from './deckEditor.module.css';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import CircleInfoIcon from '../icons/circle-info-solid.svg';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '~/components/ui/hover-card';
 import { FORMATS } from '../constants';
+import { fetchCardInfo, loadCardList } from '../deck';
+import { colorHashDark } from '../globals';
+import CircleInfoIcon from '../icons/circle-info-solid.svg';
 import { cn } from '../utils';
-import {
-  NumberField,
-  NumberFieldDecrementTrigger,
-  NumberFieldIncrementTrigger,
-  NumberFieldInput,
-  NumberFieldLabel,
-} from '~/components/ui/number-field';
+import styles from './deckEditor.module.css';
 
 type Deck = any;
 
@@ -150,7 +149,13 @@ export const DeckEditor: Component<Props> = props => {
 
               <TextField value={name()} onChange={name => setName(name)}>
                 <TextFieldLabel for='name'>Name</TextFieldLabel>
-                <TextFieldInput required type='text' id='name' name='name' placeholder='deck name' />
+                <TextFieldInput
+                  required
+                  type='text'
+                  id='name'
+                  name='name'
+                  placeholder='deck name'
+                />
               </TextField>
 
               <NumberField defaultValue={props?.deck?.startingLife || '40'}>
@@ -233,7 +238,10 @@ export const DeckEditor: Component<Props> = props => {
                               <span
                                 class={styles.multiSelectItem}
                                 onPointerDown={e => e.stopPropagation()}>
-                                <Button size='xs' variant='secondary' onClick={() => state.remove(option)}>
+                                <Button
+                                  size='xs'
+                                  variant='secondary'
+                                  onClick={() => state.remove(option)}>
                                   {option.name}
                                 </Button>
                               </span>
@@ -275,7 +283,11 @@ export const DeckEditor: Component<Props> = props => {
                               <span
                                 class={styles.multiSelectItem}
                                 onPointerDown={e => e.stopPropagation()}>
-                                <Button size='xs' variant='secondary' onClick={() => state.remove(option)}>
+                                <Button
+                                  size='xs'
+                                  variant='secondary'
+                                  style={`background-color: ${colorHashDark.hex(option.name)}`}
+                                  onClick={() => state.remove(option)}>
                                   {option.name}
                                 </Button>
                               </span>

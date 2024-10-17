@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background-color: #ffffffa0;
+  background-color: hsla(var(--background) / 0.8);
   pointer-events: auto;
 }
 
@@ -17,7 +17,7 @@
 
 .formContainer {
   padding: 2rem;
-  background-color: white;
+  background-color: hsl(var(--background));
   border-radius: 0.5rem;
   height: 100%;
 }

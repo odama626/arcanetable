@@ -47,7 +47,7 @@ const GamePage: Component = props => {
         <Dialog open onOpenChange={open => setInviteDismissed(!open)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Invite A Friend</DialogTitle>
+              <DialogTitle>Invite a Friend</DialogTitle>
             </DialogHeader>
             <Button
               onClick={() => {

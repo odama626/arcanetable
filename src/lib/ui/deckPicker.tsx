@@ -21,11 +21,11 @@ import {
   TextFieldLabel,
 } from '~/components/ui/text-field';
 import { createDeckStore } from '../deckStore';
-import { startSpectating } from '../globals';
-import { DeckEditor } from './deckEditor';
-import styles from './deckPicker.module.css';
+import { colorHashDark, startSpectating } from '../globals';
 import PencilIcon from '../icons/pencil-solid.svg';
 import { cn } from '../utils';
+import { DeckEditor } from './deckEditor';
+import styles from './deckPicker.module.css';
 
 const DeckPicker: Component = props => {
   const [deckStore, setDeckStore] = createDeckStore();
@@ -108,7 +108,9 @@ const DeckPicker: Component = props => {
                           <div class='flex flex-row gap-2 pt-2'>
                             <For each={deck.tags}>
                               {tag => (
-                                <span class='text-white rounded-full bg-slate-500 px-2 py-1 text-xs'>
+                                <span
+                                  class='text-white rounded-md h-7 px-3 text-xs inline-flex items-center justify-center'
+                                  style={`background-color: ${colorHashDark.hex(tag.name)};`}>
                                   {tag.name}
                                 </span>
                               )}
