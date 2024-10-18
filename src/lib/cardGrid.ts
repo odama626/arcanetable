@@ -30,6 +30,7 @@ export class CardGrid implements CardZone {
   private minScroll: number;
   private maxScroll: number;
   private isLocalPlayArea: boolean;
+  public mode: 'grid' | 'field' = 'grid';
 
   constructor(isLocalPlayArea: boolean, public zone: string, public id: string = nanoid()) {
     const POSITION = new Vector3(-((CARD_WIDTH + 1) * CARDS_PER_ROW) / 2 + CARD_WIDTH / 2, -95, 50);
@@ -89,36 +90,13 @@ export class CardGrid implements CardZone {
   }
 
   viewField() {
-    this.cards.forEach((card, i) => {
-      let position = card.mesh.position.clone();
-      let isEven = i % 2 === 0;
-      let x = isEven ? 115 : -60;
-      x += (i % CARDS_PER_ROW) * 3;
-      position.x = x;
-      position.z = -20;
-
-      animateObject(card.mesh, {
-        duration: 0.2,
-        to: {
-          position,
-          rotation: card.mesh.rotation
-            .clone()
-            .setFromVector3(new Vector3(0, (Math.PI / 4) * (isEven ? -1 : 1), 0)),
-        },
-      });
-    });
+    this.mode = 'field';
+    this.updateCardPositions();
   }
 
   viewGrid() {
-    this.cards.forEach((card, i) => {
-      animateObject(card.mesh, {
-        duration: 0.2,
-        to: {
-          position: this.getCardPosition(i),
-          rotation: new Euler(0, 0, 0),
-        },
-      });
-    });
+    this.mode = 'grid';
+    this.updateCardPositions();
   }
 
   private updateCardPositions() {
@@ -132,21 +110,24 @@ export class CardGrid implements CardZone {
       }
 
       if (index < 0) {
-        let targetPosition = this.getCardPosition((this.filteredCards?.length ?? 0) + missed);
+        let { position, rotation } = this.getCardPosition(
+          (this.filteredCards?.length ?? 0) + missed,
+          true
+        );
         if (
-          !isVectorEqual(targetPosition, cardMesh.userData.resting.position) ||
-          cardMesh.rotation.y === 0
+          !isVectorEqual(position, cardMesh.userData.resting.position) ||
+          !isVectorEqual(rotation, cardMesh.userData.resting.rotation)
         ) {
-          cardMesh.userData.resting.position = targetPosition;
-          cardMesh.userData.resting.rotation = new Euler(0, Math.PI, 0);
+          cardMesh.userData.resting.position = position;
+          cardMesh.userData.resting.rotation = rotation;
           animateObject(cardMesh, {
             path: new CatmullRomCurve3([
               cardMesh.position.clone(),
               cardMesh.position.clone().add(new Vector3(0, 0, -2.5)),
-              targetPosition,
+              position,
             ]),
             to: {
-              rotation: cardMesh.userData.resting.rotation,
+              rotation,
             },
             duration: 0.2,
           });
@@ -155,21 +136,21 @@ export class CardGrid implements CardZone {
         continue;
       }
 
-      const restingPosition = this.getCardPosition(index);
+      const { position, rotation } = this.getCardPosition(index);
       if (
-        !isVectorEqual(restingPosition, cardMesh.userData.resting.position) ||
+        !isVectorEqual(position, cardMesh.userData.resting.position) ||
         cardMesh.rotation.y !== 0
       ) {
-        cardMesh.userData.resting.position = restingPosition;
-        cardMesh.userData.resting.rotation = new Euler(0, 0, 0);
+        cardMesh.userData.resting.position = position;
+        cardMesh.userData.resting.rotation = rotation;
         animateObject(cardMesh, {
           path: new CatmullRomCurve3([
             cardMesh.position.clone(),
             cardMesh.position.clone().add(new Vector3(0, 0, -2.5)),
-            cardMesh.userData.resting.position,
+            position,
           ]),
           to: {
-            rotation: cardMesh.userData.resting.rotation,
+            rotation,
           },
           duration: 0.2,
         });
@@ -191,12 +172,32 @@ export class CardGrid implements CardZone {
     };
   }
 
-  private getCardPosition(index: number) {
-    return new Vector3(
+  private getCardPosition(index: number, isFlipped?: boolean) {
+    let position = new Vector3(
       (index % CARDS_PER_ROW) * (CARD_WIDTH + 1),
       -((index / CARDS_PER_ROW) | 0) * (CARD_HEIGHT + 1),
       0
     );
+    switch (this.mode) {
+      case 'grid':
+        return { position, rotation: new Euler(0, isFlipped ? Math.PI : 0, 0) };
+      case 'field': {
+        let isEven = index % 2 === 0;
+        let x = isEven ? 115 : -60;
+        x += (index % CARDS_PER_ROW) * 3;
+        position.x = x;
+        position.z = -20;
+        let yRot = (Math.PI / 4) * (isEven ? -1 : 1);
+        if (isFlipped) {
+          yRot += Math.PI;
+        }
+
+        return {
+          position,
+          rotation: new Euler(0, yRot, 0),
+        };
+      }
+    }
   }
 
   addCard(card: Card) {
@@ -240,10 +241,10 @@ export class CardGrid implements CardZone {
 
     this.adjustHandPosition();
 
-    let position = this.getCardPosition(indexPosition);
+    let { position, rotation } = this.getCardPosition(indexPosition);
     card.mesh.userData.resting = {
       position,
-      rotation: new Euler(0, 0, 0),
+      rotation,
     };
 
     const path = new CatmullRomCurve3([
@@ -258,7 +259,7 @@ export class CardGrid implements CardZone {
     animateObject(card.mesh, {
       path,
       to: {
-        rotation: new Euler(0, 0, 0),
+        rotation,
       },
       from: {
         rotation: initialRotation,
@@ -274,8 +275,8 @@ export class CardGrid implements CardZone {
 
     let globalRotation = getGlobalRotation(cardMesh);
 
-    cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
-    cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
+    cardMesh.position.copy(worldPosition);
+    cardMesh.rotation.copy(globalRotation);
 
     this.scrollContainer.remove(cardMesh);
     this.cards = this.cards.filter(c => c.id !== cardMesh.userData.id);

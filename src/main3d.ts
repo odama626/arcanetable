@@ -40,6 +40,7 @@ import { PlayArea } from './lib/playArea';
 import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
 import { processEvents } from './remoteEvents';
+import { getGlobalRotation } from './lib/utils';
 
 var container;
 
@@ -240,7 +241,7 @@ function onDocumentDragStart(event) {
   let target = intersection.object;
   if (target.userData.location === 'deck') return;
   if (!target.userData.isInteractive) return;
-  if (target.userData.isInGrid) return;
+  // if (target.userData.isInGrid) return;
 
   setCardData(target, 'isDragging', true);
 
@@ -351,11 +352,13 @@ function onDocumentMouseMove(event) {
       if (!intersection) continue;
       let pointTarget = intersection.point.clone();
       let zone = zonesById.get(target.userData.zoneId)!;
-      if (target.userData.location === 'hand') {
-        let quarternion = new THREE.Quaternion().setFromEuler(hand.mesh.rotation).invert();
+      if (['hand', 'peek'].includes(target.userData.location)) {
+        let globalRotation = getGlobalRotation(target.parent);
+        globalRotation.x += Math.PI / 2;
+        let quarternion = new THREE.Quaternion().setFromEuler(globalRotation).invert();
         target.rotation.setFromQuaternion(quarternion);
       }
-      zone.mesh.worldToLocal(pointTarget);
+      target.parent.worldToLocal(pointTarget);
 
       let rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(target.rotation);
       pointTarget.add(
@@ -367,15 +370,24 @@ function onDocumentMouseMove(event) {
       target.position.copy(pointTarget);
     }
 
-    setHoverSignal(signal => {
-      focusOn(signal.mesh);
-      const tether = getCardMeshTetherPoint(signal.mesh);
-      return {
-        mouse,
-        ...signal,
-        tether,
-      };
-    });
+    if (hoverSignal()) {
+      setHoverSignal(signal => {
+        if (signal.mesh) {
+          focusOn(signal.mesh);
+          const tether = getCardMeshTetherPoint(signal.mesh);
+          return {
+            mouse,
+            ...signal,
+            tether,
+          };
+        } else {
+          return {
+            ...signal,
+            mouse,
+          };
+        }
+      });
+    }
   } else {
     setHoverSignal(signal => ({
       mouse,

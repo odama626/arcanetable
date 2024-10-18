@@ -9,7 +9,7 @@ import { provider } from './globals';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-export function isVectorEqual(a: Vector3, b: Vector3) {
+export function isVectorEqual(a: Vector3 | Euler, b: Vector3 | Euler) {
   if (!a || !b) return false;
   let ab = a.toArray();
   let bb = b.toArray();

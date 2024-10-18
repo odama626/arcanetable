@@ -2,14 +2,7 @@ import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
-import {
-  cloneCard,
-  createCardGeometry,
-  getSearchLine,
-  initializeCardMesh,
-  setCardData,
-  updateModifiers,
-} from './card';
+import { cloneCard, initializeCardMesh, setCardData, updateModifiers } from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';

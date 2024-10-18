@@ -53,6 +53,7 @@ export class Hand implements CardZone {
     setCardData(card.mesh, 'zoneId', this.id);
     setCardData(card.mesh, 'isDragging', false);
     setCardData(card.mesh, 'isPublic', false);
+    setCardData(card.mesh, 'location', 'hand');
 
     this.mesh.add(card.mesh);
     this.cards.push(card);
@@ -77,7 +78,6 @@ export class Hand implements CardZone {
     let initialRotation = getGlobalRotation(card.mesh);
 
     if (skipAnimation) {
-      setCardData(card.mesh, 'location', 'hand');
       card.mesh.position.copy(restingPosition);
       card.mesh.rotation.set(0, 0, 0);
       if (destroy) {
@@ -86,7 +86,6 @@ export class Hand implements CardZone {
         setHoverSignal();
       }
     } else {
-      setCardData(card.mesh, 'location', 'hand');
       this.isInteractive = false;
       animateObject(card.mesh, {
         path: new CatmullRomCurve3([

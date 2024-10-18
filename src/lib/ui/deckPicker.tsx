@@ -1,4 +1,4 @@
-import { Component, createSignal, For } from 'solid-js';
+import { Component, createEffect, createSignal, For } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
   Dialog,
@@ -32,6 +32,13 @@ const DeckPicker: Component = props => {
   const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(0);
   const [editingDeck, setEditingDeck] = createSignal(false);
   const [startingLife, setStartingLife] = createSignal(40);
+
+  createEffect(() => {
+    let startingLife = deckStore.decks[selectedDeckIndex()]?.startingLife;
+    if (startingLife) {
+      setStartingLife(startingLife);
+    }
+  });
 
   function selectDeck(index: number) {
     setSelectedDeckIndex(index);
@@ -109,7 +116,7 @@ const DeckPicker: Component = props => {
                             <For each={deck.tags}>
                               {tag => (
                                 <span
-                                  class='text-white rounded-md h-7 px-3 text-xs inline-flex items-center justify-center'
+                                  class='text-white rounded-md h-7 px-3 text-sm inline-flex items-center justify-center'
                                   style={`background-color: ${colorHashDark.hex(tag.name)};`}>
                                   {tag.name}
                                 </span>

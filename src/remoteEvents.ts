@@ -23,6 +23,7 @@ import {
 import { PlayArea } from './lib/playArea';
 import { setCounters } from './lib/ui/counterDialog';
 import { isLogMessageStackable } from './lib/ui/log';
+import { transferCard } from './lib/transferCard';
 
 interface Event {
   clientID: string;
@@ -104,19 +105,15 @@ const EVENTS = {
     animateObject(card.mesh, event.payload.animation);
   },
   async transferCard(event: Event, playArea: PlayArea, card: Card) {
-    let fromZone = zonesById.get(event.payload.fromZoneId);
-    let toZone = zonesById.get(event.payload.toZoneId);
-    await fromZone?.removeCard(card.mesh);
+    let fromZone = zonesById.get(event.payload.fromZoneId)!;
+    let toZone = zonesById.get(event.payload.toZoneId)!;
+    // await fromZone?.removeCard(card.mesh);
+    console.log({ clientId: event.clientID, this: provider.awareness.clientID });
 
     let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
-    if (event.payload.cardUserData) {
-      Object.assign(card.mesh.userData, event.payload.cardUserData);
-    }
-
-    await toZone?.addCard(card, addOptions);
+    await transferCard(card, fromZone, toZone, addOptions, event.payload.cardUserData, true);
   },
   createCard(event: Event, playArea: PlayArea) {
-    
     let card = cloneCard({ detail: event.payload.userData.card.detail }, event.payload.userData.id);
 
     let zone = zonesById.get(event.payload.zoneId);
