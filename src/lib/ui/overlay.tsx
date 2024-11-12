@@ -114,10 +114,12 @@ const Overlay: Component = () => {
         </div>
       </Show>
       <div class={styles.mainMenu}>
-        <Menubar style='height: auto; white-space: nowrap;' class={`${styles.menu} flex-col`}>
+        <Menubar
+          style='height: auto; white-space: nowrap;'
+          class={`${styles.menu} flex-col items-start`}>
           <MenubarMenu>
             <MenubarItem
-              class='w-full flex justify-center'
+              class='w-full flex'
               onClick={() => {
                 let tappedCards = playArea().battlefieldZone.mesh.children.filter(
                   mesh => mesh.userData.isTapped
@@ -127,9 +129,7 @@ const Overlay: Component = () => {
               }}>
               Untap All
             </MenubarItem>
-            <MenubarItem
-              class='w-full flex justify-center'
-              onClick={() => playArea().openTokenMenu()}>
+            <MenubarItem class='w-full flex' onClick={() => playArea().openTokenMenu()}>
               Add Tokens
             </MenubarItem>
             <MoveMenu
@@ -144,7 +144,7 @@ const Overlay: Component = () => {
               playArea={playArea()}
               fromZone={playArea().hand}
             />
-            <MenubarItem onClick={() => setIsLogVisible(visible => !visible)}>
+            <MenubarItem class='width-full' onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}
             </MenubarItem>
           </MenubarMenu>

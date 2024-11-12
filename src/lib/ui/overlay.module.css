@@ -32,9 +32,15 @@
   left: 2rem;
   display: flex;
   gap: 1rem;
-  align-items: center;
   flex-direction: row;
 }
+
+.mainMenu > * > * {
+  margin: 0 !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
 .mainMenu .menu {
   height: auto;
   white-space: nowrap;

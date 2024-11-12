@@ -45,7 +45,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
             Search
           </MenubarItem>
           <MenubarSub overlap>
-            <MenubarSubTrigger onClick={() => props.playArea.draw()}>Draw</MenubarSubTrigger>
+            <MenubarSubTrigger openDelay={50} onClick={() => props.playArea.draw()}>Draw</MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
