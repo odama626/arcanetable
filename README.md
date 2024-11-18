@@ -77,7 +77,6 @@ Contributions are what make this project thrive! Here’s how you can help:
 This app is free to use and relies on your generosity. You can support us by:
 
 - [Donating on Patreon](https://patreon.com/arcanetable)
-- [Sending a tip via PayPal](https://paypal.me/arcanetable)
 - Contributing to the codebase or documentation.
 
 ## 📝 License
