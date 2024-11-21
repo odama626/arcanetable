@@ -57,7 +57,7 @@ const Page: Component = props => {
             <p class='text-xl text-gray-100 mb-6'>Unleash the power of your deck.</p>
             <A
               href={startUrl()}
-              class='bg-violet-600 text-white px-6 py-3 rounded-xl hover:bg-violet-700'>
+              class='bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700'>
               Start Now
             </A>
           </div>
@@ -116,7 +116,7 @@ const Page: Component = props => {
                   {' '}
                   <a
                     href={startUrl()}
-                    class='inline-block bg-violet-600 text-white px-6 py-3 rounded-lg hover:bg-violet-700'>
+                    class='inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700'>
                     Start Playtesting
                   </a>
                 </div>
@@ -165,8 +165,7 @@ const Page: Component = props => {
                 <div class='relative'>
                   <h3 class='text-2xl font-bold text-white'>Mastering Deck Building</h3>
                   <p class='text-white mt-2'>
-                    Cultivate strategies for an edge, from drafting to shuffling your
-                    winning hand.
+                    Cultivate strategies for an edge, from drafting to shuffling your winning hand.
                   </p>
                 </div>
               </div>
@@ -262,34 +261,34 @@ const Page: Component = props => {
         </section> */}
 
         {/* <!-- Testimonials Section --> */}
-        <section class='py-20 bg-gray-800'>
-          <div class='max-w-4xl mx-auto text-center'>
+        {/* <section class='py-20 bg-gray-800'>
+          <div class='max-w-4xl mx-auto'>
             <h2 class='text-3xl font-bold mb-8'>Discover What Players Are Saying</h2>
             <div class='grid grid-cols-1 md:grid-cols-3 gap-8'>
               <div class='p-6 bg-gray-900 rounded-lg'>
-                <p class='text-gray-400'>
-                  "Arcane Table has revolutionized the way I play card games. The features are
-                  incredible!"
+                <p class='text-gray-200'>
+                  Arcane Table has revolutionized the way I play card games. The features are
+                  incredible!
                 </p>
-                <span class='block mt-4 text-gray-500'>- Player 1</span>
+                <span class='block mt-4 text-gray-400'>- Player 1</span>
               </div>
               <div class='p-6 bg-gray-900 rounded-lg'>
-                <p class='text-gray-400'>
-                  "The customization options are endless, allowing me to craft the perfect deck
-                  every time."
+                <p class='text-gray-200'>
+                  The customization options are endless, allowing me to craft the perfect deck every
+                  time.
                 </p>
-                <span class='block mt-4 text-gray-500'>- Player 2</span>
+                <span class='block mt-4 text-gray-400'>- Player 2</span>
               </div>
               <div class='p-6 bg-gray-900 rounded-lg'>
-                <p class='text-gray-400'>
-                  "Playing on Arcane Table is a truly immersive experience. I love the intuitive
-                  interface!"
+                <p class='text-gray-200'>
+                  Playing on Arcane Table is a truly immersive experience. I love the intuitive
+                  interface!
                 </p>
-                <span class='block mt-4 text-gray-500'>- Player 3</span>
+                <span class='block mt-4 text-gray-400'>- Player 3</span>
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* <!-- Community Section --> */}
         {/* <section class='py-20 bg-gray-900'>
