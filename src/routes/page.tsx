@@ -18,7 +18,7 @@ const Page: Component = props => {
         <header
           class='relative bg-cover bg-center bg-gray-800 rounded-lg'
           style="background-image: url('/hero.png');">
-          <div class='absolute inset-0 bg-black opacity-50'></div>
+          <div class='absolute inset-0 bg-black opacity-60'></div>
           {/* <!-- Optional overlay for better text visibility --> */}
           <div class='relative flex items-center justify-between p-6'>
             <div class='flex items-center space-x-4'>
@@ -32,29 +32,11 @@ const Page: Component = props => {
               <a href='https://patreon.com/arcanetable' target='__blank'>
                 <PatreonIcon style='fill: currentColor' class='h-8 w-8' />
               </a>
-              {/* <a href='#' class='text-white hover:text-gray-300'>
-                Begin
-              </a>
-              <a href='#' class='text-white hover:text-gray-300'>
-                Home
-              </a>
-              <a href='#' class='text-white hover:text-gray-300'>
-                Pricing
-              </a>
-              <a href='#' class='text-white hover:text-gray-300'>
-                Contact Us
-              </a>
-              <a href='#' class='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'>
-                Sign In
-              </a>
-              <a href='#' class='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'>
-                Sign Up
-              </a> */}
             </nav>
           </div>
           <div class='relative flex flex-col items-center justify-center py-60 text-center'>
             <h1 class='text-4xl font-bold text-white mb-6'>Welcome to Arcane Table</h1>
-            <p class='text-xl text-gray-100 mb-6'>Unleash the power of your deck.</p>
+            <p class='text-xl text-white mb-6'>Unleash the power of your deck.</p>
             <A
               href={startUrl()}
               class='bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700'>
