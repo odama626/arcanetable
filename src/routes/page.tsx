@@ -123,7 +123,7 @@ const Page: Component = props => {
               <img
                 src='/playtesting.png'
                 alt='Playtesting Image'
-                class='max-w-l mx-auto rounded-lg min-xl:w-1/2 max-l:w-full object-cover'
+                class='mx-auto rounded-lg w-full shrink object-cover'
               />
             </div>
           </div>
