@@ -82,7 +82,7 @@ const Page: Component = props => {
         {/* <!-- Second Feature Section (Master Playtesting) --> */}
         <section class='py-20 bg-gray-900'>
           <div class='max-w-4xl mx-auto'>
-            <div class='flex gap-4'>
+            <div class='flex gap-4 max-lg:flex-col max-lg:px-4'>
               <div class='flex flex-col gap-4'>
                 <h2 class='text-3xl font-bold'>Master the Art of Playtesting</h2>
                 <p class='text-gray-400'>
@@ -113,7 +113,6 @@ const Page: Component = props => {
                   </li>
                 </ul>
                 <div>
-                  {' '}
                   <a
                     href={startUrl()}
                     class='inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700'>
@@ -124,7 +123,7 @@ const Page: Component = props => {
               <img
                 src='/playtesting.png'
                 alt='Playtesting Image'
-                class='max-w-l mx-auto rounded-lg w-1/2 object-cover'
+                class='max-w-l mx-auto rounded-lg min-xl:w-1/2 max-l:w-full object-cover'
               />
             </div>
           </div>
