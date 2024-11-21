@@ -147,10 +147,10 @@ const Page: Component = props => {
 
         {/* <!-- Insights Section --> */}
         <section class='py-16 bg-gray-950'>
-          <div class='max-w-7xl mx-auto px-6 lg:px-8'>
-            <h2 class='text-3xl font-bold text-white text-center mb-12'>Arcane what?</h2>
+          <div class='max-w-7xl mx-auto px-6 lg:px-8 flex flex-col gap-4'>
+            <h2 class='text-3xl font-bold text-white text-center'>Arcane what?</h2>
 
-            <p class='text-gray-400 text-center mb-12'>
+            <p class='text-gray-400 text-center'>
               Table. Gone are the days of staring at Archidekt and hoping your card pile will
               execute.
               <br />
@@ -161,11 +161,11 @@ const Page: Component = props => {
               <div
                 class='relative bg-gray-900 rounded-lg overflow-hidden h-64 flex items-end p-6'
                 style="background-image: url('insight-deckbuilding.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-50'></div>
+                <div class='absolute inset-0 bg-black opacity-60'></div>
                 <div class='relative'>
                   <h3 class='text-2xl font-bold text-white'>Mastering Deck Building</h3>
-                  <p class='text-gray-300 mt-2'>
-                    Cultivate strategies for a competitive edge, from drafting to shuffling your
+                  <p class='text-white mt-2'>
+                    Cultivate strategies for an edge, from drafting to shuffling your
                     winning hand.
                   </p>
                 </div>
@@ -175,10 +175,10 @@ const Page: Component = props => {
               <div
                 class='relative -900 rounded-lg overflow-hidden h-64 flex items-end p-6'
                 style="background-image: url('insight-strategy.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-50'></div>
+                <div class='absolute inset-0 bg-black opacity-60'></div>
                 <div class='relative'>
                   <h3 class='text-2xl font-bold text-white'>Improve Your Strategies</h3>
-                  <p class='text-gray-300 mt-2'>
+                  <p class='text-white mt-2'>
                     Refine your tactics with expert insights and advanced game theories.
                   </p>
                 </div>
@@ -188,10 +188,10 @@ const Page: Component = props => {
               <div
                 class='relative bg-gray-900 rounded-lg overflow-hidden h-64 flex items-end p-6'
                 style="background-image: url('insight-balance.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-50'></div>
+                <div class='absolute inset-0 bg-black opacity-60'></div>
                 <div class='relative'>
                   <h3 class='text-2xl font-bold text-white'>Balance Your Deck</h3>
-                  <p class='text-gray-300 mt-2'>
+                  <p class='text-white mt-2'>
                     Achieve harmony in your deck, balancing power and strategy for optimal gameplay.
                   </p>
                 </div>
