@@ -82,7 +82,7 @@ const Page: Component = props => {
         {/* <!-- Second Feature Section (Master Playtesting) --> */}
         <section class='py-20 bg-gray-900'>
           <div class='max-w-4xl mx-auto'>
-            <div class='flex gap-4 max-lg:flex-col max-lg:px-4'>
+            <div class='flex gap-4 max-lg:flex-col-reverse max-lg:px-4'>
               <div class='flex flex-col gap-4'>
                 <h2 class='text-3xl font-bold'>Master the Art of Playtesting</h2>
                 <p class='text-gray-400'>
