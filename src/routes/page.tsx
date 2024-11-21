@@ -1,6 +1,8 @@
 import { A } from '@solidjs/router';
 import { nanoid } from 'nanoid';
 import { Component, createSignal, onMount } from 'solid-js';
+import GithubIcon from '~/lib/icons/github.svg';
+import PatreonIcon from '~/lib/icons/patreon.svg';
 
 const Page: Component = props => {
   const [startUrl, setStartUrl] = createSignal(`/game/${nanoid()}`);
@@ -11,7 +13,7 @@ const Page: Component = props => {
 
   return (
     <div class='bg-gray-900 text-white font-sans'>
-      <div class='mx-auto flex flex-col gap-5'>
+      <div class='mx-auto flex flex-col'>
         {/* <!-- Header Section with Background Image --> */}
         <header
           class='relative bg-cover bg-center bg-gray-800 rounded-lg'
@@ -23,7 +25,13 @@ const Page: Component = props => {
               <img src='/icon.svg' alt='Arcane Table Logo' class='w-12 h-12' />
               <span class='text-xl font-bold text-white'>Arcane Table</span>
             </div>
-            <nav class='space-x-4'>
+            <nav class='space-x-4 flex'>
+              <a href='https://github.com/odama626/arcanetable/' target='__blank'>
+                <GithubIcon style='fill: currentColor;' class='h-8 w-8' />
+              </a>
+              <a href='https://patreon.com/arcanetable' target='__blank'>
+                <PatreonIcon style='fill: currentColor' class='h-8 w-8' />
+              </a>
               {/* <a href='#' class='text-white hover:text-gray-300'>
                 Begin
               </a>
@@ -49,7 +57,7 @@ const Page: Component = props => {
             <p class='text-xl text-gray-100 mb-6'>Unleash the power of your deck.</p>
             <A
               href={startUrl()}
-              class='bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700'>
+              class='bg-violet-600 text-white px-6 py-3 rounded-xl hover:bg-violet-700'>
               Start Now
             </A>
           </div>
@@ -73,24 +81,54 @@ const Page: Component = props => {
 
         {/* <!-- Second Feature Section (Master Playtesting) --> */}
         <section class='py-20 bg-gray-900'>
-          <div class='max-w-4xl mx-auto flex flex-col items-center'>
-            <h2 class='text-3xl font-bold mb-8 text-center'>Master the Art of Playtesting</h2>
-            <p class='text-gray-400 text-center mb-12'>
-              Develop your strategies and master deck design so that you will always best your
-              playgroup
-            </p>
-            <img
-              src='/playtesting.png'
-              alt='Playtesting Image'
-              class='w-full max-w-xl mx-auto rounded-lg'
-            />
+          <div class='max-w-4xl mx-auto'>
+            <div class='flex gap-4'>
+              <div class='flex flex-col gap-4'>
+                <h2 class='text-3xl font-bold'>Master the Art of Playtesting</h2>
+                <p class='text-gray-400'>
+                  Develop your strategies and master deck design so that you will always best your
+                  playgroup
+                </p>
+                <ul class='flex flex-col gap-4 items-start text-gray-400'>
+                  <li>
+                    🃏 <strong class='text-white'>3D Card Simulation:</strong>
+                    <br />
+                    Test your Magic: The Gathering decks in a fully interactive 3D environment.
+                  </li>
+                  <li>
+                    🤝 <strong class='text-white'>Local Multiplayer Playtesting:</strong>
+                    <br />
+                    Playtest with friends by sharing an invite link
+                  </li>
+                  <li>
+                    {' '}
+                    🔍 <strong class='text-white'>Deck Management:</strong>
+                    <br />
+                    Import, export, and manage your decks seamlessly.
+                  </li>
+                  <li>
+                    <strong class='text-white'>🔧 Customizable Settings:</strong>
+                    <br />
+                    Tailor the app to fit your playstyle and preferences.
+                  </li>
+                </ul>
+                <div>
+                  {' '}
+                  <a
+                    href={startUrl()}
+                    class='inline-block bg-violet-600 text-white px-6 py-3 rounded-lg hover:bg-violet-700'>
+                    Start Playtesting
+                  </a>
+                </div>
+              </div>
+              <img
+                src='/playtesting.png'
+                alt='Playtesting Image'
+                class='max-w-l mx-auto rounded-lg w-1/2 object-cover'
+              />
+            </div>
           </div>
         </section>
-        <div class='text-center'>
-          <A href={startUrl()} class='bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700'>
-            Start Playtesting
-          </A>
-        </div>
 
         {/* <!-- Third Feature Section (Custom Solutions) --> */}
         {/* <section class='py-20 bg-gray-900'>
@@ -108,7 +146,7 @@ const Page: Component = props => {
         </section> */}
 
         {/* <!-- Insights Section --> */}
-        <section class='py-16 bg-gray-900'>
+        <section class='py-16 bg-gray-950'>
           <div class='max-w-7xl mx-auto px-6 lg:px-8'>
             <h2 class='text-3xl font-bold text-white text-center mb-12'>Arcane what?</h2>
 
