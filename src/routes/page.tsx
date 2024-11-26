@@ -105,7 +105,7 @@ const Page: Component = props => {
               <img
                 src='/playtesting.png'
                 alt='Playtesting Image'
-                class='mx-auto rounded-lg w-full shrink object-cover'
+                class='mx-auto rounded-lg w-full shrink object-cover min-w-0'
               />
             </div>
           </div>
