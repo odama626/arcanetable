@@ -71,7 +71,7 @@ test('remote shuffle then join', async () => {
   );
 });
 
-test.only('remote shuffle then join', async () => {
+test('remote shuffle then join', async () => {
   let cardList = createMockDecklist();
 
   const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
@@ -95,7 +95,7 @@ test.only('remote shuffle then join', async () => {
   await playArea.shuffleDeck();
 
   playArea.shuffleDeck();
-  
+
   await playArea.shuffleDeck();
 
   for (const event of events) {
