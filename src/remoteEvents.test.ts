@@ -48,3 +48,61 @@ test('remote mulligan then join', async () => {
     remotePlayArea.deck.cards.map(card => card.id)
   );
 });
+
+test('remote shuffle then join', async () => {
+  let cardList = createMockDecklist();
+
+  const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
+
+  const remotePlayArea = PlayArea.FromNetworkState(playArea.getLocalState());
+
+  let events = [];
+
+  playArea.subscribeEvents(event => events.push(event));
+
+  await playArea.shuffleDeck();
+
+  for (const event of events) {
+    await handleEvent(event, remotePlayArea);
+  }
+
+  expect(remotePlayArea.deck.cards.map(card => card.id)).toEqual(
+    playArea.deck.cards.map(card => card.id)
+  );
+});
+
+test.only('remote shuffle then join', async () => {
+  let cardList = createMockDecklist();
+
+  const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
+
+  const remotePlayArea = PlayArea.FromNetworkState(playArea.getLocalState());
+
+  let events = [];
+
+  playArea.subscribeEvents(event => events.push(event));
+
+  await playArea.draw();
+
+  await playArea.shuffleDeck();
+
+  for (const event of events) {
+    await handleEvent(event, remotePlayArea);
+  }
+
+  events = [];
+
+  await playArea.shuffleDeck();
+
+  playArea.shuffleDeck();
+  
+  await playArea.shuffleDeck();
+
+  for (const event of events) {
+    await handleEvent(event, remotePlayArea);
+  }
+
+  expect(remotePlayArea.deck.cards.map(card => card.id)).toEqual(
+    playArea.deck.cards.map(card => card.id)
+  );
+});
