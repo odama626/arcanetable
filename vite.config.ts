@@ -4,6 +4,7 @@ import solidSvg from 'vite-plugin-solid-svg';
 import path from 'path';
 // import mkcert from 'vite-plugin-mkcert'
 // import devtools from 'solid-devtools/vite';
+import { compression } from 'vite-plugin-compression2';
 
 export default defineConfig({
   plugins: [
@@ -14,6 +15,8 @@ export default defineConfig({
     // devtools(),
     solidPlugin(),
     solidSvg(),
+    compression(),
+    compression({ algorithm: 'brotliCompress' }),
   ],
   resolve: {
     alias: {

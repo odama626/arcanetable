@@ -6,7 +6,7 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode production",
     "serve": "vite preview",
     "test": "vitest"
   },
@@ -41,6 +41,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.169.0",
+    "vite-plugin-compression2": "^1.3.3",
     "vite-plugin-solid-svg": "^0.8.1",
     "vitest": "^2.1.3",
     "y-webrtc": "^10.3.0",
