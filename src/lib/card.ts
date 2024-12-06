@@ -359,6 +359,6 @@ export function getSerializableCard(cardMesh: Object3D) {
     id: cardMesh.userData.id,
     userData: cardMesh.userData,
     position: cardMesh.position.toArray(),
-    rotation: cardMesh.position.toArray(),
+    rotation: cardMesh.rotation.toArray(),
   };
 }

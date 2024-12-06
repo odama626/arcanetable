@@ -78,7 +78,7 @@ export async function handleEvent(event, playArea) {
 
 const EVENTS = {
   join(event: Event) {
-    let playArea = new PlayArea(event.clientID, event.payload.cards, event.payload);
+    let playArea = PlayArea.FromNetworkState({ ...event.payload, clientID: event.clientID });
 
     table.add(playArea.mesh);
     playAreas.set(event.clientID, playArea);

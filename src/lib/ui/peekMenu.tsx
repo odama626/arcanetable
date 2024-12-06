@@ -1,12 +1,7 @@
 import { Component, createSignal, Match, Show, Switch } from 'solid-js';
+import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from '~/components/ui/menubar';
+import { Menubar, MenubarMenu } from '~/components/ui/menubar';
 import { Card } from '../constants';
 import {
   cardsById,
@@ -20,10 +15,9 @@ import {
   setPeekFilterText,
   zonesById,
 } from '../globals';
-import styles from './peekMenu.module.css';
 import { transferCard } from '../transferCard';
-import { Button } from '~/components/ui/button';
 import MoveMenu from './moveMenu';
+import styles from './peekMenu.module.css';
 
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;

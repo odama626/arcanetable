@@ -2,7 +2,13 @@ import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { cloneCard, initializeCardMesh, setCardData, updateModifiers } from './card';
+import {
+  cloneCard,
+  getSerializableCard,
+  initializeCardMesh,
+  setCardData,
+  updateModifiers,
+} from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
@@ -27,7 +33,7 @@ interface State {
   peekZone?: RemoteZoneState;
   hand?: RemoteZoneState;
   deck?: RemoteZoneState;
-  cards?: Card[];
+  cards?: { id: string; clientId: number}[];
 }
 
 export class PlayArea {
@@ -44,7 +50,7 @@ export class PlayArea {
   public tokenSearchZone;
   public availableTokens?: Card[];
 
-  constructor(public clientId: number, public cards: Card[], state: State) {
+  constructor(public clientId: number, public cards: Card[], cardsInDeck: Card[], state: State) {
     this.mesh = new Group();
     this.isLocalPlayArea = !!state.isLocalPlayer;
 
@@ -71,7 +77,9 @@ export class PlayArea {
     this.mesh.add(this.exileZone.mesh);
     this.mesh.add(this.graveyardZone.mesh);
 
-    let deckCards = (state?.deck?.cards || cards).map(card => initializeCardMesh(card, clientId));
+    let deckCards = (state?.deck?.cards || cardsInDeck).map(card =>
+      initializeCardMesh(card, clientId)
+    );
 
     this.deck = new Deck(deckCards, state?.deck?.id);
     this.hand = new Hand(state?.hand?.id, this.isLocalPlayArea);
@@ -283,15 +291,17 @@ export class PlayArea {
   }
 
   getLocalState(): State {
-    return {
+    const localState = {
       graveyard: this.graveyardZone.getSerializable(),
       exile: this.exileZone.getSerializable(),
       battlefield: this.battlefieldZone.getSerializable(),
       peekZone: this.peekZone.getSerializable(),
       hand: this.hand.getSerializable(),
       deck: this.deck.getSerializable(),
-      cards: this.cards,
+      cards: this.cards.map(card => ({ ...card, mesh: undefined })),
     };
+
+    return localState;
   }
 
   subscribeEvents(callback) {
@@ -306,12 +316,14 @@ export class PlayArea {
 
   static async FromDeck(clientId: number, deck) {
     let deckList = deck?.deck ?? loadCardList(deck.cardList);
-    let cards = await loadDeckList(deckList);
+    let cardsInDeck = await loadDeckList(deckList);
+    let cardsInPlay = deck?.inPlay ? await loadDeckList(deck?.inPlay) : [];
 
-    const playArea = new PlayArea(clientId, cards, { isLocalPlayer: true });
+    let cards = cardsInDeck.concat(cardsInPlay);
+
+    const playArea = new PlayArea(clientId, cards, cardsInDeck, { isLocalPlayer: true });
 
     if (deck?.inPlay) {
-      let cardsInPlay = await loadDeckList(deck?.inPlay);
       cardsInPlay.forEach((card, i) => {
         card.id = card.id || nanoid();
         let initializedCard = initializeCardMesh(card, clientId);
@@ -327,7 +339,7 @@ export class PlayArea {
   }
 
   static FromNetworkState(state: State) {
-    let playArea = new PlayArea(state.clientId!, state.cards!, state);
+    let playArea = new PlayArea(state.clientId!, state.cards!, state.deck.cards!, state);
 
     return playArea;
   }

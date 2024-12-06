@@ -8,7 +8,8 @@ headlessInit();
 useAnimations();
 
 test('mulligan', async () => {
-  const playArea = new PlayArea(0, createMockDecklist(), { isLocalPlayer: true });
+  let cardList = createMockDecklist();
+  const playArea = new PlayArea(0, cardList, cardList, { isLocalPlayer: true });
 
   await playArea.mulligan(7);
   await playArea.mulligan(7);
@@ -19,7 +20,7 @@ test('mulligan', async () => {
 
 test('remote mulligan then join', async () => {
   let cardList = createMockDecklist();
-  const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
+  const playArea = new PlayArea(0, cardList, cardList, { isLocalPlayer: true });
   const remotePlayArea = PlayArea.FromNetworkState(playArea.getLocalState());
   let events = [];
 
@@ -52,9 +53,9 @@ test('remote mulligan then join', async () => {
 test('remote shuffle then join', async () => {
   let cardList = createMockDecklist();
 
-  const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
+  const playArea = new PlayArea(0, cardList, cardList, { isLocalPlayer: true });
 
-  const remotePlayArea = PlayArea.FromNetworkState(playArea.getLocalState());
+  const remotePlayArea = PlayArea.FromNetworkState(structuredClone(playArea.getLocalState()));
 
   let events = [];
 
@@ -74,9 +75,9 @@ test('remote shuffle then join', async () => {
 test('remote shuffle then join', async () => {
   let cardList = createMockDecklist();
 
-  const playArea = new PlayArea(0, cardList, { isLocalPlayer: true });
+  const playArea = new PlayArea(0, cardList, cardList, { isLocalPlayer: true });
 
-  const remotePlayArea = PlayArea.FromNetworkState(playArea.getLocalState());
+  const remotePlayArea = PlayArea.FromNetworkState(structuredClone(playArea.getLocalState()));
 
   let events = [];
 
@@ -94,7 +95,7 @@ test('remote shuffle then join', async () => {
 
   await playArea.shuffleDeck();
 
-  playArea.shuffleDeck();
+  await playArea.shuffleDeck();
 
   await playArea.shuffleDeck();
 

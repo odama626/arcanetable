@@ -1,4 +1,4 @@
-import { Mesh, Object3D } from 'three';
+import { EulerTuple, Mesh, Object3D, Vector3Tuple } from 'three';
 
 export const CARD_WIDTH = 63 / 4;
 export const CARD_HEIGHT = 88 / 4;
@@ -18,8 +18,8 @@ export interface Card {
 export interface SerializableCard {
   id: string;
   userData: Record<string, any>;
-  position: [number, number, number];
-  rotation: [number, number, number];
+  position: Vector3Tuple;
+  rotation: EulerTuple;
 }
 export interface CardZone<AddOptions = {} & { skipAnimation?: boolean; destroy?: boolean }> {
   id: string;

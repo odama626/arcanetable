@@ -170,7 +170,11 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
 
   removeCard(cardMesh: Mesh) {
     let index = this.cards.findIndex(card => card.id === cardMesh.userData.id);
-    if (index > -1) this.cards.splice(index, 1);
+    if (index > -1) {
+      this.cards.splice(index, 1);
+    } else {
+      console.error(`didn't find card`, { cardMesh, cards: this.cards });
+    }
     if (this.isTopPublic && !this.cards[0]?.mesh.userData.isPublic) {
       this.flipTop();
     }
