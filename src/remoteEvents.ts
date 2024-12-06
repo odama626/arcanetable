@@ -88,6 +88,9 @@ const EVENTS = {
     const rotation = PLAY_AREA_ROTATIONS[playerCount()];
     playArea.mesh.rotateZ(rotation);
   },
+  openTokenMenu(event: Event, playArea: PlayArea) {
+    return playArea.openTokenMenu(event.payload);
+  },
   queueAnimationGroup(event: Event) {
     queueAnimationGroup();
   },
@@ -108,7 +111,6 @@ const EVENTS = {
     let fromZone = zonesById.get(event.payload.fromZoneId)!;
     let toZone = zonesById.get(event.payload.toZoneId)!;
     // await fromZone?.removeCard(card.mesh);
-    console.log({ clientId: event.clientID, this: provider.awareness.clientID });
 
     let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
     await transferCard(card, fromZone, toZone, addOptions, event.payload.cardUserData, true);

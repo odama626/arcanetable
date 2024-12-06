@@ -24,6 +24,12 @@ interface RemoteZoneState {
   cards: SerializableCard[];
 }
 
+interface CardReference {
+  id: string;
+  clientId: number;
+  detail: any;
+}
+
 interface State {
   isLocalPlayer?: boolean;
   clientId?: number;
@@ -31,9 +37,10 @@ interface State {
   exile?: RemoteZoneState;
   battlefield?: RemoteZoneState;
   peekZone?: RemoteZoneState;
+  tokenSearchZone?: RemoteZoneState;
   hand?: RemoteZoneState;
   deck?: RemoteZoneState;
-  cards?: { id: string; clientId: number}[];
+  cards: CardReference[];
 }
 
 export class PlayArea {
@@ -48,9 +55,14 @@ export class PlayArea {
   public isLocalPlayArea: boolean;
   public revealZone;
   public tokenSearchZone;
-  public availableTokens?: Card[];
+  public availableTokens?: CardReference[];
 
-  constructor(public clientId: number, public cards: Card[], cardsInDeck: Card[], state: State) {
+  constructor(
+    public clientId: number,
+    public cards: CardReference[],
+    cardsInDeck: Card[],
+    state: State
+  ) {
     this.mesh = new Group();
     this.isLocalPlayArea = !!state.isLocalPlayer;
 
@@ -58,7 +70,7 @@ export class PlayArea {
 
     this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek', state.peekZone?.id);
     this.revealZone = new CardGrid(this.isLocalPlayArea, 'reveal');
-    this.tokenSearchZone = new CardGrid(this.isLocalPlayArea, 'tokenSearch');
+    this.tokenSearchZone = new CardGrid(this.isLocalPlayArea, 'tokenSearch', state.tokenSearchZone?.id);
     this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
     this.exileZone = new CardStack('exile', state.exile?.id);
 
@@ -105,7 +117,10 @@ export class PlayArea {
     }
   }
 
-  async openTokenMenu() {
+  async openTokenMenu(payload?: { availableTokens: CardReference[]; ids: string[] }) {
+    if (payload?.availableTokens) {
+      this.availableTokens = payload.availableTokens;
+    } 
     if (!this.availableTokens) {
       let cardsInPlay = this.cards;
       let allTokens = new Set(
@@ -116,13 +131,19 @@ export class PlayArea {
       );
 
       this.availableTokens = await Promise.all(
-        [...allTokens].map(uri => fetch(uri, { cache: 'force-cache' }).then(r => r.json()))
+        [...allTokens].map(async uri => {
+          const payload = await fetch(uri, { cache: 'force-cache' }).then(r => r.json());
+          return {
+            ...payload,
+            clientId: this.clientId
+          }
+        })
       ).then(cards => uniqBy(cards, 'oracle_id'));
     }
 
     let availableCards = this.availableTokens
-      .map(detail => {
-        let card = cloneCard({ detail }, nanoid());
+      .map((detail, i) => {
+        let card = cloneCard({ detail }, payload?.ids?.[i] ?? nanoid());
         setCardData(card.mesh, 'isPublic', true);
         setCardData(card.mesh, 'isInteractive', true);
         setCardData(card.mesh, 'location', 'tokenSearch');
@@ -131,6 +152,11 @@ export class PlayArea {
         return card;
       })
       .sort((a, b) => a.detail.name.localeCompare(b.detail.name));
+
+    this.emitEvent('openTokenMenu', {
+      availableTokens: this.availableTokens,
+      ids: availableCards.map(card => card.id),
+    });
 
     for (let i = 0; i < availableCards.length; i++) {
       setTimeout(() => {
@@ -296,6 +322,7 @@ export class PlayArea {
       exile: this.exileZone.getSerializable(),
       battlefield: this.battlefieldZone.getSerializable(),
       peekZone: this.peekZone.getSerializable(),
+      tokenSearchZone: this.tokenSearchZone.getSerializable(),
       hand: this.hand.getSerializable(),
       deck: this.deck.getSerializable(),
       cards: this.cards.map(card => ({ ...card, mesh: undefined })),

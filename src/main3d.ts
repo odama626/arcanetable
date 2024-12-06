@@ -304,12 +304,14 @@ function onDocumentDrop(event) {
     });
 
     setHoverSignal(signal => {
-      focusOn(signal.mesh);
-      const tether = getCardMeshTetherPoint(signal.mesh);
+      let mesh = signal?.mesh ?? target;
+      focusOn(mesh);
+      const tether = getCardMeshTetherPoint(mesh);
       return {
         mouse,
-        ...signal,
+        ...(signal ?? {}),
         tether,
+        mesh
       };
     });
   });
