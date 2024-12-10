@@ -67,7 +67,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
                               ...modifiers,
                               counters: {
                                 ...modifiers.counters,
-                                [counter.id]: parseInt(value, 10),
+                                [counter.id]: parseInt(value.replace(/\,/g,''), 10),
                               },
                             }));
                           }}>

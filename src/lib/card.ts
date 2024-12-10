@@ -88,7 +88,6 @@ export function cloneCard(card: Card, newId: string): Card {
       ['cardBack', 'publicCardBack'],
       ['resting']
     );
-    console.log({ cloneable });
     newCard.mesh.userData = structuredClone(cloneable);
     Object.assign(newCard.mesh.userData, transferable);
 
@@ -98,6 +97,7 @@ export function cloneCard(card: Card, newId: string): Card {
     newCard.mesh.rotation.copy(card.mesh.rotation);
   }
   setCardData(newCard.mesh, 'id', newCard.id);
+  setCardData(newCard.mesh, 'isToken', true);
   updateModifiers(newCard);
   newCard.detail.search = card.detail.search ?? getSearchLine(newCard.detail);
   cardsById.set(newCard.id, newCard);
@@ -178,6 +178,7 @@ export function cleanupCard(card: card) {
 }
 
 export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
+  let modifiersNeedUpdate = false;
   // before setting value
   if (field === 'isPublic') {
     if (cardMesh.userData.isDoubleSided) {
@@ -207,22 +208,31 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     cardMesh.userData.previousZoneId = cardMesh.userData.zoneId;
   }
 
+  if (field === 'isToken' && cardMesh.userData.isToken !== value) {
+    modifiersNeedUpdate = true;
+  }
+
   cardMesh.userData[field] = value;
 
   // after setting value
 
   if (field === 'isFlipped') {
+    modifiersNeedUpdate = true;
+  }
+
+  if (modifiersNeedUpdate) {
     let card = cardsById.get(cardMesh.userData.id);
-    updateModifiers(card);
+    if (card) updateModifiers(card);
   }
 }
 
 const textCanvas = document.createElement('canvas');
 textCanvas.height = 55;
 
-function createLabel(text, color?: string) {
-  const ctx = textCanvas.getContext('2d')!;
+function createLabel(text: string, color?: string) {
+  const ctx = textCanvas.getContext('2d', { willReadFrequently: true })!;
   const font = '48px grobold';
+
   ctx.font = font;
   const textWidth = ctx.measureText(text).width;
 
@@ -242,29 +252,44 @@ function createLabel(text, color?: string) {
   return { texture, width: textCanvas.width / 31 };
 }
 
-function updateCounter(card: Card, counterId: string, index: number) {
-  let counter = counters().find(counter => counter.id === counterId)!;
-  let counterValue = card.mesh.userData.modifiers.counters?.[counterId];
+function getCounterLabel(value: number | string, name: string) {
+  switch (typeof value) {
+    case 'number':
+      return `${value.toLocaleString()} ${name}`;
+    case 'boolean':
+      return value ? `is ${name}` : ``;
+    default:
+      return value.toString();
+  }
+}
+
+function updateCounter(
+  card: Card,
+  counter: { id: string; name: string; color: string },
+  value: number | string | boolean,
+  index: number
+) {
   let zOffset = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -2 : 1);
 
-  if (!card.modifiers[counterId]) {
+  if (!card.modifiers[counter.id]) {
     let geometry = new BoxGeometry(1, 1, 1);
     let mat = new MeshStandardMaterial({ color: new Color(counter.color) });
     let mesh = new Mesh(geometry, mat);
-    mesh.scale.set(7, 3, CARD_THICKNESS);
+    mesh.scale.set(1, 3, CARD_THICKNESS);
     card.mesh.add(mesh);
     mesh.transparent = true;
     card.modifiers[counter.id] = mesh;
   }
-  if (counterValue !== 0) {
-    if (!card.mesh.children.includes(card.modifiers[counterId])) {
+  if (value) {
+    if (!card.mesh.children.includes(card.modifiers[counter.id])) {
       card.mesh.add(card.modifiers[counter.id]);
     }
     let mesh: Mesh = card.modifiers[counter.id];
-    let label = createLabel(`${counterValue} ${counter.name}`, counter.color);
+    let label = createLabel(getCounterLabel(value, counter.name), counter.color);
     mesh.material.map = label.texture;
+    mesh.scale.set(label.width, 3, CARD_THICKNESS);
     mesh.position.set(
-      (CARD_WIDTH / 2 + label.width / 2 + 1) * (card.mesh.userData.isFlipped ? -1 : 1),
+      (CARD_WIDTH / 2 + label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
       zOffset
     );
@@ -278,8 +303,7 @@ export function updateModifiers(card: Card) {
   card.modifiers = card.modifiers ?? {};
   let zPosition = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -5 : 1);
 
-  let modifiers = card.mesh.userData.modifiers;
-  let { power = 0, toughness = 0 } = modifiers || {};
+  let { power = 0, toughness = 0 } = card.mesh.userData.modifiers || {};
 
   if (power !== 0 || toughness !== 0) {
     if (!card.modifiers.pt) {
@@ -309,12 +333,32 @@ export function updateModifiers(card: Card) {
     card.mesh.remove(card.modifiers.pt);
   }
 
-  if (!card.mesh.userData?.modifiers?.counters) return;
+  const countersById = Object.fromEntries(counters().map(counter => [counter.id, counter]));
 
-  Object.keys(card.mesh.userData.modifiers.counters)
-    .sort((a, b) => a.localeCompare(b))
-    .forEach((counterId, index) => {
-      updateCounter(card, counterId, index);
+  const modifiers = Object.entries(card.mesh.userData.modifiers?.counters ?? {}).map(
+    ([counterId, value], index) => {
+      return {
+        counter: countersById[counterId],
+        value,
+      };
+    }
+  );
+
+  if (card.mesh.userData.isToken) {
+    modifiers.push({ counter: { name: 'token' }, value: card.mesh.userData.isToken });
+  }
+
+  if (!modifiers.length) return;
+
+  console.log({ modifiers });
+
+  modifiers
+    .sort((a, b) => {
+      if (a.value === b.value) return a.counter.name.localeCompare(b.counter.name);
+      return b.value - a.value;
+    })
+    .forEach((modifier, index) => {
+      updateCounter(card, modifier.counter, modifier.value, index);
     });
 }
 
