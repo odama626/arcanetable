@@ -2,19 +2,13 @@ import { uniqBy } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
-import {
-  cloneCard,
-  getSerializableCard,
-  initializeCardMesh,
-  setCardData,
-  updateModifiers,
-} from './card';
+import { cloneCard, initializeCardMesh, setCardData, updateModifiers } from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
-import { cardsById, doXTimes, focusCamera, provider, sendEvent, zonesById } from './globals';
+import { cardsById, doXTimes, focusCamera, provider, zonesById } from './globals';
 import { Hand } from './hand';
 import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
@@ -142,13 +136,12 @@ export class PlayArea {
       }))
       .reverse();
 
-    sendEvent({ type: 'bulk', timing: 50, events: events });
+    this.emitEvent({ type: 'bulk', timing: 50, events: events });
     await doXTimes(
       zone.cards.length,
       () => {
         let card = zone.cards.at(-1);
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
-        previousZone?.addCard(card);
         transferCard(card, zone, previousZone, undefined, undefined, true);
       },
       50
@@ -194,9 +187,12 @@ export class PlayArea {
       })
       .sort((a, b) => a.detail.name.localeCompare(b.detail.name));
 
-    this.emitEvent('toggleTokenMenu', {
-      availableTokens: this.availableTokens,
-      ids: availableCards.map(card => card.id),
+    this.emitEvent({
+      type: 'toggleTokenMenu',
+      payload: {
+        availableTokens: this.availableTokens,
+        ids: availableCards.map(card => card.id),
+      },
     });
 
     for (let i = 0; i < availableCards.length; i++) {
@@ -210,14 +206,14 @@ export class PlayArea {
     card.mesh.userData.modifiers = update(
       card.mesh.userData.modifiers ?? { power: 0, toughness: 0, counters: {} }
     );
-    this.emitEvent('modifyCard', { userData: card.mesh.userData });
+    this.emitEvent({ type: 'modifyCard', payload: { userData: card.mesh.userData } });
 
     updateModifiers(card);
   }
 
   draw() {
     this.hand.addCard(this.deck.draw());
-    this.emitEvent('draw');
+    this.emitEvent({ type: 'draw' });
   }
 
   async mulligan(drawCount: number, existingOrder?: number[]) {
@@ -232,7 +228,7 @@ export class PlayArea {
       50
     );
     let order = await this.deck.shuffle(existingOrder);
-    this.emitEvent('mulligan', { order, drawCount });
+    this.emitEvent({ type: 'mulligan', payload: { order, drawCount } });
 
     await doXTimes(
       drawCount,
@@ -248,7 +244,7 @@ export class PlayArea {
       setCardData(card.mesh, 'isPublic', true);
       this.revealZone.addCard(card);
     } else {
-      this.emitEvent('reveal', { userData: card.mesh.userData });
+      this.emitEvent({ type: 'reveal', payload: { userData: card.mesh.userData } });
     }
   }
 
@@ -292,12 +288,12 @@ export class PlayArea {
   }
   async deckFlipTop(toggle = false) {
     let card = await this.deck.flipTop(toggle);
-    this.emitEvent('deckFlipTop', { toggle, userData: card.mesh.userData });
+    this.emitEvent({ type: 'deckFlipTop', payload: { toggle, userData: card.mesh.userData } });
   }
 
   async shuffleDeck(existingOrder?: number[]) {
     let order = await this.deck.shuffle(existingOrder);
-    this.emitEvent('shuffleDeck', { order });
+    this.emitEvent({ type: 'shuffleDeck', payload: { order } });
   }
 
   flip(cardMesh: Mesh) {
@@ -306,7 +302,7 @@ export class PlayArea {
       new Vector3(CARD_WIDTH / 4, 0, 0)
     );
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
-    this.emitEvent('flip', { userData: cardMesh.userData });
+    this.emitEvent({ type: 'flip', payload: { userData: cardMesh.userData } });
 
     let rotation = cardMesh.rotation.clone();
     let vec = new Vector3();
@@ -345,7 +341,7 @@ export class PlayArea {
       let rotation = cardMesh.rotation.clone();
       rotation.z = angleDelta;
       setCardData(cardMesh, 'isTapped', !cardMesh.userData.isTapped);
-      this.emitEvent('tap', { userData: cardMesh.userData });
+      this.emitEvent({ type: 'tap', payload: { userData: cardMesh.userData } });
 
       animateObject(cardMesh, {
         to: { rotation },
@@ -356,7 +352,7 @@ export class PlayArea {
   }
 
   clone(id: string, newId = nanoid()) {
-    this.emitEvent('clone', { id, newId });
+    this.emitEvent({ type: 'clone', payload: { id, newId } });
     let card = cardsById.get(id)!;
     let newCard = cloneCard(card, newId);
     card.mesh.parent?.add(newCard.mesh);
@@ -381,9 +377,9 @@ export class PlayArea {
     this.listeners.push(callback);
   }
 
-  private emitEvent(type: string, payload = {}) {
+  private emitEvent(event = {}) {
     this.listeners.forEach(callback => {
-      callback({ type, payload });
+      callback(event);
     });
   }
 
