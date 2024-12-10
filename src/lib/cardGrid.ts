@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { createEffect } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
@@ -15,11 +15,6 @@ import {
 import { getGlobalRotation, isVectorEqual } from './utils';
 
 const CARDS_PER_ROW = 5;
-export const [cardGridStore, setCardGridStore] = createStore({
-  active: false,
-  cards: [],
-  tether: {},
-});
 
 export class CardGrid implements CardZone {
   public mesh: Group;
@@ -31,6 +26,8 @@ export class CardGrid implements CardZone {
   private maxScroll: number;
   private isLocalPlayArea: boolean;
   public mode: 'grid' | 'field' = 'grid';
+  public observable: CardZone['observable'];
+  private setObservable: SetStoreFunction<CardZone['observable']>;
 
   constructor(isLocalPlayArea: boolean, public zone: string, public id: string = nanoid()) {
     const POSITION = new Vector3(-((CARD_WIDTH + 1) * CARDS_PER_ROW) / 2 + CARD_WIDTH / 2, -95, 50);
@@ -48,6 +45,10 @@ export class CardGrid implements CardZone {
     this.cardMap = new Map<string, Card>();
 
     this.mesh.userData.restingPosition = this.mesh.position.clone();
+
+    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+      cardCount: this.cards.length,
+    });
 
     if (this.isLocalPlayArea) {
       this.scrollContainer.addEventListener('scroll', event => {
@@ -178,6 +179,7 @@ export class CardGrid implements CardZone {
       -((index / CARDS_PER_ROW) | 0) * (CARD_HEIGHT + 1),
       0
     );
+
     switch (this.mode) {
       case 'grid':
         return { position, rotation: new Euler(0, isFlipped ? Math.PI : 0, 0) };
@@ -219,25 +221,11 @@ export class CardGrid implements CardZone {
       setScrollTarget(this.scrollContainer);
     }
 
-    if (!cardGridStore.active) {
-      setCardGridStore(
-        'tether',
-        getProjectionVec(
-          this.scrollContainer.localToWorld(
-            new Vector3(CARD_WIDTH * CARDS_PER_ROW, -CARD_HEIGHT / 2 - 1, 0)
-          )
-        )
-      );
-      setCardGridStore('active', true);
-    }
-    setCardGridStore('zone', this.zone);
-
-    setCardGridStore('cards', this.cards.slice(0));
-
     this.scrollContainer.add(card.mesh);
     this.cards.push(card);
     this.maxScroll = (this.cards.length / CARDS_PER_ROW) * (CARD_HEIGHT + 1);
     this.cardMap.set(card.id, card);
+    this.setObservable('cardCount', this.cards.length);
 
     this.adjustHandPosition();
 
@@ -281,9 +269,9 @@ export class CardGrid implements CardZone {
     this.scrollContainer.remove(cardMesh);
     this.cards = this.cards.filter(c => c.id !== cardMesh.userData.id);
     this.cardMap.delete(cardMesh.userData.id);
+    this.setObservable('cardCount', this.cards.length);
 
     if (this.cards.length < 1) {
-      setCardGridStore('active', false);
       setHoverSignal();
     }
     if (this.filteredCards) {

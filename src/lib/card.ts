@@ -223,9 +223,9 @@ textCanvas.height = 55;
 function createLabel(text, color?: string) {
   const ctx = textCanvas.getContext('2d')!;
   const font = '48px grobold';
+  ctx.font = font;
   const textWidth = ctx.measureText(text).width;
 
-  ctx.font = font;
   textCanvas.width = Math.ceil(textWidth + 24);
 
   ctx.font = font;
@@ -264,7 +264,7 @@ function updateCounter(card: Card, counterId: string, index: number) {
     let label = createLabel(`${counterValue} ${counter.name}`, counter.color);
     mesh.material.map = label.texture;
     mesh.position.set(
-      (CARD_WIDTH / 2 + label.width / 2 - 1) * (card.mesh.userData.isFlipped ? -1 : 1),
+      (CARD_WIDTH / 2 + label.width / 2 + 1) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
       zOffset
     );

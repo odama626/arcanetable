@@ -30,7 +30,7 @@ const Overlay: Component = () => {
   const location = () => userData()?.location;
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
-  const playArea = () => playAreas.get(provider?.awareness?.clientID)!;
+  const playArea = playAreas[provider?.awareness?.clientID];
   const focusCameraStyle = () => {
     if (hoverSignal()?.mouse?.y > 0) {
       return { right: `0px`, bottom: '0' };
@@ -87,17 +87,17 @@ const Overlay: Component = () => {
           }}>
           <Switch>
             <Match when={cardMesh()?.userData.location === 'deck'}>
-              <DeckMenu playArea={playArea()} />
+              <DeckMenu playArea={playArea} />
             </Match>
             <Match when={cardMesh()?.userData.location === 'battlefield'}>
-              <CardBattlefieldMenu playArea={playArea()} cardMesh={cardMesh()} />
+              <CardBattlefieldMenu playArea={playArea} cardMesh={cardMesh()} />
             </Match>
             <Match when={cardMesh()?.userData.location === 'hand'}>
               <Menubar class='flex-col' style='height: auto; margin-left: -10px;'>
                 <MenubarMenu>
                   <MenubarItem
                     onClick={() => {
-                      playArea().reveal(cardsById.get(cardMesh().userData.id));
+                      playArea.reveal(cardsById.get(cardMesh().userData.id));
                     }}>
                     Reveal
                   </MenubarItem>
@@ -105,8 +105,8 @@ const Overlay: Component = () => {
                 <MoveMenu
                   text='Move To'
                   cards={[cardsById.get(cardMesh().userData.id)]}
-                  playArea={playArea()}
-                  fromZone={playArea().hand}
+                  playArea={playArea}
+                  fromZone={playArea.hand}
                 />
               </Menubar>
             </Match>
@@ -121,28 +121,28 @@ const Overlay: Component = () => {
             <MenubarItem
               class='w-full flex'
               onClick={() => {
-                let tappedCards = playArea().battlefieldZone.mesh.children.filter(
+                let tappedCards = playArea.battlefieldZone.mesh.children.filter(
                   mesh => mesh.userData.isTapped
                 ) as Mesh[];
 
-                tappedCards.forEach(card => playArea().tap(card));
+                tappedCards.forEach(card => playArea.tap(card));
               }}>
               Untap All
             </MenubarItem>
-            <MenubarItem class='w-full flex' onClick={() => playArea().openTokenMenu()}>
+            <MenubarItem class='w-full flex' onClick={() => playArea.toggleTokenMenu()}>
               Add Tokens
             </MenubarItem>
             <MoveMenu
-              text='Move Battlefield To'
-              cards={playArea().battlefieldZone.cards}
-              playArea={playArea()}
-              fromZone={playArea().battlefieldZone}
+              text={`Battlefield (${playArea.battlefieldZone.observable.cardCount})`}
+              cards={playArea.battlefieldZone.cards}
+              playArea={playArea}
+              fromZone={playArea.battlefieldZone}
             />
             <MoveMenu
-              text='Move Hand To'
-              cards={playArea().hand.cards}
-              playArea={playArea()}
-              fromZone={playArea().hand}
+              text={`Hand (${playArea.hand.observable.cardCount})`}
+              cards={playArea.hand.cards}
+              playArea={playArea}
+              fromZone={playArea.hand}
             />
             <MenubarItem class='width-full' onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}

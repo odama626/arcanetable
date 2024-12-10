@@ -1,17 +1,17 @@
 import { updateModifiers } from './card';
 import { Card, CardZone } from './constants';
-import { sendEvent } from './globals';
+import { cardsById, sendEvent } from './globals';
 
-export async function transferCard<AddOptions>(
+export async function transferCard<AddOptions extends {}>(
   card: Card,
   fromZone: CardZone<any>,
-  toZone: CardZone<AddOptions>,
-  addOptions?: AddOptions,
+  toZone?: CardZone<AddOptions>,
+  addOptions: AddOptions = {} as AddOptions,
   cardUserData?: any,
-  isRemote?: boolean
+  preventTransmit?: boolean
 ) {
   await fromZone.removeCard?.(card.mesh);
-  if (toZone.zone !== 'battlefield') {
+  if (toZone?.zone !== 'battlefield') {
     if (card.mesh.userData.isToken) {
       addOptions.destroy = true;
     }
@@ -21,15 +21,21 @@ export async function transferCard<AddOptions>(
   if (cardUserData) {
     Object.assign(card.mesh.userData, cardUserData);
   }
-  await toZone.addCard(card, addOptions);
 
-  if (!isRemote) {
+  if (!toZone) {
+    card.mesh.geometry.dispose();
+    cardsById.delete(card.id);
+  } else {
+    await toZone.addCard(card, addOptions);
+  }
+
+  if (!preventTransmit) {
     sendEvent({
       type: 'transferCard',
       payload: {
         userData: card.mesh.userData,
         fromZoneId: fromZone.id,
-        toZoneId: toZone.id,
+        toZoneId: toZone?.id,
         addOptions,
         cardUserData,
       },

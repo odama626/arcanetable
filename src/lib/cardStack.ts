@@ -15,9 +15,13 @@ import { cleanupCard, getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { setHoverSignal, zonesById } from './globals';
 import { getGlobalRotation } from './utils';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 
 export class CardStack implements CardZone {
   public mesh: Mesh;
+  public cards: Card[] = [];
+  public observable: CardZone['observable'];
+  private setObservable: SetStoreFunction<CardZone['observable']>;
 
   constructor(public zone: string, public id: string = nanoid()) {
     let geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
@@ -32,6 +36,11 @@ export class CardStack implements CardZone {
     this.mesh.add(lineSegments);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+
+    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+      cardCount: this.cards.length,
+    });
+
     zonesById.set(id, this);
   }
 
@@ -63,6 +72,8 @@ export class CardStack implements CardZone {
     setCardData(card.mesh, 'isPublic', true);
 
     this.mesh.add(card.mesh);
+    this.cards.push(card);
+    this.setObservable('cardCount', this.cards.length);
 
     let initialRotation = card.mesh.rotation;
     if (card.mesh.parent) {
@@ -100,6 +111,11 @@ export class CardStack implements CardZone {
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
     this.mesh.remove(cardMesh);
+    this.cards.splice(
+      this.cards.indexOf(card => card.id === cardMesh.userData.id),
+      1
+    );
+    this.setObservable('cardCount', this.cards.length);
     this.updateCardPositions();
   }
 }

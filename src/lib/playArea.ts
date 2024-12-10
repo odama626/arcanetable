@@ -12,9 +12,9 @@ import {
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
-import { Card, CARD_HEIGHT, CARD_WIDTH, SerializableCard } from './constants';
+import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
-import { cardsById, doXTimes, focusCamera, provider } from './globals';
+import { cardsById, doXTimes, focusCamera, provider, sendEvent, zonesById } from './globals';
 import { Hand } from './hand';
 import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
@@ -70,7 +70,11 @@ export class PlayArea {
 
     this.peekZone = new CardGrid(this.isLocalPlayArea, 'peek', state.peekZone?.id);
     this.revealZone = new CardGrid(this.isLocalPlayArea, 'reveal');
-    this.tokenSearchZone = new CardGrid(this.isLocalPlayArea, 'tokenSearch', state.tokenSearchZone?.id);
+    this.tokenSearchZone = new CardGrid(
+      this.isLocalPlayArea,
+      'tokenSearch',
+      state.tokenSearchZone?.id
+    );
     this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
     this.exileZone = new CardStack('exile', state.exile?.id);
 
@@ -117,10 +121,47 @@ export class PlayArea {
     }
   }
 
-  async openTokenMenu(payload?: { availableTokens: CardReference[]; ids: string[] }) {
+  async dismissAllCardGrids() {
+    const zones = ['peekZone', 'tokenSearchZone'] as const;
+    await Promise.all(
+      zones.map(name => {
+        if (this[name].cards.length > 0) return this.dismissFromZone(this[name]);
+      })
+    );
+  }
+
+  async dismissFromZone(zone: CardZone) {
+    let events = zone.cards
+      .map(card => ({
+        type: 'transferCard',
+        payload: {
+          userData: card.mesh.userData,
+          toZoneId: card.mesh.userData.previousZoneId,
+          fromZoneId: card.mesh.userData.zoneId,
+        },
+      }))
+      .reverse();
+
+    sendEvent({ type: 'bulk', timing: 50, events: events });
+    await doXTimes(
+      zone.cards.length,
+      () => {
+        let card = zone.cards.at(-1);
+        let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
+        previousZone?.addCard(card);
+        transferCard(card, zone, previousZone, undefined, undefined, true);
+      },
+      50
+    );
+  }
+
+  async toggleTokenMenu(payload?: { availableTokens: CardReference[]; ids: string[] }) {
+    const isOpen = this.tokenSearchZone.cards.length > 0;
+    await this.dismissAllCardGrids();
+    if (isOpen) return;
     if (payload?.availableTokens) {
       this.availableTokens = payload.availableTokens;
-    } 
+    }
     if (!this.availableTokens) {
       let cardsInPlay = this.cards;
       let allTokens = new Set(
@@ -135,8 +176,8 @@ export class PlayArea {
           const payload = await fetch(uri, { cache: 'force-cache' }).then(r => r.json());
           return {
             ...payload,
-            clientId: this.clientId
-          }
+            clientId: this.clientId,
+          };
         })
       ).then(cards => uniqBy(cards, 'oracle_id'));
     }
@@ -153,7 +194,7 @@ export class PlayArea {
       })
       .sort((a, b) => a.detail.name.localeCompare(b.detail.name));
 
-    this.emitEvent('openTokenMenu', {
+    this.emitEvent('toggleTokenMenu', {
       availableTokens: this.availableTokens,
       ids: availableCards.map(card => card.id),
     });
@@ -212,6 +253,9 @@ export class PlayArea {
   }
 
   async peekGraveyard() {
+    if (this.tokenSearchZone.cards.length) {
+      this.dismissFromZone(this.tokenSearchZone);
+    }
     await Promise.all(
       this.graveyardZone.mesh.children.map((child, i) => {
         if (!child.userData.id) return;
@@ -225,10 +269,12 @@ export class PlayArea {
         });
       })
     );
-    // this.graveyardZone.mesh();
   }
 
   async peekExile() {
+    if (this.tokenSearchZone.cards.length) {
+      this.dismissFromZone(this.tokenSearchZone);
+    }
     await Promise.all(
       this.exileZone.mesh.children.map((child, i) => {
         if (!child.userData.id) return;

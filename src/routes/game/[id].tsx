@@ -2,7 +2,7 @@ import { useBeforeLeave } from '@solidjs/router';
 import { Component, createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { cleanup, isSpectating, players } from '~/lib/globals';
+import { cleanup, isInitialized, isSpectating, players } from '~/lib/globals';
 import DeckPicker from '~/lib/ui/deckPicker';
 import Overlay from '~/lib/ui/overlay';
 import { loadDeckAndJoin, localInit } from '~/main3d';
@@ -34,7 +34,9 @@ const GamePage: Component = props => {
 
   return (
     <>
-      <Overlay />
+      <Show when={isInitialized()}>
+        <Overlay />
+      </Show>
       <Show when={deckIndex() === undefined && !isSpectating()}>
         <DeckPicker
           onSelectDeck={settings => {

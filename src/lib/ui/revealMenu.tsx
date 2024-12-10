@@ -25,7 +25,7 @@ const RevealMenu: Component = props => {
   const location = () => userData()?.location;
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
-  const playArea = () => playAreas.get(provider.awareness.clientID)!;
+  const playArea = playAreas[provider.awareness.clientID];
 
   return (
     <>
@@ -46,10 +46,10 @@ const RevealMenu: Component = props => {
               <MenubarMenu>
                 <MenubarItem
                   onClick={() => {
-                    let cards = playArea().revealZone.cards;
+                    let cards = playArea.revealZone.cards;
 
                     cards.forEach(card => {
-                      playArea().revealZone.removeCard(card.mesh);
+                      playArea.revealZone.removeCard(card.mesh);
                       cleanupCard(card);
                     });
                     setHoverSignal();

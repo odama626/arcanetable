@@ -36,7 +36,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   return (
     <Menubar>
       <MenubarMenu>
-        <MenubarTrigger>Actions</MenubarTrigger>
+        <MenubarTrigger>Actions | {props.playArea.deck.observable.cardCount} cards</MenubarTrigger>
         <MenubarContent>
           <MenubarItem
             onClick={() => {
@@ -45,7 +45,9 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
             Search
           </MenubarItem>
           <MenubarSub overlap>
-            <MenubarSubTrigger openDelay={50} onClick={() => props.playArea.draw()}>Draw</MenubarSubTrigger>
+            <MenubarSubTrigger openDelay={50} onClick={() => props.playArea.draw()}>
+              Draw
+            </MenubarSubTrigger>
             <MenubarSubContent>
               <For each={COUNT_OPTIONS}>
                 {value => (
@@ -119,19 +121,22 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
                 {value => (
                   <MenubarItem
                     closeOnSelect={false}
-                    onClick={() =>
+                    onClick={async () => {
                       doXTimes(value, () => {
                         let card = props.playArea.deck.cards[0];
                         props.playArea.reveal(card);
                         peekTopDeck();
-                      })
-                    }>
+                      });
+                    }}>
                     {value}
                   </MenubarItem>
                 )}
               </For>
               <MenubarItem
                 onClick={() => {
+                  if (props.playArea.tokenSearchZone.cards.length) {
+                    props.playArea.dismissFromZone(props.playArea.tokenSearchZone);
+                  }
                   doXTimes(
                     props.playArea.deck.cards.length,
                     () => {

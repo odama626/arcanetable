@@ -19,7 +19,6 @@ import {
   playAreas,
   provider,
   sendEvent,
-  setHoverSignal,
   setPeekFilterText,
 } from '../globals';
 import styles from './peekMenu.module.css';
@@ -31,14 +30,14 @@ const TokenSearchMenu: Component = props => {
   const location = () => userData()?.location;
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
-  const playArea = () => playAreas.get(provider.awareness.clientID)!;
+  const playArea = playAreas[provider.awareness.clientID];
   const [viewField, setViewField] = createSignal(false);
 
   function addToBattlefield(referenceCard: Card) {
     let card = cloneCard(referenceCard, nanoid());
 
-    let battlefield = playArea().battlefieldZone;
-    let tokenZone = playArea().tokenSearchZone;
+    let battlefield = playArea.battlefieldZone;
+    let tokenZone = playArea.tokenSearchZone;
     tokenZone.mesh.localToWorld(card.mesh.position);
     battlefield.addCard(card);
 
@@ -77,7 +76,7 @@ const TokenSearchMenu: Component = props => {
                 <Button
                   variant='ghost'
                   onClick={() => {
-                    playArea().tokenSearchZone.removeCard(cardMesh());
+                    playArea.tokenSearchZone.removeCard(cardMesh());
                     cleanupCard(cardsById.get(cardMesh().userData.id));
                   }}>
                   Dismiss
@@ -88,6 +87,9 @@ const TokenSearchMenu: Component = props => {
         </Show>
         <div class={styles.searchContainer}>
           <div class={styles.search}>
+            <h2 class='text-white text-xl text-left mb-4'>
+              Add Tokens | {playArea.tokenSearchZone.observable.cardCount}
+            </h2>
             <Command>
               <CommandInput
                 placeholder='Search'
@@ -97,26 +99,12 @@ const TokenSearchMenu: Component = props => {
               />
               <Menubar>
                 <MenubarMenu>
-                  <Button
-                    variant='ghost'
-                    onClick={() => {
-                      let cards = playArea().tokenSearchZone.cards;
-
-                      cards.forEach(card => {
-                        playArea().tokenSearchZone.removeCard(card.mesh);
-                        card.mesh.geometry.dispose();
-                        cardsById.delete(card.id);
-                      });
-                      setHoverSignal();
-                    }}>
-                    Dismiss
-                  </Button>
                   <Switch>
                     <Match when={viewField()}>
                       <Button
                         variant='ghost'
                         onClick={() => {
-                          playArea().tokenSearchZone.viewGrid();
+                          playArea.tokenSearchZone.viewGrid();
                           setViewField(false);
                         }}>
                         View Grid
@@ -126,13 +114,18 @@ const TokenSearchMenu: Component = props => {
                       <Button
                         variant='ghost'
                         onClick={() => {
-                          playArea().tokenSearchZone.viewField();
+                          playArea.tokenSearchZone.viewField();
                           setViewField(true);
                         }}>
                         View Field
                       </Button>
                     </Match>
                   </Switch>
+                  <Button
+                    variant='ghost'
+                    onClick={() => playArea.dismissFromZone(playArea.tokenSearchZone)}>
+                    Dismiss
+                  </Button>
                 </MenubarMenu>
               </Menubar>
             </Command>

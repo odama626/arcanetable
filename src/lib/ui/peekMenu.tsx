@@ -25,18 +25,18 @@ const PeekMenu: Component = props => {
   const isOwner = () => userData()?.clientId === provider.awareness.clientID;
   const location = () => userData()?.location;
   const tether = () => hoverSignal()?.tether;
-  const playArea = () => playAreas.get(provider.awareness.clientID)!;
-  const cardCount = () => playArea().peekZone.cards.length;
+  const playArea = playAreas[provider.awareness.clientID];
+  const cardCount = () => playArea.peekZone.cards.length;
   const card = () => cardsById.get(hoverSignal()?.mesh?.userData.id);
   const [viewField, setViewField] = createSignal(false);
 
   function drawAfterRevealing(card: Card) {
     drawWithoutRevealing(card);
-    playArea().reveal(card);
+    playArea.reveal(card);
   }
 
   function drawWithoutRevealing(card: Card) {
-    transferCard(card, playArea().peekZone, playArea().hand);
+    transferCard(card, playArea.peekZone, playArea.hand);
   }
 
   return (
@@ -61,8 +61,8 @@ const PeekMenu: Component = props => {
                 <MoveMenu
                   text='Move To'
                   cards={[card()]}
-                  playArea={playArea()}
-                  fromZone={playArea().peekZone}
+                  playArea={playArea}
+                  fromZone={playArea.peekZone}
                 />
               </MenubarMenu>
             </Menubar>
@@ -71,7 +71,7 @@ const PeekMenu: Component = props => {
         <div class={styles.searchContainer}>
           <div class={styles.search}>
             <h2 class='text-white text-xl text-left mb-4'>
-              Peek — from {userData().previousLocation}
+              Peek — from {userData().previousLocation} | {playArea.peekZone.observable.cardCount}
             </h2>
             <Command>
               <CommandInput
@@ -86,12 +86,12 @@ const PeekMenu: Component = props => {
                     variant='ghost'
                     onClick={async () => {
                       await doXTimes(cardCount(), () => {
-                        let card = playArea().peekZone.cards[0];
-                        transferCard(card, playArea().peekZone, playArea().deck, {
+                        let card = playArea.peekZone.cards[0];
+                        transferCard(card, playArea.peekZone, playArea.deck, {
                           location: 'bottom',
                         });
                       });
-                      await doAfter(100, () => playArea().shuffleDeck());
+                      await doAfter(100, () => playArea.shuffleDeck());
 
                       setHoverSignal();
                     }}>
@@ -100,31 +100,29 @@ const PeekMenu: Component = props => {
                   <Button
                     variant='ghost'
                     onClick={() =>
-                      doXTimes(cardCount(), () => drawAfterRevealing(playArea().peekZone.cards[0]))
+                      doXTimes(cardCount(), () => drawAfterRevealing(playArea.peekZone.cards[0]))
                     }>
                     Reveal & Draw All
                   </Button>
                   <Button
                     variant='ghost'
                     onClick={() =>
-                      doXTimes(cardCount(), () =>
-                        drawWithoutRevealing(playArea().peekZone.cards[0])
-                      )
+                      doXTimes(cardCount(), () => drawWithoutRevealing(playArea.peekZone.cards[0]))
                     }>
                     Draw All
                   </Button>
                   <MoveMenu
                     text='Move All To'
-                    cards={playArea().peekZone.cards}
-                    playArea={playArea()}
-                    fromZone={playArea().peekZone}
+                    cards={playArea.peekZone.cards}
+                    playArea={playArea}
+                    fromZone={playArea.peekZone}
                   />
                   <Switch>
                     <Match when={viewField()}>
                       <Button
                         variant='ghost'
                         onClick={() => {
-                          playArea().peekZone.viewGrid();
+                          playArea.peekZone.viewGrid();
                           setViewField(false);
                         }}>
                         View Grid
@@ -134,7 +132,7 @@ const PeekMenu: Component = props => {
                       <Button
                         variant='ghost'
                         onClick={() => {
-                          playArea().peekZone.viewField();
+                          playArea.peekZone.viewField();
                           setViewField(true);
                         }}>
                         View Field
@@ -143,29 +141,8 @@ const PeekMenu: Component = props => {
                   </Switch>
                   <Button
                     variant='ghost'
-                    onClick={async () => {
-                      let events = playArea()
-                        .peekZone.cards.map(card => ({
-                          type: 'transferCard',
-                          payload: {
-                            userData: card.mesh.userData,
-                            toZoneId: card.mesh.userData.previousZoneId,
-                            fromZoneId: card.mesh.userData.zoneId,
-                          },
-                        }))
-                        .reverse();
-                      sendEvent({ type: 'bulk', timing: 50, events: events });
-                      await doXTimes(
-                        cardCount(),
-                        () => {
-                          let card = playArea().peekZone.cards.at(-1);
-                          playArea().peekZone.removeCard(card.mesh);
-                          let toZoneId = card?.mesh.userData.previousZoneId;
-                          let zone = zonesById.get(card.mesh.userData.previousZoneId);
-                          zone?.addCard(card);
-                        },
-                        50
-                      );
+                    onClick={() => {
+                      playArea.dismissFromZone(playArea.peekZone);
                     }}>
                     Dismiss
                   </Button>

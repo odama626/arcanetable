@@ -15,6 +15,7 @@ import {
   processedEvents,
   provider,
   setLogs,
+  setPlayAreas,
   setPlayerCount,
   setProcessedEvents,
   table,
@@ -57,7 +58,7 @@ export async function processEvents() {
         let event = events.shift();
         addLogMessage(event);
         if (event.clientID === provider.awareness.clientID) break;
-        let playArea = playAreas.get(event.clientID);
+        let playArea = playAreas[event.clientID];
         await handleEvent(event, playArea);
         if (events.length > 0) {
           await new Promise(resolve => setTimeout(resolve, timing));
@@ -81,15 +82,15 @@ const EVENTS = {
     let playArea = PlayArea.FromNetworkState({ ...event.payload, clientID: event.clientID });
 
     table.add(playArea.mesh);
-    playAreas.set(event.clientID, playArea);
+    setPlayAreas(event.clientID, playArea);
     setPlayerCount(count => count + 1);
 
     console.log({ playerCount: playerCount() });
     const rotation = PLAY_AREA_ROTATIONS[playerCount()];
     playArea.mesh.rotateZ(rotation);
   },
-  openTokenMenu(event: Event, playArea: PlayArea) {
-    return playArea.openTokenMenu(event.payload);
+  toggleTokenMenu(event: Event, playArea: PlayArea) {
+    return playArea.toggleTokenMenu(event.payload);
   },
   queueAnimationGroup(event: Event) {
     queueAnimationGroup();
@@ -142,7 +143,7 @@ const EVENTS = {
     let cardProxy = cloneCard(card, nanoid());
     // remotePlayArea.peek();
     setCardData(cardProxy.mesh, 'isPublic', true);
-    const playArea = playAreas.get(provider.awareness.clientID)!;
+    const playArea = playAreas[provider.awareness.clientID];
     playArea.reveal(cardProxy);
   },
   deckFlipTop(event: Event, playArea: PlayArea) {

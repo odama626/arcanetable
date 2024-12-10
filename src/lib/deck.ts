@@ -5,11 +5,14 @@ import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './
 import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
 import { expect, setHoverSignal, zonesById } from './globals';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;
   public isTopPublic = false;
   public zone: string;
+  public observable: CardZone['observable'];
+  private setObservable: SetStoreFunction<CardZone['observable']>;
 
   constructor(public cards: Card[], public id = nanoid()) {
     this.mesh = new Group();
@@ -28,6 +31,10 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       card.mesh.position.set(0, 0, i * 0.125);
       this.mesh.add(card.mesh);
     });
+
+    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+      cardCount: cards.length,
+    });
   }
 
   addCardBottom(card: Card, { destroy = false } = {}) {
@@ -35,6 +42,8 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     setCardData(card.mesh, 'zoneId', this.id);
     setCardData(card.mesh, 'location', 'deck');
     this.cards.push(card);
+
+    this.setObservable('cardCount', this.cards.length);
 
     let initialPosition = card.mesh.getWorldPosition(new Vector3());
     this.mesh.worldToLocal(initialPosition);
@@ -88,6 +97,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     setCardData(card.mesh, 'isPublic', false);
 
     this.cards.unshift(card);
+    this.setObservable('cardCount', this.cards.length);
 
     let initialPosition = card.mesh.getWorldPosition(new Vector3());
     this.mesh.worldToLocal(initialPosition);
@@ -172,6 +182,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     let index = this.cards.findIndex(card => card.id === cardMesh.userData.id);
     if (index > -1) {
       this.cards.splice(index, 1);
+      this.setObservable('cardCount', this.cards.length);
     } else {
       console.error(`didn't find card`, { cardMesh, cards: this.cards });
     }
@@ -265,6 +276,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     card.mesh.rotation.set(worldEuler.x, worldEuler.y, worldEuler.z);
 
     this.mesh.remove(card.mesh);
+    this.setObservable('cardCount', this.cards.length);
 
     if (this.isTopPublic) {
       this.flipTop();

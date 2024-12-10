@@ -5,6 +5,7 @@ import { cleanupCard, getSerializableCard, setCardData } from './card';
 import { Card, CardZone } from './constants';
 import { cardsById, setHoverSignal, zonesById } from './globals';
 import { getGlobalRotation } from './utils';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 
 export class Hand implements CardZone {
   public mesh: Group;
@@ -12,6 +13,8 @@ export class Hand implements CardZone {
   private cardMap: Map<string, Card>;
   public isInteractive: boolean = true;
   public zone;
+  public observable: CardZone['observable'];
+  public setObservable: SetStoreFunction<CardZone['observable']>;
 
   constructor(public id = nanoid(), public isLocalHand: boolean) {
     this.mesh = new Group();
@@ -21,6 +24,8 @@ export class Hand implements CardZone {
     this.mesh.position.set(0, -120, 40);
     this.mesh.userData.restingPosition = this.mesh.position.clone();
     this.zone = 'hand';
+
+    [this.observable, this.setObservable] = createStore({ cardCount: this.cards.length });
 
     zonesById.set(this.id, this);
 
@@ -58,6 +63,7 @@ export class Hand implements CardZone {
     this.mesh.add(card.mesh);
     this.cards.push(card);
     this.cardMap.set(card.id, card);
+    this.setObservable('cardCount', this.cards.length)
 
     let index = this.cards.length - 1;
 
@@ -148,6 +154,7 @@ export class Hand implements CardZone {
     this.mesh.remove(cardMesh);
     this.cards.splice(cardIndex, 1);
     this.cardMap.delete(cardMesh.userData.id);
+    this.setObservable('cardCount', this.cards.length)
 
     this.adjustHandPosition();
     for (let i = cardIndex; i < this.cards.length; i++) {

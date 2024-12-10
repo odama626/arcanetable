@@ -30,6 +30,8 @@ import {
   setAnimating,
   setDeckIndex,
   setHoverSignal,
+  setIsIntitialized,
+  setPlayAreas,
   setPlayers,
   table,
   updateFocusCamera,
@@ -131,7 +133,8 @@ export async function loadDeckAndJoin(settings) {
   let counters = deck?.counters ?? [];
 
   playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);
-  playAreas.set(provider.awareness.clientID, playArea);
+  setPlayAreas(provider.awareness.clientID, playArea);
+  setIsIntitialized(true)
   setCounters(existing => uniqBy([...counters, ...existing], 'id'));
 
   playArea.subscribeEvents(sendEvent);
@@ -189,7 +192,7 @@ function onDocumentClick(event) {
     });
   } else if (target.userData.location === 'graveyard') {
     if (target.userData.clientId !== provider.awareness.clientID) {
-      let remotePlayArea = playAreas.get(target.userData.clientId);
+      let remotePlayArea = playAreas[target.userData.clientId];
       remotePlayArea?.graveyardZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id);
         if (!card) return;
@@ -205,7 +208,7 @@ function onDocumentClick(event) {
     }
   } else if (target.userData.location === 'exile') {
     if (target.userData.clientId !== provider.awareness.clientID) {
-      let remotePlayArea = playAreas.get(target.userData.clientId);
+      let remotePlayArea = playAreas[target.userData.clientId]
       remotePlayArea?.exileZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id)!;
         if (!card) return;
@@ -354,7 +357,7 @@ function onDocumentMouseMove(event) {
       if (!intersection) continue;
       let pointTarget = intersection.point.clone();
       let zone = zonesById.get(target.userData.zoneId)!;
-      if (['hand', 'peek'].includes(target.userData.location)) {
+      if (['hand', 'peek', 'tokenSearch'].includes(target.userData.location)) {
         let globalRotation = getGlobalRotation(target.parent);
         globalRotation.x += Math.PI / 2;
         let quarternion = new THREE.Quaternion().setFromEuler(globalRotation).invert();

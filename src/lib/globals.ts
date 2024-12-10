@@ -43,7 +43,7 @@ export let focusCamera: PerspectiveCamera;
 export let [hoverSignal, setHoverSignal] = createSignal();
 export let cardsById = new Map<string, Card>();
 export let zonesById = new Map<string, CardZone<unknown>>();
-export let playAreas = new Map<number, PlayArea>();
+export let [playAreas, setPlayAreas] = createStore<Record<number, PlayArea>>({});
 export let [peekFilterText, setPeekFilterText] = createSignal('');
 export const ydoc = new Doc();
 export let table: Object3D;
@@ -51,6 +51,7 @@ export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
 export let [deckIndex, setDeckIndex] = createSignal();
+export let [isInitialized, setIsIntitialized] = createSignal(false)
 export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
@@ -157,7 +158,7 @@ export function startSpectating() {
   orbitControls.target = table.position;
 
   let curIndex = 0;
-  playAreas.forEach((playArea, i) => {
+  Object.values(playAreas).forEach((playArea, i) => {
     playArea.mesh.rotation.z = PLAY_AREA_ROTATIONS[curIndex];
     curIndex++;
   });

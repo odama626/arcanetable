@@ -21,7 +21,7 @@ import ChevronDownIcon from '~/lib/icons/chevron-down-solid.svg'
 
 export const LocalPlayer: Component = props => {
   const [open, setOpen] = createSignal(true);
-  const playArea = () => playAreas.get(provider?.awareness?.clientID)!;
+  const playArea = () => playAreas[provider?.awareness?.clientID];
 
   function changeCounter(counterId, callback) {
     let localState = provider.awareness.getLocalState();
