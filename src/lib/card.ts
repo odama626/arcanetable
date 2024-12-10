@@ -229,7 +229,7 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
 const textCanvas = document.createElement('canvas');
 textCanvas.height = 55;
 
-function createLabel(text: string, color?: string) {
+export function createLabel(text: string, color?: string) {
   const ctx = textCanvas.getContext('2d', { willReadFrequently: true })!;
   const font = '48px grobold';
 

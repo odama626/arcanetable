@@ -110,6 +110,20 @@ const Overlay: Component = () => {
                 />
               </Menubar>
             </Match>
+            <Match when={cardMesh()?.userData.location === 'graveyard'}>
+              <div
+                class='flex-col bg-card px-3 py-2 rounded-sm'
+                style='height: auto; margin-left: -10px;'>
+                graveyard | {playArea.graveyardZone.observable.cardCount} cards
+              </div>
+            </Match>
+            <Match when={cardMesh()?.userData.location === 'exile'}>
+              <div
+                class='flex-col bg-card px-3 py-2 rounded-sm'
+                style='height: auto; margin-left: -10px;'>
+                exile | {playArea.exileZone.observable.cardCount} cards
+              </div>
+            </Match>
           </Switch>
         </div>
       </Show>

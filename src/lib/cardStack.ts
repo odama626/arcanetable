@@ -111,10 +111,9 @@ export class CardStack implements CardZone {
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
     this.mesh.remove(cardMesh);
-    this.cards.splice(
-      this.cards.indexOf(card => card.id === cardMesh.userData.id),
-      1
-    );
+    let index = this.cards.findIndex(c => c.id === cardMesh.userData.id);
+    this.cards.splice(index, 1);
+    console.log(cardMesh, this.cards, index, this.cards.length);
     this.setObservable('cardCount', this.cards.length);
     this.updateCardPositions();
   }
