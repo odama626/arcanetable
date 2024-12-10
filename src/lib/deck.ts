@@ -182,6 +182,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     let index = this.cards.findIndex(card => card.id === cardMesh.userData.id);
     if (index > -1) {
       this.cards.splice(index, 1);
+      this.mesh.remove(cardMesh)
       this.setObservable('cardCount', this.cards.length);
     } else {
       console.error(`didn't find card`, { cardMesh, cards: this.cards });
