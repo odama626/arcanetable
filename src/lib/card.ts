@@ -20,33 +20,31 @@ import { splitProps } from 'solid-js';
 
 let cardBackTexture: Texture;
 let alphaMap: Texture;
+const blackMat = new MeshStandardMaterial({ color: 0x000000 });
 
 export function createCardGeometry(card: Card) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
   cardBackTexture = cardBackTexture || textureLoader.load('/arcane-table-back.webp');
   cardBackTexture.colorSpace = SRGBColorSpace;
-  let cardBack = new MeshStandardMaterial({ map: cardBackTexture });
+  let cardBackMat = new MeshStandardMaterial({ map: cardBackTexture });
   let { mesh: _, modifiers, ...shared } = card;
 
-  cardBack.transparent = true;
+  cardBackMat.transparent = true;
 
   alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
   let front = textureLoader.load(getCardImage(card));
 
   front.colorSpace = SRGBColorSpace;
+  
 
-  let frontMesh = new MeshStandardMaterial({
+  let frontMat = new MeshStandardMaterial({
     color: 0xffffff,
     map: front,
     alphaMap,
   });
-  frontMesh.transparent = true;
+  frontMat.transparent = true;
 
-  let materials = [null, null, null, null, frontMesh, cardBack].map(img => {
-    if (!img) return new MeshStandardMaterial({ color: 0x000000 });
-    return img;
-  });
-  const mesh = new Mesh(geometry, materials);
+  const mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, frontMat, cardBackMat]);
   setCardData(mesh, 'isInteractive', true);
   setCardData(mesh, 'card', shared);
   setCardData(mesh, 'id', card.id);
@@ -64,7 +62,7 @@ export function createCardGeometry(card: Card) {
       color: 0xffffff,
     });
     mesh.userData.cardBack.transparent = true;
-    setCardData(mesh, 'publicCardBack', cardBack);
+    setCardData(mesh, 'publicCardBack', cardBackMat);
   }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
@@ -275,7 +273,7 @@ function updateCounter(
   if (!card.modifiers[counter.id]) {
     let geometry = new BoxGeometry(1, 1, 1);
     let mat = new MeshStandardMaterial({ color: new Color(counter.color) });
-    let mesh = new Mesh(geometry, mat);
+    let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, blackMat]);
     mesh.scale.set(1, 3, CARD_THICKNESS);
     card.mesh.add(mesh);
     mesh.transparent = true;
@@ -287,14 +285,14 @@ function updateCounter(
     }
     let mesh: Mesh = card.modifiers[counter.id];
     let label = createLabel(getCounterLabel(value, counter.name), counter.color);
-    mesh.material.map = label.texture;
+    mesh.material[4].map = label.texture;
     mesh.scale.set(label.width, 3, CARD_THICKNESS);
     mesh.position.set(
       (CARD_WIDTH / 2 + label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
       zOffset
     );
-    mesh.material.needsUpdate = true;
+    mesh.material[4].needsUpdate = true;
   } else {
     card.mesh.remove(card.modifiers[counter.id]);
   }
@@ -310,8 +308,8 @@ export function updateModifiers(card: Card) {
     if (!card.modifiers.pt) {
       let geometry = new BoxGeometry(1, 1, 1);
       let mat = new MeshStandardMaterial({});
-      let mesh = new Mesh(geometry, mat);
-      mesh.scale.set(7, 3, CARD_THICKNESS);
+      let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, blackMat]);
+      mesh.scale.set(7, 3, 0.1);
       card.mesh.add(mesh);
       mesh.transparent = true;
       mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, zPosition);
@@ -324,12 +322,12 @@ export function updateModifiers(card: Card) {
     let label = createLabel(
       `${power > 0 ? '+' : ''}${power} / ${toughness > 0 ? '+' : ''}${toughness}`
     );
-    mesh.material.map = label.texture;
+    mesh.material[4].map = label.texture;
     mesh.scale.setX(label.width);
     mesh.position.setZ(zPosition);
     let xPosition = (CARD_WIDTH / 2 - label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1);
     mesh.position.setX(xPosition);
-    mesh.material.needsUpdate = true;
+    mesh.material[4].needsUpdate = true;
   } else if (card.modifiers.pt) {
     card.mesh.remove(card.modifiers.pt);
   }

@@ -10,10 +10,8 @@ import {
   hoverSignal,
   playAreas,
   provider,
-  sendEvent,
   setHoverSignal,
   setPeekFilterText,
-  zonesById,
 } from '../globals';
 import { transferCard } from '../transferCard';
 import MoveMenu from './moveMenu';

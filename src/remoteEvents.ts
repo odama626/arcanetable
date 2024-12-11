@@ -95,9 +95,6 @@ const EVENTS = {
   queueAnimationGroup(event: Event) {
     queueAnimationGroup();
   },
-  draw(event: Event, playArea: PlayArea) {
-    playArea?.draw();
-  },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
     playArea.modifyCard(card);

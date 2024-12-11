@@ -26,7 +26,6 @@ const Log: Component = props => {
 export function isLogMessageStackable(previous, next) {
   if (!previous) return false;
   if (previous.clientID !== next.clientID) return false;
-  if (previous.type === 'draw' && next.type === 'draw') return true;
   let prevUserData = previous.payload?.userData;
   let nextUserData = next.payload?.userData;
   if (!prevUserData || !nextUserData) return false;
@@ -58,8 +57,6 @@ export function parseLogEntry(entry) {
   switch (entry.type) {
     case 'join':
       return 'Joined';
-    case 'draw':
-      return `drew ${cardReference()}`;
     case 'transferCard': {
       let fromZone = zonesById.get(data.fromZoneId);
       let toZone = zonesById.get(data.toZoneId);
@@ -85,7 +82,11 @@ export function parseLogEntry(entry) {
     case 'createCounter':
       return null;
     case 'reveal':
-      return <>revealed <strong>{card.detail.name}</strong></>
+      return (
+        <>
+          revealed <strong>{card.detail.name}</strong>
+        </>
+      );
 
     default:
       return `${entry.type} ${cardReference()}`;

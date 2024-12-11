@@ -4,7 +4,13 @@ import { PlayArea } from './lib/playArea';
 import { createMockDecklist, useAnimations } from './lib/testingUtils';
 import { handleEvent } from './remoteEvents';
 
-headlessInit();
+const provider = {
+  awareness: {
+    clientID: 'mock',
+  },
+};
+
+headlessInit({ provider, gameLog: [] });
 useAnimations();
 
 test('mulligan', async () => {
@@ -73,29 +79,22 @@ test('remote shuffle then join', async () => {
 });
 
 test('remote shuffle then join', async () => {
+  let events = [];
+  let gameLog = {
+    push(e) {
+      events.push(...e);
+    },
+  };
+  headlessInit({ provider: { awareness: { clientID: 0 } }, gameLog });
   let cardList = createMockDecklist();
 
   const playArea = new PlayArea(0, cardList, cardList, { isLocalPlayer: true });
 
   const remotePlayArea = PlayArea.FromNetworkState(structuredClone(playArea.getLocalState()));
 
-  let events = [];
-
   playArea.subscribeEvents(event => events.push(event));
 
   await playArea.draw();
-
-  await playArea.shuffleDeck();
-
-  for (const event of events) {
-    await handleEvent(event, remotePlayArea);
-  }
-
-  events = [];
-
-  await playArea.shuffleDeck();
-
-  await playArea.shuffleDeck();
 
   await playArea.shuffleDeck();
 

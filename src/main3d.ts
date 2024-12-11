@@ -134,7 +134,7 @@ export async function loadDeckAndJoin(settings) {
 
   playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);
   setPlayAreas(provider.awareness.clientID, playArea);
-  setIsIntitialized(true)
+  setIsIntitialized(true);
   setCounters(existing => uniqBy([...counters, ...existing], 'id'));
 
   playArea.subscribeEvents(sendEvent);
@@ -208,7 +208,7 @@ function onDocumentClick(event) {
     }
   } else if (target.userData.location === 'exile') {
     if (target.userData.clientId !== provider.awareness.clientID) {
-      let remotePlayArea = playAreas[target.userData.clientId]
+      let remotePlayArea = playAreas[target.userData.clientId];
       remotePlayArea?.exileZone.mesh.children.forEach((cardMesh, i) => {
         let card = cardsById.get(cardMesh.userData.id)!;
         if (!card) return;
@@ -314,7 +314,7 @@ function onDocumentDrop(event) {
         mouse,
         ...(signal ?? {}),
         tether,
-        mesh
+        mesh,
       };
     });
   });
@@ -459,13 +459,6 @@ function hightlightHover(intersects: THREE.Intersection<THREE.Object3D<THREE.Obj
     setHoverSignal({ mesh: next, tether, mouse });
 
     hover.object.dispatchEvent({ type: 'mousein', mesh: hover.object });
-    if (next.userData.location === 'deck') {
-      hover.object.material?.forEach((mat: THREE.MeshStandardMaterial, i) => {
-        hover.colors[i] = mat.color.clone();
-        mat.color.set(0xffa0a0);
-      });
-    }
-
     focusOn(next);
 
     outlinePass.selectedObjects = [hover.object];

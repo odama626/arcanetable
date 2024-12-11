@@ -51,7 +51,7 @@ export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
 export let [deckIndex, setDeckIndex] = createSignal();
-export let [isInitialized, setIsIntitialized] = createSignal(false)
+export let [isInitialized, setIsIntitialized] = createSignal(false);
 export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
@@ -87,20 +87,22 @@ export function doAfter(x: number, callback: Function): Promise<void> {
   });
 }
 
-export function headlessInit() {
+export function headlessInit(opts = {}) {
   clock = new Clock();
   setProcessedEvents(0);
   loadingManager = new LoadingManager();
   textureLoader = new TextureLoader(loadingManager);
+  gameLog = opts.gameLog ?? ydoc.getArray('gameLog');
+  provider = opts?.provider;
 }
 
 export function init({ gameId }) {
+  headlessInit();
   if (import.meta.env.PROD) {
     provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
   } else {
     provider = new WebrtcProvider(gameId, ydoc, { signaling: [`signaling.arcanetable.app`] });
   }
-  headlessInit();
 
   loadingManager.onProgress = function (item, loaded, total) {
     console.log(item, loaded, total);
@@ -147,7 +149,6 @@ export function init({ gameId }) {
   table.userData.zone = 'battlefield';
   table.rotateX(Math.PI * -0.5);
   scene.add(table);
-  gameLog = ydoc.getArray('gameLog');
 }
 
 export function startSpectating() {

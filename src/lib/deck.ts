@@ -1,11 +1,11 @@
 import { nanoid } from 'nanoid';
-import { CatmullRomCurve3, Euler, Group, Mesh, Quaternion, Vector3 } from 'three';
+import { createStore, SetStoreFunction } from 'solid-js/store';
+import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
 import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
 import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
-import { expect, setHoverSignal, zonesById } from './globals';
-import { createStore, SetStoreFunction } from 'solid-js/store';
+import { setHoverSignal, zonesById } from './globals';
 import { getGlobalRotation } from './utils';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
@@ -187,8 +187,8 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       cardMesh.getWorldPosition(worldPosition);
       let globalRotation = getGlobalRotation(cardMesh);
 
-      cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
-      cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
+      cardMesh.position.copy(worldPosition);
+      cardMesh.rotation.copy(globalRotation);
 
       this.mesh.remove(cardMesh);
       this.setObservable('cardCount', this.cards.length);
@@ -268,30 +268,6 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       id: this.id,
       cards: this.cards.map(card => getSerializableCard(card.mesh)),
     };
-  }
-
-  draw() {
-    let card = this.cards.shift();
-    expect(!!card, 'deck must have card to draw');
-    if (!card) return;
-
-    let worldPosition = new Vector3();
-    card.mesh.getWorldPosition(worldPosition);
-    let worldQuaternion = new Quaternion();
-    card.mesh.getWorldQuaternion(worldQuaternion);
-    let worldEuler = new Euler().setFromQuaternion(worldQuaternion);
-
-    card.mesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
-    card.mesh.rotation.set(worldEuler.x, worldEuler.y, worldEuler.z);
-
-    this.mesh.remove(card.mesh);
-    this.setObservable('cardCount', this.cards.length);
-
-    if (this.isTopPublic) {
-      this.flipTop();
-    }
-
-    return card;
   }
 }
 
