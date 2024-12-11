@@ -302,8 +302,10 @@ function onDocumentDrop(event) {
     expect(!!card, `card not found`, { card });
 
     await transferCard(card, fromZone, toZone, {
-      skipAnimation: true,
-      positionArray: position.toArray(),
+      addOptions: {
+        skipAnimation: true,
+        positionArray: position.toArray(),
+      },
     });
 
     setHoverSignal(signal => {

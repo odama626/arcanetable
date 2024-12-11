@@ -14,18 +14,18 @@ interface Props {
 }
 
 const MoveMenu: Component<Props> = props => {
-  function moveTo<T>(zone: CardZone<T>, addOptions?: T) {
+  function moveTo<T extends {}>(zone: CardZone<T>, addOptions?: T) {
     let cards = props.cards.slice();
     doXTimes(cards.length, () => {
-      transferCard(cards.shift()!, props.fromZone, zone, addOptions);
+      transferCard(cards.shift()!, props.fromZone, zone, { addOptions });
     });
   }
 
-  function moveToFaceDown<T>(zone: CardZone<T>, addOptions?: T) {
+  function moveToFaceDown<T extends {}>(zone: CardZone<T>, addOptions?: T) {
     let cards = props.cards.slice();
     doXTimes(cards.length, () => {
       let card = cards.shift()!;
-      transferCard(card, props.fromZone, zone, addOptions, { isFlipped: true });
+      transferCard(card, props.fromZone, zone, { addOptions, userData: { isFlipped: true } });
     });
   }
 

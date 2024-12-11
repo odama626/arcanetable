@@ -2,13 +2,21 @@ import { updateModifiers } from './card';
 import { Card, CardZone } from './constants';
 import { cardsById, sendEvent } from './globals';
 
+interface ExtendedOptions<AddOptions extends {} = {}> {
+  addOptions?: AddOptions;
+  userData?: unknown;
+  preventTransmit?: boolean;
+}
+
 export async function transferCard<AddOptions extends {}>(
   card: Card,
   fromZone: CardZone<any>,
   toZone?: CardZone<AddOptions>,
-  addOptions: AddOptions = {} as AddOptions,
-  cardUserData?: any,
-  preventTransmit?: boolean
+  {
+    addOptions = {} as AddOptions,
+    userData,
+    preventTransmit = false,
+  }: ExtendedOptions<AddOptions> = {}
 ) {
   await fromZone.removeCard?.(card.mesh);
   if (toZone?.zone !== 'battlefield') {
@@ -18,8 +26,8 @@ export async function transferCard<AddOptions extends {}>(
     card.mesh.userData.modifiers = undefined;
     updateModifiers(card);
   }
-  if (cardUserData) {
-    Object.assign(card.mesh.userData, cardUserData);
+  if (userData) {
+    Object.assign(card.mesh.userData, userData);
   }
 
   if (!toZone) {
@@ -36,8 +44,14 @@ export async function transferCard<AddOptions extends {}>(
         userData: card.mesh.userData,
         fromZoneId: fromZone.id,
         toZoneId: toZone?.id,
-        addOptions,
-        cardUserData,
+        extendedOptions: {
+          addOptions: {
+            ...addOptions,
+            skipAnimation: false
+          },
+          userData,
+          preventTransmit: true,
+        },
       },
     });
   }

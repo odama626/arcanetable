@@ -86,7 +86,9 @@ const PeekMenu: Component = props => {
                       await doXTimes(cardCount(), () => {
                         let card = playArea.peekZone.cards[0];
                         transferCard(card, playArea.peekZone, playArea.deck, {
-                          location: 'bottom',
+                          addOptions: {
+                            location: 'bottom',
+                          },
                         });
                       });
                       await doAfter(100, () => playArea.shuffleDeck());

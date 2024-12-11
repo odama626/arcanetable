@@ -142,7 +142,7 @@ export class PlayArea {
       () => {
         let card = zone.cards.at(-1);
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
-        transferCard(card, zone, previousZone, undefined, undefined, true);
+        transferCard(card, zone, previousZone, { preventTransmit: true });
       },
       50
     );
@@ -212,8 +212,7 @@ export class PlayArea {
   }
 
   draw() {
-    this.hand.addCard(this.deck.draw());
-    this.emitEvent({ type: 'draw' });
+    transferCard(this.deck.cards[0], this.deck, this.hand);
   }
 
   async mulligan(drawCount: number, existingOrder?: number[]) {
@@ -233,7 +232,7 @@ export class PlayArea {
     await doXTimes(
       drawCount,
       () => {
-        this.hand.addCard(this.deck.draw());
+        transferCard(this.deck.cards[0], this.deck, this.hand, { preventTransmit: true });
       },
       50
     );

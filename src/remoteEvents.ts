@@ -108,10 +108,8 @@ const EVENTS = {
   async transferCard(event: Event, playArea: PlayArea, card: Card) {
     let fromZone = zonesById.get(event.payload.fromZoneId)!;
     let toZone = zonesById.get(event.payload.toZoneId)!;
-    // await fromZone?.removeCard(card.mesh);
 
-    let { skipAnimation, ...addOptions } = event.payload.addOptions ?? {};
-    await transferCard(card, fromZone, toZone, addOptions, event.payload.cardUserData, true);
+    await transferCard(card, fromZone, toZone, event.payload.extendedOptions);
   },
   createCard(event: Event, playArea: PlayArea) {
     let card = cloneCard({ detail: event.payload.userData.card.detail }, event.payload.userData.id);
