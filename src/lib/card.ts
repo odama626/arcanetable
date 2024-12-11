@@ -350,8 +350,6 @@ export function updateModifiers(card: Card) {
 
   if (!modifiers.length) return;
 
-  console.log({ modifiers });
-
   modifiers
     .sort((a, b) => {
       if (a.value === b.value) return a.counter.name.localeCompare(b.counter.name);
@@ -370,10 +368,6 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
   let vector = new Vector3();
   let direction = obj.getWorldDirection(new Vector3()).normalize().multiplyScalar(-1);
   let intersections = [];
-
-  console.log(direction);
-
-  console.log(obj, direction);
 
   for (
     let pointOffset = 0;

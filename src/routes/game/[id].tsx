@@ -12,11 +12,9 @@ const GamePage: Component = props => {
   const [inviteDismissed, setInviteDismissed] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
 
-  console.log({ props });
   let url = new URL(document.location);
   url.pathname = props.location.pathname;
   url.searchParams.forEach((value, key) => {
-    console.log({ key });
     url.searchParams.delete(key);
   });
 
