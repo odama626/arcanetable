@@ -17,7 +17,7 @@ import {
 } from '~/components/ui/number-field';
 import { playAreas, provider } from '../globals';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
-import ChevronDownIcon from '~/lib/icons/chevron-down-solid.svg'
+import ChevronDownIcon from '~/lib/icons/chevron-down-solid.svg';
 
 export const LocalPlayer: Component = props => {
   const [open, setOpen] = createSignal(true);
@@ -96,7 +96,7 @@ export const LocalPlayer: Component = props => {
           <CollapsibleContent>
             <hr class='my-3' />
             <DropdownMenu>
-              <DropdownMenuTrigger>Add</DropdownMenuTrigger>
+              <DropdownMenuTrigger>Add Counters</DropdownMenuTrigger>
               <DropdownMenuContent>
                 <For each={counters()}>
                   {counter => {
@@ -126,11 +126,13 @@ export const LocalPlayer: Component = props => {
                     );
                   }}
                 </For>
-                <DropdownMenuSeparator />
+                <Show when={counters().length > 0}>
+                  <DropdownMenuSeparator />
+                </Show>
                 <DropdownMenuItem
                   closeOnSelect={false}
                   onClick={() => setIsCounterDialogOpen(true)}>
-                  New
+                  Create New Counter
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

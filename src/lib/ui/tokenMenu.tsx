@@ -1,19 +1,13 @@
 import { nanoid } from 'nanoid';
-import { Component, createSignal, For, Match, Show, Switch } from 'solid-js';
+import { Component, createSignal, Match, Show, Switch } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from '~/components/ui/menubar';
+import { Menubar, MenubarContent, MenubarMenu, MenubarTrigger } from '~/components/ui/menubar';
+import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
 import { cleanupCard, cloneCard } from '../card';
 import { Card } from '../constants';
 import {
   cardsById,
-  COUNT_OPTIONS,
   doXTimes,
   hoverSignal,
   playAreas,
@@ -59,18 +53,13 @@ const TokenSearchMenu: Component = props => {
               <MenubarMenu>
                 <MenubarTrigger>Add</MenubarTrigger>
                 <MenubarContent>
-                  <For each={COUNT_OPTIONS}>
-                    {value => (
-                      <MenubarItem
-                        closeOnSelect={false}
-                        onClick={() => {
-                          let card = cardsById.get(cardMesh().userData.id)!;
-                          doXTimes(value, () => addToBattlefield(card), 50);
-                        }}>
-                        {value}
-                      </MenubarItem>
-                    )}
-                  </For>
+                  <div class='py-1.5 px-2'>Add Tokens</div>
+                  <NumberFieldMenuItem
+                    onSubmit={count => {
+                      let card = cardsById.get(cardMesh().userData.id)!;
+                      doXTimes(count, () => addToBattlefield(card), 50);
+                    }}
+                  />
                 </MenubarContent>
 
                 <Button

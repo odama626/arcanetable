@@ -56,7 +56,6 @@ export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
 export const [scrollTarget, setScrollTarget] = createSignal();
 export let provider: WebsocketProvider | WebrtcProvider;
-export let COUNT_OPTIONS = [1, 2, 3, 5, 7, 10];
 export let [logs, setLogs] = createStore([]);
 export let [processedEvents, setProcessedEvents] = createSignal(0);
 export let [isSpectating, setIsSpectating] = createSignal(false);

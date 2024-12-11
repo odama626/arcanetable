@@ -1,4 +1,4 @@
-import { Component, For } from 'solid-js';
+import { Component } from 'solid-js';
 import {
   Menubar,
   MenubarContent,
@@ -10,7 +10,8 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '~/components/ui/menubar';
-import { COUNT_OPTIONS, doXTimes } from '../globals';
+import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
+import { doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
 import { transferCard } from '../transferCard';
 
@@ -49,89 +50,77 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               Draw
             </MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() => doXTimes(value, () => props.playArea.draw())}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Draw</div>
+              <NumberFieldMenuItem
+                defaultValue={7}
+                onSubmit={count => {
+                  doXTimes(count, () => props.playArea.draw());
+                }}
+              />
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
             <MenubarSubTrigger onClick={discardTopDeck}>Discard</MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() => doXTimes(value, discardTopDeck)}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Discard</div>
+              <NumberFieldMenuItem
+                onSubmit={count => {
+                  doXTimes(count, discardTopDeck);
+                }}
+              />
               <MenubarItem
                 closeOnSelect={false}
                 onClick={() => doXTimes(getNextLandIndex() + 1, discardTopDeck)}>
-                To next land
+                Discard all cards to next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
             <MenubarSubTrigger onClick={exileTopDeck}>Exile</MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem closeOnSelect={false} onClick={() => doXTimes(value, exileTopDeck)}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Exile</div>
+              <NumberFieldMenuItem
+                onSubmit={count => {
+                  doXTimes(count, exileTopDeck);
+                }}
+              />
               <MenubarItem
                 closeOnSelect={false}
                 onClick={() => doXTimes(getNextLandIndex() + 1, exileTopDeck)}>
-                To next land
+                Exile all cards to next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub>
             <MenubarSubTrigger onClick={peekTopDeck}>Peek</MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem closeOnSelect={false} onClick={() => doXTimes(value, peekTopDeck)}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Peek</div>
+              <NumberFieldMenuItem
+                onSubmit={count => {
+                  doXTimes(count, peekTopDeck);
+                }}
+              />
               <MenubarItem
                 onClick={() => {
                   doXTimes(props.playArea.deck.cards.length, peekTopDeck, 50);
                 }}>
-                All
+                Peek All
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub>
             <MenubarSubTrigger>Reveal</MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={async () => {
-                      doXTimes(value, () => {
-                        let card = props.playArea.deck.cards[0];
-                        props.playArea.reveal(card);
-                        peekTopDeck();
-                      });
-                    }}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Reveal</div>
+              <NumberFieldMenuItem
+                onSubmit={async count => {
+                  doXTimes(count, () => {
+                    let card = props.playArea.deck.cards[0];
+                    props.playArea.reveal(card);
+                    peekTopDeck();
+                  });
+                }}
+              />
               <MenubarItem
                 onClick={() => {
                   if (props.playArea.tokenSearchZone.cards.length) {
@@ -147,7 +136,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
                     50
                   );
                 }}>
-                All
+                Reveal All
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
@@ -173,13 +162,13 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               Mulligan for
             </MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem closeOnSelect={false} onClick={() => props.playArea.mulligan(value)}>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='py-1.5 px-2'>Mulligan for x cards</div>
+              <NumberFieldMenuItem
+                defaultValue={7}
+                onSubmit={async count => {
+                  props.playArea.mulligan(count);
+                }}
+              />
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSeparator />

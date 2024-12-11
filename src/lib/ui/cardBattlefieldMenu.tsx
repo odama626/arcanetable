@@ -19,7 +19,8 @@ import {
   NumberFieldIncrementTrigger,
   NumberFieldInput,
 } from '~/components/ui/number-field';
-import { cardsById, COUNT_OPTIONS, doXTimes } from '../globals';
+import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
+import { cardsById, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 import MoveMenu from './moveMenu';
@@ -67,7 +68,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
                               ...modifiers,
                               counters: {
                                 ...modifiers.counters,
-                                [counter.id]: parseInt(value.replace(/\,/g,''), 10),
+                                [counter.id]: parseInt(value.replace(/\,/g, ''), 10),
                               },
                             }));
                           }}>
@@ -82,9 +83,11 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
                   );
                 }}
               </For>
-              <MenubarSeparator />
+              <Show when={counters().length > 0}>
+                <MenubarSeparator />
+              </Show>
               <MenubarItem closeOnSelect={false} onClick={() => setIsCounterDialogOpen(true)}>
-                New
+                Create New Counter
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
@@ -93,17 +96,13 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
               Clone
             </MenubarSubTrigger>
             <MenubarSubContent>
-              <For each={COUNT_OPTIONS}>
-                {value => (
-                  <MenubarItem
-                    closeOnSelect={false}
-                    onClick={() =>
-                      doXTimes(value, () => props.playArea.clone(props.cardMesh?.userData.id), 10)
-                    }>
-                    {value}
-                  </MenubarItem>
-                )}
-              </For>
+              <div class='pt-1.5 px-2'>Clone {props.cardMesh?.userData?.card?.detail?.name}</div>
+              <div class='pb-1.5 px-2 text-sm'>consider using counters</div>
+              <NumberFieldMenuItem
+                onSubmit={count =>
+                  doXTimes(count, () => props.playArea.clone(props.cardMesh?.userData.id), 10)
+                }
+              />
             </MenubarSubContent>
           </MenubarSub>
         </MenubarContent>
