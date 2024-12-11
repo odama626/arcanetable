@@ -6,6 +6,7 @@ import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
 import { expect, setHoverSignal, zonesById } from './globals';
 import { createStore, SetStoreFunction } from 'solid-js/store';
+import { getGlobalRotation } from './utils';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;
@@ -182,7 +183,14 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     let index = this.cards.findIndex(card => card.id === cardMesh.userData.id);
     if (index > -1) {
       this.cards.splice(index, 1);
-      this.mesh.remove(cardMesh)
+      let worldPosition = new Vector3();
+      cardMesh.getWorldPosition(worldPosition);
+      let globalRotation = getGlobalRotation(cardMesh);
+
+      cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
+      cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
+
+      this.mesh.remove(cardMesh);
       this.setObservable('cardCount', this.cards.length);
     } else {
       console.error(`didn't find card`, { cardMesh, cards: this.cards });
