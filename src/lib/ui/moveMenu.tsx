@@ -33,6 +33,7 @@ const MoveMenu: Component<Props> = props => {
     <MenubarMenu>
       <MenubarTrigger class='whitespace-nowrap'>{props.text ?? 'Move to'}</MenubarTrigger>
       <MenubarContent>
+        <MenubarItem onClick={() => moveTo(props.playArea.peekZone)}>Search</MenubarItem>
         <Show when={props.fromZone !== props.playArea.hand}>
           <MenubarItem onClick={() => moveTo(props.playArea.hand)}>Hand</MenubarItem>
         </Show>

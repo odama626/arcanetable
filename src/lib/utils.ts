@@ -1,6 +1,7 @@
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
-import { get, set } from 'lodash-es';
+import get from 'lodash-es/get';
+import set from 'lodash-es/set';
 import { twMerge } from 'tailwind-merge';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { CARD_WIDTH } from './constants';

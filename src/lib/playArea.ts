@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash-es';
+import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
@@ -332,14 +332,15 @@ export class PlayArea {
 
   tap(cardMesh: Mesh) {
     return new Promise<void>(onComplete => {
+      let initialAngle = cardMesh.userData.isFlipped ? Math.PI : 0;
       let angleDelta = cardMesh.userData.isTapped ? 0 : -Math.PI / 2;
 
       if (cardMesh.userData.isFlipped) {
-        angleDelta += Math.PI;
+        angleDelta = -angleDelta;
       }
 
       let rotation = cardMesh.rotation.clone();
-      rotation.z = angleDelta;
+      rotation.z = angleDelta + initialAngle;
       setCardData(cardMesh, 'isTapped', !cardMesh.userData.isTapped);
       this.emitEvent({ type: 'tap', payload: { userData: cardMesh.userData } });
 

@@ -1,4 +1,5 @@
-import { uniqBy } from 'lodash-es';
+import set from 'lodash-es/set';
+import uniqBy from 'lodash-es/uniqBy';
 import {
   BoxGeometry,
   Color,
@@ -149,17 +150,17 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
   }
 
   if (cardMesh.userData.location === 'battlefield') {
-    if (!cardMesh.userData.isFlipped) {
+    if (cardMesh.userData.isFlipped) {
+      if (cardMesh.userData.isTapped) {
+        targetVertex = 6;
+      } else {
+        targetVertex = 2;
+      }
+    } else {
       if (cardMesh.userData.isTapped) {
         targetVertex = 15;
       } else {
         targetVertex = 6;
-      }
-    } else {
-      if (cardMesh.userData.isTapped) {
-        targetVertex = 1;
-      } else {
-        targetVertex = 2;
       }
     }
   }
@@ -212,7 +213,7 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     modifiersNeedUpdate = true;
   }
 
-  cardMesh.userData[field] = value;
+  set(cardMesh.userData, field, value);
 
   // after setting value
 

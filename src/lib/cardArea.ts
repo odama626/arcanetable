@@ -51,8 +51,13 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     const initialPosition = card.mesh.getWorldPosition(new Vector3());
     this.mesh.worldToLocal(initialPosition);
     let position: Vector3;
+    let rotation = new Euler();
 
-    if (!positionArray) {
+    if (positionArray) {
+      position = new Vector3().fromArray(positionArray);
+    } else if (card.mesh.userData?.zone?.[this.id]?.position) {
+      position = new Vector3().fromArray(card.mesh.userData.zone[this.id].position);
+    } else {
       let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 10));
       let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
       let raycaster = new Raycaster(rayOrigin, direction);
@@ -65,8 +70,6 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
       } else {
         position = this.mesh.worldToLocal(intersections[0].point);
       }
-    } else {
-      position = new Vector3().fromArray(positionArray);
     }
 
     setCardData(card.mesh, 'zoneId', this.id);
@@ -74,6 +77,7 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     setCardData(card.mesh, 'isPublic', true);
     setCardData(card.mesh, 'isInteractive', true);
     setCardData(card.mesh, 'isInGrid', false);
+
     this.mesh.add(card.mesh);
     this.cards.push(card);
     this.setObservable('cardCount', this.cards.length);
@@ -83,9 +87,11 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
       initialRotation = new Euler().setFromQuaternion(card.mesh.parent.quaternion.invert());
     }
 
-    let rotation = new Euler();
     if (card.mesh.userData.isFlipped) {
       rotation.y += Math.PI;
+    }
+    if (card.mesh.userData.isTapped) {
+      rotation.z -= Math.PI / 2;
     }
 
     if (skipAnimation) {
@@ -111,6 +117,8 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     cardMesh.getWorldPosition(worldPosition);
 
     let globalRotation = getGlobalRotation(cardMesh);
+
+    setCardData(cardMesh, `zone.${this.id}.position`, cardMesh.position.toArray());
 
     cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
     cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);

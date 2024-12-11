@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash-es';
+import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
