@@ -26,6 +26,7 @@ import PencilIcon from '../icons/pencil-solid.svg';
 import { cn } from '../utils';
 import { DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
+import CopyLinkButton from '~/components/ui/copy-link-button';
 
 const DeckPicker: Component = props => {
   const [deckStore, setDeckStore] = createDeckStore();
@@ -136,6 +137,7 @@ const DeckPicker: Component = props => {
               </div>
             </div>
             <DialogFooter>
+              <CopyLinkButton variant='ghost' class='mr-auto' />
               <Button onClick={() => startSpectating()} variant='ghost'>
                 Spectate
               </Button>

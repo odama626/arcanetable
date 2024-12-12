@@ -22,6 +22,15 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
+import { Dialog } from '@kobalte/core/dialog';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -160,7 +169,21 @@ const Overlay: Component = () => {
                 playArea={playArea}
                 fromZone={playArea.hand}
               />
-              <MenubarItem onClick={() => onConcede()}>Concede</MenubarItem>
+              <Dialog>
+                <DialogTrigger>
+                  <MenubarItem>Concede</MenubarItem>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>Are you sure you want to concede?</DialogHeader>
+                  <DialogDescription>
+                    Conceding will allow you to spectate until the session ends
+                  </DialogDescription>
+                  <DialogFooter>
+                    <Button variant='ghost'>Cancel</Button>
+                    <Button onClick={() => onConcede()}>Concede</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </Show>
             <MenubarItem class='width-full' onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}
