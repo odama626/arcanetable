@@ -1,4 +1,4 @@
-import { updateModifiers } from './card';
+import { setCardData, updateModifiers } from './card';
 import { Card, CardZone } from './constants';
 import { cardsById, sendEvent } from './globals';
 
@@ -27,7 +27,9 @@ export async function transferCard<AddOptions extends {}>(
     updateModifiers(card);
   }
   if (userData) {
-    Object.assign(card.mesh.userData, userData);
+    Object.entries(userData).forEach(([field, value]) => {
+      setCardData(card.mesh, field, value);
+    });
   }
 
   if (!toZone) {
@@ -47,7 +49,7 @@ export async function transferCard<AddOptions extends {}>(
         extendedOptions: {
           addOptions: {
             ...addOptions,
-            skipAnimation: false
+            skipAnimation: false,
           },
           userData,
           preventTransmit: true,
