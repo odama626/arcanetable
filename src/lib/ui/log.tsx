@@ -47,12 +47,10 @@ export function parseLogEntry(entry) {
   let card = cardsById.get(entry.payload?.userData?.id);
   let { userData, ...data } = entry?.payload || {};
   let cardReference = () => {
-    if (userData?.isPublic || userData?.wasPublic) return card.detail.name;
+    if (userData?.isPublic || userData?.wasPublic) return card?.detail?.name;
     if (entry.count > 1) return `${entry.count} cards`;
     return 'a card';
   };
-
-  console.log({ entry, card });
 
   switch (entry.type) {
     case 'join':
@@ -74,7 +72,7 @@ export function parseLogEntry(entry) {
     case 'animateObject':
       return null;
     case 'tap':
-      return `${userData.isTapped ? 'tapped' : 'untapped'} ${card.detail.name}`;
+      return `${userData.isTapped ? 'tapped' : 'untapped'} ${card?.detail.name}`;
     case 'shuffleDeck':
       return 'shuffled';
     case 'mulligan':
@@ -84,7 +82,7 @@ export function parseLogEntry(entry) {
     case 'reveal':
       return (
         <>
-          revealed <strong>{card.detail.name}</strong>
+          revealed <strong>{card?.detail.name}</strong>
         </>
       );
 
