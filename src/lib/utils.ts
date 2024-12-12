@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import get from 'lodash-es/get';
 import set from 'lodash-es/set';
 import { twMerge } from 'tailwind-merge';
-import { Euler, Object3D, Quaternion, Vector3 } from 'three';
+import { Euler, Mesh, Object3D, Quaternion, Vector3 } from 'three';
 import { CARD_WIDTH } from './constants';
 import { provider } from './globals';
 
@@ -35,15 +35,21 @@ export function cleanMaterial(material: Material) {
     }
   }
 }
+
+export function cleanupMesh(object: Mesh) {
+  if (!object.isMesh) return;
+  object.geometry.dispose();
+  if (object.material.isMaterial) {
+    cleanMaterial(object.material);
+  } else {
+    for (const material of object.material) cleanMaterial(material);
+  }
+}
+
 export function cleanupFromNode(root: Object3D, isScene?: boolean) {
   root.traverse(object => {
     if (!object.isMesh) return;
-    object.geometry.dispose();
-    if (object.material.isMaterial) {
-      cleanMaterial(object.material);
-    } else {
-      for (const material of object.material) cleanMaterial(material);
-    }
+    cleanupMesh(object);
     if (!isScene) root.remove(object);
   });
 }

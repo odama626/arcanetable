@@ -5,8 +5,9 @@ import { animateObject, queueAnimationGroup } from './animations';
 import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
 import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
-import { setHoverSignal, zonesById } from './globals';
-import { getGlobalRotation } from './utils';
+import { cardsById, setHoverSignal, zonesById } from './globals';
+import { cleanupMesh, getGlobalRotation } from './utils';
+import { createRoot } from 'solid-js';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public mesh: Group;
@@ -14,6 +15,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   public zone: string;
   public observable: CardZone['observable'];
   private setObservable: SetStoreFunction<CardZone['observable']>;
+  private destroyReactivity(): void;
 
   constructor(public cards: Card[], public id = nanoid()) {
     this.mesh = new Group();
@@ -32,9 +34,11 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       card.mesh.position.set(0, 0, i * 0.125);
       this.mesh.add(card.mesh);
     });
-
-    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
-      cardCount: cards.length,
+    createRoot(destroy => {
+      this.destroyReactivity = destroy;
+      [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+        cardCount: cards.length,
+      });
     });
   }
 
@@ -268,6 +272,14 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       id: this.id,
       cards: this.cards.map(card => getSerializableCard(card.mesh)),
     };
+  }
+
+  destroy() {
+    this.cards.map(card => cardsById.delete(card.id));
+    zonesById.delete(this.id);
+    cleanupMesh(this.mesh);
+    this.destroyReactivity();
+    this.cards = [];
   }
 }
 

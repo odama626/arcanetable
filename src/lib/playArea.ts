@@ -409,6 +409,27 @@ export class PlayArea {
     return playArea;
   }
 
+  destroy() {
+    this.mesh.remove(this.revealZone.mesh);
+    this.mesh.remove(this.peekZone.mesh);
+    this.mesh.remove(this.tokenSearchZone.mesh);
+    this.mesh.remove(this.exileZone.mesh);
+    this.mesh.remove(this.graveyardZone.mesh);
+    this.mesh.remove(this.deck.mesh);
+    this.mesh.remove(this.hand.mesh);
+    this.mesh.remove(this.battlefieldZone.mesh);
+    this.peekZone.destroy();
+    this.revealZone.destroy();
+    this.tokenSearchZone.destroy();
+    this.graveyardZone.destroy();
+    this.exileZone.destroy();
+    this.battlefieldZone.destroy();
+    this.deck.destroy();
+    this.hand.destroy();
+    this.cards = [];
+
+  }
+
   static FromNetworkState(state: State) {
     let playArea = new PlayArea(state.clientId!, state.cards!, state.deck.cards!, state);
 

@@ -7,6 +7,7 @@ import {
   focusRenderer,
   hoverSignal,
   isSpectating,
+  onConcede,
   playAreas,
   players,
   provider,
@@ -132,32 +133,35 @@ const Overlay: Component = () => {
           style='height: auto; white-space: nowrap;'
           class={`${styles.menu} flex-col items-start`}>
           <MenubarMenu>
-            <MenubarItem
-              class='w-full flex'
-              onClick={() => {
-                let tappedCards = playArea.battlefieldZone.mesh.children.filter(
-                  mesh => mesh.userData.isTapped
-                ) as Mesh[];
+            <Show when={!isSpectating()}>
+              <MenubarItem
+                class='w-full flex'
+                onClick={() => {
+                  let tappedCards = playArea.battlefieldZone.mesh.children.filter(
+                    mesh => mesh.userData.isTapped
+                  ) as Mesh[];
 
-                tappedCards.forEach(card => playArea.tap(card));
-              }}>
-              Untap All
-            </MenubarItem>
-            <MenubarItem class='w-full flex' onClick={() => playArea.toggleTokenMenu()}>
-              Add Tokens
-            </MenubarItem>
-            <MoveMenu
-              text={`Battlefield (${playArea.battlefieldZone.observable.cardCount})`}
-              cards={playArea.battlefieldZone.cards}
-              playArea={playArea}
-              fromZone={playArea.battlefieldZone}
-            />
-            <MoveMenu
-              text={`Hand (${playArea.hand.observable.cardCount})`}
-              cards={playArea.hand.cards}
-              playArea={playArea}
-              fromZone={playArea.hand}
-            />
+                  tappedCards.forEach(card => playArea.tap(card));
+                }}>
+                Untap All
+              </MenubarItem>
+              <MenubarItem class='w-full flex' onClick={() => playArea.toggleTokenMenu()}>
+                Add Tokens
+              </MenubarItem>
+              <MoveMenu
+                text={`Battlefield (${playArea.battlefieldZone.observable.cardCount})`}
+                cards={playArea.battlefieldZone.cards}
+                playArea={playArea}
+                fromZone={playArea.battlefieldZone}
+              />
+              <MoveMenu
+                text={`Hand (${playArea.hand.observable.cardCount})`}
+                cards={playArea.hand.cards}
+                playArea={playArea}
+                fromZone={playArea.hand}
+              />
+              <MenubarItem onClick={() => onConcede()}>Concede</MenubarItem>
+            </Show>
             <MenubarItem class='width-full' onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}
             </MenubarItem>

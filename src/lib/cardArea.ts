@@ -1,4 +1,6 @@
 import { nanoid } from 'nanoid';
+import { createRoot } from 'solid-js';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 import {
   BoxGeometry,
   EdgesGeometry,
@@ -13,15 +15,15 @@ import {
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './constants';
-import { zonesById } from './globals';
-import { getGlobalRotation } from './utils';
-import { createStore, SetStoreFunction } from 'solid-js/store';
+import { cardsById, zonesById } from './globals';
+import { cleanupMesh, getGlobalRotation } from './utils';
 
 export class CardArea implements CardZone<{ positionArray?: [number, number, number] }> {
   public mesh: Mesh;
   public cards: Card[];
   public observable: CardZone['observable'];
   private setObservable: SetStoreFunction<CardZone['observable']>;
+  private destroyReactivity(): void;
 
   constructor(public zone: string, public id: string = nanoid()) {
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
@@ -30,7 +32,6 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
     this.cards = [];
-    // this.mesh.position.set(12.5, -65, 0);
     this.mesh.position.setY(-50);
     this.mesh.receiveShadow = true;
     let edges = new EdgesGeometry(geometry);
@@ -38,10 +39,13 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     lineSegments.userData.isOrnament = true;
     lineSegments.position.setZ(0.125);
     this.mesh.add(lineSegments);
-    // this.mesh.position.setX(-25);
     zonesById.set(id, this);
-    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
-      cardCount: this.cards.length,
+
+    createRoot(destroy => {
+      this.destroyReactivity = destroy;
+      [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+        cardCount: this.cards.length,
+      });
     });
 
     this.mesh.position.setZ(2.5);
@@ -135,5 +139,13 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
         .filter(child => !child.userData.isOrnament)
         .map(getSerializableCard),
     };
+  }
+
+  destroy() {
+    this.cards.map(card => cardsById.delete(card.id));
+    zonesById.delete(this.id);
+    cleanupMesh(this.mesh);
+    this.destroyReactivity();
+    this.cards = [];
   }
 }

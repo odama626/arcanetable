@@ -44,7 +44,6 @@ export function isLogMessageStackable(previous, next) {
 }
 
 export function parseLogEntry(entry) {
-  console.log(entry)
   let card = cardsById.get(entry.payload?.userData?.id);
   let { userData, ...data } = entry?.payload || {};
   let cardReference = () => {
@@ -60,7 +59,10 @@ export function parseLogEntry(entry) {
       let fromZone = zonesById.get(data.fromZoneId);
       let toZone = zonesById.get(data.toZoneId);
       let destination = toZone.zone;
-      if (toZone?.mesh.userData.zone === 'deck' && entry.extendedOptions?.addOptions?.location === 'bottom')
+      if (
+        toZone?.mesh.userData.zone === 'deck' &&
+        entry.extendedOptions?.addOptions?.location === 'bottom'
+      )
         destination = `Bottom of ${destination}`;
 
       return (
@@ -70,6 +72,8 @@ export function parseLogEntry(entry) {
         </>
       );
     }
+    case 'concede':
+      return 'conceded';
     case 'animateObject':
       return null;
     case 'tap':

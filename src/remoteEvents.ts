@@ -2,13 +2,14 @@ import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
 import { Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './lib/animations';
-import { cloneCard, createCardGeometry, setCardData } from './lib/card';
+import { cloneCard, setCardData } from './lib/card';
 import { Card } from './lib/constants';
 import {
   cardsById,
   expect,
   gameLog,
   logs,
+  onConcede,
   PLAY_AREA_ROTATIONS,
   playAreas,
   playerCount,
@@ -22,9 +23,9 @@ import {
   zonesById,
 } from './lib/globals';
 import { PlayArea } from './lib/playArea';
+import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
 import { isLogMessageStackable } from './lib/ui/log';
-import { transferCard } from './lib/transferCard';
 
 interface Event {
   clientID: string;
@@ -88,6 +89,9 @@ const EVENTS = {
     console.log({ playerCount: playerCount() });
     const rotation = PLAY_AREA_ROTATIONS[playerCount()];
     playArea.mesh.rotateZ(rotation);
+  },
+  concede(event: Event, playArea: PlayArea) {
+    onConcede(event.clientID);
   },
   toggleTokenMenu(event: Event, playArea: PlayArea) {
     return playArea.toggleTokenMenu(event.payload);

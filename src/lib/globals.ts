@@ -64,6 +64,7 @@ export let orbitControls: OrbitControls;
 export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
 export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
+export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -202,6 +203,30 @@ export function getProjectionVec(vec: Vector3) {
   );
   return projectionVec;
 }
+
+export function onConcede(clientId?: string) {
+  if (!clientId) {
+    clientId = provider.awareness.clientID;
+    startSpectating();
+    sendEvent({ type: 'concede' });
+  } else {
+    setPlayerCount(count => count - 1);
+  }
+  console.log(clientId);
+  console.log(playAreas);
+  const playArea = playAreas[clientId];
+  playArea.destroy();
+  setPlayAreas(clientId, undefined);
+  if (playerCount() < 2) {
+    Object.values(playAreas).forEach(playArea => {
+      playArea.destroy();
+    });
+    setSelectedDeckIndex(undefined);
+    setIsSpectating(false);
+    orbitControls?.dispose()
+  }
+}
+
 export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
   if (focusCamera.userData.isAnimating) return;
 

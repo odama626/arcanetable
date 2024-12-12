@@ -1,4 +1,6 @@
 import { nanoid } from 'nanoid';
+import { createRoot } from 'solid-js';
+import { createStore, SetStoreFunction } from 'solid-js/store';
 import {
   BoxGeometry,
   CatmullRomCurve3,
@@ -13,15 +15,15 @@ import {
 import { animateObject } from './animations';
 import { cleanupCard, getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
-import { setHoverSignal, zonesById } from './globals';
-import { getGlobalRotation } from './utils';
-import { createStore, SetStoreFunction } from 'solid-js/store';
+import { cardsById, setHoverSignal, zonesById } from './globals';
+import { cleanupMesh, getGlobalRotation } from './utils';
 
 export class CardStack implements CardZone {
   public mesh: Mesh;
   public cards: Card[] = [];
   public observable: CardZone['observable'];
   private setObservable: SetStoreFunction<CardZone['observable']>;
+  private destroyReactivity(): void;
 
   constructor(public zone: string, public id: string = nanoid()) {
     let geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
@@ -36,9 +38,12 @@ export class CardStack implements CardZone {
     this.mesh.add(lineSegments);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    createRoot(destroy => {
+      this.destroyReactivity = destroy;
 
-    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
-      cardCount: this.cards.length,
+      [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+        cardCount: this.cards.length,
+      });
     });
 
     zonesById.set(id, this);
@@ -109,10 +114,20 @@ export class CardStack implements CardZone {
     cardMesh.position.copy(worldPosition);
     cardMesh.rotation.copy(globalRotation);
     this.mesh.remove(cardMesh);
-    
+
     let index = this.cards.findIndex(c => c.id === cardMesh.userData.id);
     this.cards.splice(index, 1);
     this.setObservable('cardCount', this.cards.length);
     this.updateCardPositions();
+  }
+
+  destroy() {
+    this.cards.map(card => {
+      cardsById.delete(card.id);
+    });
+    this.destroyReactivity();
+    zonesById.delete(this.id);
+    cleanupMesh(this.mesh);
+    this.cards = [];
   }
 }

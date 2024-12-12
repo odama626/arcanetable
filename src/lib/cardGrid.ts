@@ -1,18 +1,12 @@
 import { nanoid } from 'nanoid';
-import { createEffect } from 'solid-js';
+import { createEffect, createRoot } from 'solid-js';
 import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone } from './constants';
-import {
-  getProjectionVec,
-  peekFilterText,
-  setHoverSignal,
-  setScrollTarget,
-  zonesById,
-} from './globals';
-import { getGlobalRotation, isVectorEqual } from './utils';
+import { cardsById, peekFilterText, setHoverSignal, setScrollTarget, zonesById } from './globals';
+import { cleanupMesh, getGlobalRotation, isVectorEqual } from './utils';
 
 const CARDS_PER_ROW = 5;
 
@@ -28,6 +22,7 @@ export class CardGrid implements CardZone {
   public mode: 'grid' | 'field' = 'grid';
   public observable: CardZone['observable'];
   private setObservable: SetStoreFunction<CardZone['observable']>;
+  private destroyReactivity;
 
   constructor(isLocalPlayArea: boolean, public zone: string, public id: string = nanoid()) {
     const POSITION = new Vector3(-((CARD_WIDTH + 1) * CARDS_PER_ROW) / 2 + CARD_WIDTH / 2, -95, 50);
@@ -46,48 +41,52 @@ export class CardGrid implements CardZone {
 
     this.mesh.userData.restingPosition = this.mesh.position.clone();
 
-    [this.observable, this.setObservable] = createStore<CardZone['observable']>({
-      cardCount: this.cards.length,
-    });
+    createRoot(destroy => {
+      this.destroyReactivity = destroy;
 
-    if (this.isLocalPlayArea) {
-      this.scrollContainer.addEventListener('scroll', event => {
-        let position = this.scrollContainer.position
-          .clone()
-          .add(new Vector3(0, event.event.deltaY * 0.25, 0));
-
-        position.y = Math.min(position.y, this.maxScroll);
-        position.y = Math.max(position.y, this.minScroll);
-
-        animateObject(this.scrollContainer, { duration: 0.2, to: { position } });
+      [this.observable, this.setObservable] = createStore<CardZone['observable']>({
+        cardCount: this.cards.length,
       });
 
-      createEffect(() => {
-        let filterText = peekFilterText().toLowerCase();
+      if (this.isLocalPlayArea) {
+        this.scrollContainer.addEventListener('scroll', event => {
+          let position = this.scrollContainer.position
+            .clone()
+            .add(new Vector3(0, event.event.deltaY * 0.25, 0));
 
-        if (filterText.length) {
-          let filterScores = this.cards
-            .map(card => {
-              let indexOf = card.detail.search.indexOf(filterText);
-              let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
-              return {
-                score: indexScore,
-                card,
-              };
-            })
-            .filter(card => card.score > 0)
-            .sort((a, b) => b.score - a.score);
-          this.filteredCards = filterScores.map(score => score.card);
-        } else {
-          this.filteredCards = undefined;
-        }
-        animateObject(this.scrollContainer, {
-          duration: 0.2,
-          to: { position: new Vector3(0, this.minScroll, 0) },
+          position.y = Math.min(position.y, this.maxScroll);
+          position.y = Math.max(position.y, this.minScroll);
+
+          animateObject(this.scrollContainer, { duration: 0.2, to: { position } });
         });
-        this.updateCardPositions();
-      });
-    }
+
+        createEffect(() => {
+          let filterText = peekFilterText().toLowerCase();
+
+          if (filterText.length) {
+            let filterScores = this.cards
+              .map(card => {
+                let indexOf = card.detail.search.indexOf(filterText);
+                let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
+                return {
+                  score: indexScore,
+                  card,
+                };
+              })
+              .filter(card => card.score > 0)
+              .sort((a, b) => b.score - a.score);
+            this.filteredCards = filterScores.map(score => score.card);
+          } else {
+            this.filteredCards = undefined;
+          }
+          animateObject(this.scrollContainer, {
+            duration: 0.2,
+            to: { position: new Vector3(0, this.minScroll, 0) },
+          });
+          this.updateCardPositions();
+        });
+      }
+    });
   }
 
   viewField() {
@@ -280,5 +279,16 @@ export class CardGrid implements CardZone {
     }
 
     this.updateCardPositions();
+  }
+
+  destroy() {
+    this.cards.map(card => {
+      cardsById.delete(card.id);
+    });
+    zonesById.delete(this.id);
+    cleanupMesh(this.mesh);
+    this.cards = [];
+    this.cardMap.clear();
+    this.destroyReactivity();
   }
 }
