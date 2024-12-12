@@ -308,7 +308,7 @@ export function updateModifiers(card: Card) {
     if (!card.modifiers.pt) {
       let geometry = new BoxGeometry(1, 1, 1);
       let mat = new MeshStandardMaterial({});
-      let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, blackMat]);
+      let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, mat]);
       mesh.scale.set(7, 3, 0.1);
       card.mesh.add(mesh);
       mesh.transparent = true;
@@ -323,11 +323,13 @@ export function updateModifiers(card: Card) {
       `${power > 0 ? '+' : ''}${power} / ${toughness > 0 ? '+' : ''}${toughness}`
     );
     mesh.material[4].map = label.texture;
+    mesh.material[5].map = label.texture;
     mesh.scale.setX(label.width);
     mesh.position.setZ(zPosition);
     let xPosition = (CARD_WIDTH / 2 - label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1);
     mesh.position.setX(xPosition);
     mesh.material[4].needsUpdate = true;
+    mesh.material[5].needsUpdate = true;
   } else if (card.modifiers.pt) {
     card.mesh.remove(card.modifiers.pt);
   }
