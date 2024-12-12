@@ -257,17 +257,18 @@ export class CardGrid implements CardZone {
   }
 
   removeCard(cardMesh: Object3D) {
-    let worldPosition = new Vector3();
-    cardMesh.getWorldPosition(worldPosition);
     setCardData(cardMesh, 'isInGrid', false);
 
     let globalRotation = getGlobalRotation(cardMesh);
+    let worldPosition = new Vector3();
+    cardMesh.getWorldPosition(worldPosition);
 
     cardMesh.position.copy(worldPosition);
     cardMesh.rotation.copy(globalRotation);
 
     this.scrollContainer.remove(cardMesh);
-    this.cards = this.cards.filter(c => c.id !== cardMesh.userData.id);
+    let index = this.cards.findIndex(c => c.id === cardMesh.userData.id);
+    this.cards.splice(index, 1);
     this.cardMap.delete(cardMesh.userData.id);
     this.setObservable('cardCount', this.cards.length);
 

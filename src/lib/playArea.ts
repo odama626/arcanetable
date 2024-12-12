@@ -131,7 +131,10 @@ export class PlayArea {
         payload: {
           userData: card.mesh.userData,
           toZoneId: card.mesh.userData.previousZoneId,
-          fromZoneId: card.mesh.userData.zoneId,
+          fromZoneId: zone.id,
+          extendedOptions: {
+            preventTransmit: true,
+          },
         },
       }))
       .reverse();
@@ -142,6 +145,7 @@ export class PlayArea {
       () => {
         let card = zone.cards.at(-1);
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
+        console.log(zone, previousZone);
         transferCard(card, zone, previousZone, { preventTransmit: true });
       },
       50

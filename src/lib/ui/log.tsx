@@ -8,11 +8,11 @@ const Log: Component = props => {
       <For each={logs}>
         {log => {
           let player = players().find(p => p.id === log.clientID);
-          let text = () => parseLogEntry(log);
+          let text = parseLogEntry(log);
           return (
-            <Show when={text()}>
+            <Show when={text}>
               <p>
-                {player.entry.name} {text()}
+                {player.entry.name} {text}
               </p>
             </Show>
           );
@@ -44,6 +44,7 @@ export function isLogMessageStackable(previous, next) {
 }
 
 export function parseLogEntry(entry) {
+  console.log(entry)
   let card = cardsById.get(entry.payload?.userData?.id);
   let { userData, ...data } = entry?.payload || {};
   let cardReference = () => {
@@ -58,8 +59,8 @@ export function parseLogEntry(entry) {
     case 'transferCard': {
       let fromZone = zonesById.get(data.fromZoneId);
       let toZone = zonesById.get(data.toZoneId);
-      let destination = userData.location;
-      if (toZone?.mesh.userData.zone === 'deck' && entry.addOptions?.location === 'bottom')
+      let destination = toZone.zone;
+      if (toZone?.mesh.userData.zone === 'deck' && entry.extendedOptions?.addOptions?.location === 'bottom')
         destination = `Bottom of ${destination}`;
 
       return (
