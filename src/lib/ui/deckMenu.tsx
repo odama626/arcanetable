@@ -37,7 +37,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   return (
     <Menubar>
       <MenubarMenu>
-        <MenubarTrigger>Actions | {props.playArea.deck.observable.cardCount} cards</MenubarTrigger>
+        <MenubarTrigger>Deck | {props.playArea.deck.observable.cardCount} cards</MenubarTrigger>
         <MenubarContent>
           <MenubarItem
             onClick={() => {

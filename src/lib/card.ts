@@ -35,7 +35,6 @@ export function createCardGeometry(card: Card) {
   let front = textureLoader.load(getCardImage(card));
 
   front.colorSpace = SRGBColorSpace;
-  
 
   let frontMat = new MeshStandardMaterial({
     color: 0xffffff,
@@ -268,13 +267,11 @@ function updateCounter(
   value: number | string | boolean,
   index: number
 ) {
-  let zOffset = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -2 : 1);
-
   if (!card.modifiers[counter.id]) {
     let geometry = new BoxGeometry(1, 1, 1);
     let mat = new MeshStandardMaterial({ color: new Color(counter.color) });
-    let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, blackMat]);
-    mesh.scale.set(1, 3, CARD_THICKNESS);
+    let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, mat]);
+    mesh.scale.set(1, 3, CARD_THICKNESS + 0.1);
     card.mesh.add(mesh);
     mesh.transparent = true;
     card.modifiers[counter.id] = mesh;
@@ -286,13 +283,15 @@ function updateCounter(
     let mesh: Mesh = card.modifiers[counter.id];
     let label = createLabel(getCounterLabel(value, counter.name), counter.color);
     mesh.material[4].map = label.texture;
+    mesh.material[5].map = label.texture;
     mesh.scale.set(label.width, 3, CARD_THICKNESS);
     mesh.position.set(
       (CARD_WIDTH / 2 + label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
-      zOffset
+      0
     );
     mesh.material[4].needsUpdate = true;
+    mesh.material[5].needsUpdate = true;
   } else {
     card.mesh.remove(card.modifiers[counter.id]);
   }
@@ -300,7 +299,6 @@ function updateCounter(
 
 export function updateModifiers(card: Card) {
   card.modifiers = card.modifiers ?? {};
-  let zPosition = CARD_THICKNESS * (card.mesh.userData.isFlipped ? -5 : 1);
 
   let { power = 0, toughness = 0 } = card.mesh.userData.modifiers || {};
 
@@ -309,10 +307,10 @@ export function updateModifiers(card: Card) {
       let geometry = new BoxGeometry(1, 1, 1);
       let mat = new MeshStandardMaterial({});
       let mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, mat, mat]);
-      mesh.scale.set(7, 3, 0.1);
+      mesh.scale.set(7, 3, CARD_THICKNESS + 0.1);
       card.mesh.add(mesh);
       mesh.transparent = true;
-      mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, zPosition);
+      mesh.position.set(CARD_WIDTH / 2, -CARD_HEIGHT / 2 - 0.25, 0);
       card.modifiers.pt = mesh;
     }
     let mesh = card.modifiers.pt as Mesh;
@@ -325,7 +323,6 @@ export function updateModifiers(card: Card) {
     mesh.material[4].map = label.texture;
     mesh.material[5].map = label.texture;
     mesh.scale.setX(label.width);
-    mesh.position.setZ(zPosition);
     let xPosition = (CARD_WIDTH / 2 - label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1);
     mesh.position.setX(xPosition);
     mesh.material[4].needsUpdate = true;
@@ -336,11 +333,17 @@ export function updateModifiers(card: Card) {
 
   const countersById = Object.fromEntries(counters().map(counter => [counter.id, counter]));
 
-  const modifiers = Object.entries(card.mesh.userData.modifiers?.counters ?? {}).map(
-    ([counterId, value], index) => {
+  let modifierCounters = new Set([
+    ...Object.keys(card.mesh.userData.modifiers?.counters ?? {}),
+    ...Object.keys(card.modifiers),
+  ]);
+  modifierCounters.delete('pt');
+
+  const modifiers = Array.from(modifierCounters).map(
+    (counterId,) => {
       return {
         counter: countersById[counterId],
-        value,
+        value: card.mesh.userData.modifiers?.counters[counterId],
       };
     }
   );
