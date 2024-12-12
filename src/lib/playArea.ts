@@ -172,20 +172,18 @@ export class PlayArea {
             clientId: this.clientId,
           };
         })
-      ).then(cards => uniqBy(cards, 'oracle_id'));
+      ).then(cards => uniqBy(cards, 'oracle_id').sort((a, b) => a.name.localeCompare(b.name)));
     }
 
-    let availableCards = this.availableTokens
-      .map((detail, i) => {
-        let card = cloneCard({ detail }, payload?.ids?.[i] ?? nanoid());
-        setCardData(card.mesh, 'isPublic', true);
-        setCardData(card.mesh, 'isInteractive', true);
-        setCardData(card.mesh, 'location', 'tokenSearch');
-        setCardData(card.mesh, 'clientId', provider.awareness.clientID);
-        setCardData(card.mesh, 'isToken', true);
-        return card;
-      })
-      .sort((a, b) => a.detail.name.localeCompare(b.detail.name));
+    let availableCards = this.availableTokens.map((detail, i) => {
+      let card = cloneCard({ detail }, payload?.ids?.[i] ?? nanoid());
+      setCardData(card.mesh, 'isPublic', true);
+      setCardData(card.mesh, 'isInteractive', true);
+      setCardData(card.mesh, 'location', 'tokenSearch');
+      setCardData(card.mesh, 'clientId', provider.awareness.clientID);
+      setCardData(card.mesh, 'isToken', true);
+      return card;
+    });
 
     this.emitEvent({
       type: 'toggleTokenMenu',
