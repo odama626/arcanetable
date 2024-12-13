@@ -11,9 +11,15 @@ import {
   MenubarTrigger,
 } from '~/components/ui/menubar';
 import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
-import { doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
-import { transferCard } from '../transferCard';
+import {
+  discardFromTop,
+  drawCards,
+  exileFromTop,
+  peekFromTop,
+  revealFromTop,
+  searchDeck,
+} from '../shortcuts/commands/deck';
 
 const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   function getNextLandIndex() {
@@ -22,29 +28,12 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
     );
   }
 
-  function discardTopDeck() {
-    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.graveyardZone);
-  }
-
-  function exileTopDeck() {
-    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.exileZone);
-  }
-
-  function peekTopDeck() {
-    transferCard(props.playArea.deck.cards[0], props.playArea.deck, props.playArea.peekZone);
-  }
-
   return (
     <Menubar>
       <MenubarMenu>
         <MenubarTrigger>Deck | {props.playArea.deck.observable.cardCount} cards</MenubarTrigger>
         <MenubarContent>
-          <MenubarItem
-            onClick={() => {
-              doXTimes(props.playArea.deck.cards.length, peekTopDeck, 25);
-            }}>
-            Search
-          </MenubarItem>
+          <MenubarItem onClick={() => searchDeck(props.playArea)}>Search</MenubarItem>
           <MenubarSub overlap>
             <MenubarSubTrigger openDelay={50} onClick={() => props.playArea.draw()}>
               Draw
@@ -53,57 +42,49 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               <div class='py-1.5 px-2'>Draw</div>
               <NumberFieldMenuItem
                 defaultValue={7}
-                onSubmit={count => {
-                  doXTimes(count, () => props.playArea.draw());
-                }}
+                onSubmit={count => drawCards(props.playArea, count)}
               />
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
-            <MenubarSubTrigger onClick={discardTopDeck}>Discard</MenubarSubTrigger>
+            <MenubarSubTrigger onClick={() => discardFromTop(props.playArea)}>
+              Discard
+            </MenubarSubTrigger>
             <MenubarSubContent>
               <div class='py-1.5 px-2'>Discard</div>
-              <NumberFieldMenuItem
-                onSubmit={count => {
-                  doXTimes(count, discardTopDeck);
-                }}
-              />
+              <NumberFieldMenuItem onSubmit={count => discardFromTop(props.playArea, count)} />
               <MenubarItem
                 closeOnSelect={false}
-                onClick={() => doXTimes(getNextLandIndex() + 1, discardTopDeck)}>
+                onClick={() => discardFromTop(props.playArea, getNextLandIndex() + 1)}>
                 Discard all cards to next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub overlap>
-            <MenubarSubTrigger onClick={exileTopDeck}>Exile</MenubarSubTrigger>
+            <MenubarSubTrigger onClick={() => exileFromTop(props.playArea)}>
+              Exile
+            </MenubarSubTrigger>
             <MenubarSubContent>
               <div class='py-1.5 px-2'>Exile</div>
               <NumberFieldMenuItem
                 onSubmit={count => {
-                  doXTimes(count, exileTopDeck);
+                  exileFromTop(props.playArea, count);
                 }}
               />
               <MenubarItem
                 closeOnSelect={false}
-                onClick={() => doXTimes(getNextLandIndex() + 1, exileTopDeck)}>
+                onClick={() => exileFromTop(props.playArea, getNextLandIndex() + 1)}>
                 Exile all cards to next land
               </MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSub>
-            <MenubarSubTrigger onClick={peekTopDeck}>Peek</MenubarSubTrigger>
+            <MenubarSubTrigger onClick={() => peekFromTop(props.playArea)}>Peek</MenubarSubTrigger>
             <MenubarSubContent>
               <div class='py-1.5 px-2'>Peek</div>
-              <NumberFieldMenuItem
-                onSubmit={count => {
-                  doXTimes(count, peekTopDeck);
-                }}
-              />
+              <NumberFieldMenuItem onSubmit={count => peekFromTop(props.playArea, count)} />
               <MenubarItem
-                onClick={() => {
-                  doXTimes(props.playArea.deck.cards.length, peekTopDeck, 50);
-                }}>
+                onClick={() => peekFromTop(props.playArea, props.playArea.deck.cards.length)}>
                 Peek All
               </MenubarItem>
             </MenubarSubContent>
@@ -112,29 +93,13 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
             <MenubarSubTrigger>Reveal</MenubarSubTrigger>
             <MenubarSubContent>
               <div class='py-1.5 px-2'>Reveal</div>
-              <NumberFieldMenuItem
-                onSubmit={async count => {
-                  doXTimes(count, () => {
-                    let card = props.playArea.deck.cards[0];
-                    props.playArea.reveal(card);
-                    peekTopDeck();
-                  });
-                }}
-              />
+              <NumberFieldMenuItem onSubmit={async count => revealFromTop(props.playArea, count)} />
               <MenubarItem
                 onClick={() => {
                   if (props.playArea.tokenSearchZone.cards.length) {
                     props.playArea.dismissFromZone(props.playArea.tokenSearchZone);
                   }
-                  doXTimes(
-                    props.playArea.deck.cards.length,
-                    () => {
-                      let card = props.playArea.deck.cards[0];
-                      props.playArea.reveal(card);
-                      peekTopDeck();
-                    },
-                    50
-                  );
+                  revealFromTop(props.playArea, props.playArea.deck.cards.length);
                 }}>
                 Reveal All
               </MenubarItem>
@@ -165,9 +130,7 @@ const DeckMenu: Component<{ playArea: PlayArea }> = props => {
               <div class='py-1.5 px-2'>Mulligan for x cards</div>
               <NumberFieldMenuItem
                 defaultValue={7}
-                onSubmit={async count => {
-                  props.playArea.mulligan(count);
-                }}
+                onSubmit={async count => props.playArea.mulligan(count)}
               />
             </MenubarSubContent>
           </MenubarSub>
