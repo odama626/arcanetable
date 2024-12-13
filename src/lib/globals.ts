@@ -223,6 +223,7 @@ export function onConcede(clientId?: string) {
     });
     setSelectedDeckIndex(undefined);
     setIsSpectating(false);
+    setIsIntitialized(false)
     orbitControls?.dispose()
   }
 }
