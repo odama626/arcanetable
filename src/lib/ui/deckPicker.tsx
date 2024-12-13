@@ -22,7 +22,7 @@ import {
 } from '~/components/ui/text-field';
 import { createDeckStore } from '../deckStore';
 import { colorHashDark, startSpectating } from '../globals';
-import PencilIcon from '../icons/pencil-solid.svg';
+import PencilIcon from 'lucide-solid/icons/pencil';
 import { cn } from '../utils';
 import { DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
@@ -128,7 +128,7 @@ const DeckPicker: Component = props => {
                       </button>
                       <div class='absolute top-2 right-2'>
                         <button type='button' onClick={() => setEditingDeck(deck)}>
-                          <PencilIcon style='height: 1.25rem; fill: white; stroke: black; stroke-width: 2px;' />
+                          <PencilIcon />
                         </button>
                       </div>
                     </div>

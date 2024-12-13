@@ -31,7 +31,7 @@ import { getCardArtImage, getCardImage } from '../card';
 import { FORMATS } from '../constants';
 import { fetchCardInfo, loadCardList } from '../deck';
 import { colorHashDark } from '../globals';
-import CircleInfoIcon from '../icons/circle-info-solid.svg';
+import CircleInfoIcon from 'lucide-solid/icons/info';
 import { cn } from '../utils';
 import styles from './deckEditor.module.css';
 
@@ -180,7 +180,7 @@ export const DeckEditor: Component<Props> = props => {
                   </div>
                   <HoverCard openDelay={100}>
                     <HoverCardTrigger>
-                      <CircleInfoIcon class='fill-sky-700 hover:fill-sky-600' />
+                      <CircleInfoIcon class='text-sky-500 hover:text-sky-400' />
                     </HoverCardTrigger>
                     <HoverCardContent>
                       <p>Supported cardlist formats:</p>

@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
+import CommandPalette from '../shortcuts/command-palette';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -198,6 +199,7 @@ const Overlay: Component = () => {
       <RevealMenu />
       <TokenSearchMenu />
       <CounterDialog />
+      <CommandPalette />
     </div>
   );
 };

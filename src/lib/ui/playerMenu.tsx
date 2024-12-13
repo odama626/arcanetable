@@ -17,7 +17,7 @@ import {
 } from '~/components/ui/number-field';
 import { playAreas, provider } from '../globals';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
-import ChevronDownIcon from '~/lib/icons/chevron-down-solid.svg';
+import ChevronDownIcon from 'lucide-solid/icons/chevron-down';
 
 export const LocalPlayer: Component = props => {
   const [open, setOpen] = createSignal(true);
@@ -54,17 +54,18 @@ export const LocalPlayer: Component = props => {
                   life: parseInt(value, 10),
                 });
               }}>
-              <div class='relative' style='display: inline-block'>
+              <div class='relative rounded-md' style='display: inline-block;'>
                 <NumberFieldInput />
                 <NumberFieldIncrementTrigger />
                 <NumberFieldDecrementTrigger />
               </div>
             </NumberField>
             <CollapsibleTrigger class='size-4'>
-              {/* <svg height='1rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
-                <path d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z' />
-              </svg> */}
-              <ChevronDownIcon />
+              <ChevronDownIcon
+                style={`transform: rotate3d(1,0,0,${
+                  open() ? 180 : 0
+                }deg); transition: transform 250ms ease-in-out;`}
+              />
             </CollapsibleTrigger>
           </div>
           <Show when={!open()}>
@@ -85,7 +86,7 @@ export const LocalPlayer: Component = props => {
                         return false;
                       }}
                       onClick={e => changeCounter(counterId, x => x + 1)}
-                      style={`background-color: ${counter.color}; min-width: 2rem; height:2rem; line-height: 2rem;`}>
+                      style={`background-color: ${counter.color}; color: black; min-width: 2rem; height:2rem; line-height: 2rem;`}>
                       {props?.counters[counterId]}
                     </button>
                   );
@@ -139,17 +140,17 @@ export const LocalPlayer: Component = props => {
             <ul class='space-y-2'>
               <For
                 each={Object.entries(props?.counters ?? {})
-                  // .filter(entry => entry[1] !== 0)
                   .map(entry => entry[0])
                   .sort((a, b) => a.localeCompare(b))}>
                 {counterId => {
                   let counter = counters().find(c => c.id === counterId);
                   return (
-                    <li class='flex justify-between text-gray-600'>
+                    <li class='flex justify-between items-center'>
                       <span style='text-align: start;'>{counter.name}</span>
                       <span class='font-semibold'>
                         <NumberField
-                          style={`width: 6rem; background-color: ${counter.color}`}
+                          class='rounded-md'
+                          style={`width: 6rem; background-color: ${counter.color}; color: black`}
                           onChange={rawValue => {
                             let value = parseInt(rawValue, 10);
                             if (isNaN(value)) value = 0;
@@ -209,7 +210,7 @@ export const NetworkPlayer: Component = props => {
                         return false;
                       }}
                       onClick={e => changeCounter(counterId, x => x + 1)}
-                      style={`background-color: ${counter.color}; min-width: 2rem; height:2rem; line-height: 2rem;`}>
+                      style={`background-color: ${counter.color}; color: black; min-width: 2rem; height:2rem; line-height: 2rem;`}>
                       {props?.counters[counterId]}
                     </button>
                   );
@@ -233,7 +234,7 @@ export const NetworkPlayer: Component = props => {
                       <span class='font-semibold'>
                         <NumberField
                           disabled
-                          style={`width: 6rem; background-color: ${counter.color}`}
+                          style={`width: 6rem; background-color: ${counter.color}; color: black;`}
                           onChange={rawValue => {
                             let value = parseInt(rawValue, 10);
                             if (isNaN(value)) value = 0;
