@@ -124,6 +124,32 @@ export class PlayArea {
     );
   }
 
+  async transferEntireZone<A,B>(fromZone: CardZone<A>, toZone: CardZone<B>) {
+    let events = fromZone.cards
+      .map(card => ({
+        type: 'transferCard',
+        payload: {
+          userData: card.mesh.userData,
+          toZoneId: toZone.id,
+          fromZoneId: fromZone.id,
+          extendedOptions: {
+            preventTransmit: true,
+          },
+        },
+      }))
+      .reverse();
+
+    this.emitEvent({ type: 'bulk', timing: 50, events: events });
+    await doXTimes(
+      fromZone.cards.length,
+      () => {
+        let card = fromZone.cards.at(-1);
+        transferCard(card, fromZone, toZone, { preventTransmit: true });
+      },
+      50
+    );
+  }
+
   async dismissFromZone(zone: CardZone) {
     let events = zone.cards
       .map(card => ({
@@ -145,7 +171,6 @@ export class PlayArea {
       () => {
         let card = zone.cards.at(-1);
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
-        console.log(zone, previousZone);
         transferCard(card, zone, previousZone, { preventTransmit: true });
       },
       50
@@ -427,7 +452,6 @@ export class PlayArea {
     this.deck.destroy();
     this.hand.destroy();
     this.cards = [];
-
   }
 
   static FromNetworkState(state: State) {

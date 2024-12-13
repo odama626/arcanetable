@@ -83,7 +83,7 @@ const PeekMenu: Component = props => {
                   <Button
                     variant='ghost'
                     onClick={async () => {
-                      await playArea.dismissFromZone(playArea.peekZone)
+                      await playArea.transferEntireZone(playArea.peekZone, playArea.deck)
                       await doAfter(100, () => playArea.shuffleDeck());
 
                       setHoverSignal();
