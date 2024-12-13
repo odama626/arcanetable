@@ -1,7 +1,6 @@
-import hotkeys from 'hotkeys-js';
-import { createSignal, onMount, Show } from 'solid-js';
+import { createSignal, onMount } from 'solid-js';
 import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -9,40 +8,100 @@ import {
   CommandList,
   CommandSeparator,
 } from '~/components/ui/command';
-import style from './command-palette.module.css'
+import { doXTimes } from '../globals';
+import { PlayArea } from '../playArea';
 
-export default function CommandPalette(props) {
+export default function CommandPalette(props: { playArea: PlayArea }) {
   const [isOpen, setIsOpen] = createSignal(false);
+  const [search, setSearch] = createSignal('');
+  let inputRef;
+  let regexMap = new Map();
+
+  function getRegex(value: string) {
+    if (!regexMap.has(value)) {
+      regexMap.set(value, new RegExp(value.slice(6)));
+    }
+    return regexMap.get(value);
+  }
+
   onMount(() => {
-    hotkeys('ctrl+space', function (event, handler) {
-      event.preventDefault();
-      setIsOpen(open => !open);
-    });
+    function listener(event) {
+      if (event.ctrlKey && event.code === 'Space') {
+        event.preventDefault();
+        setIsOpen(open => !open);
+        if (isOpen() && inputRef) {
+          inputRef.focus();
+        }
+      }
+    }
+    document.addEventListener('keydown', listener);
     return () => {
-      hotkeys.unbind('ctrl+space');
+      document.removeEventListener('keydown', listener);
     };
   });
 
+  function onFilter(value, search, keywords = []) {
+    if (value.startsWith('regex:')) {
+      const regex = getRegex(value);
+      let matches = regex.test(search);
+      console.log({ matches, regex });
+      if (matches) return 1;
+    }
+
+    console.log({ value, search, includes: value.includes(search) });
+    let extendedSearch = [value, ...keywords].join('|');
+
+    if (extendedSearch.includes(search)) return 1;
+    return 0;
+  }
+
+  function onValueChange(value, search) {
+    console.log(value, search);
+  }
+
+  function onActionComplete() {
+    setSearch('');
+    setIsOpen(false);
+  }
+
   return (
-    <Show when={isOpen()}>
-      <Command class={style.container}>
-        <CommandInput autofocus placeholder='Type a command or search...' />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading='Deck'>
-            <CommandItem>Draw</CommandItem>
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading='Settings'>
-            <CommandItem>Profile</CommandItem>
-            <CommandItem>Billing</CommandItem>
-            <CommandItem>Settings</CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </Command>
-    </Show>
+    <CommandDialog
+      open={isOpen()}
+      onOpenChange={setIsOpen}
+      commandProps={{ filter: onFilter, onValueChange }}>
+      <CommandInput
+        value={search()}
+        onValueChange={setSearch}
+        ref={inputRef}
+        placeholder='Type a command or search...'
+      />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading='Deck'>
+          <CommandItem
+            onSelect={value => {
+              console.log('selected', value, search());
+              let regex = getRegex(value);
+              const matches = regex.exec(search());
+              let count = parseInt(matches[1], 10);
+              doXTimes(count, () => props.playArea.draw());
+              onActionComplete();
+            }}
+            keywords={['draw ']}
+            value={'regex:draw\\s+(\\d+)'}>
+            Draw [number of cards]
+          </CommandItem>
+          <CommandItem>Calendar</CommandItem>
+          <CommandItem>Search Emoji</CommandItem>
+          <CommandItem>Calculator</CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading='Settings'>
+          <CommandItem>Profile</CommandItem>
+          <CommandItem>Billing</CommandItem>
+          <CommandItem>Settings</CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }

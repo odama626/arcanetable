@@ -199,7 +199,7 @@ const Overlay: Component = () => {
       <RevealMenu />
       <TokenSearchMenu />
       <CounterDialog />
-      <CommandPalette />
+      <CommandPalette playArea={playArea} />
     </div>
   );
 };
