@@ -62,11 +62,15 @@ export class CardGrid implements CardZone {
 
         createEffect(() => {
           let filterText = peekFilterText().toLowerCase();
+          let filters = filterText.split(',');
 
           if (filterText.length) {
             let filterScores = this.cards
               .map(card => {
-                let indexOf = card.detail.search.indexOf(filterText);
+                let indexOf = filters.reduce(
+                  (a, b) => Math.min(a, card.detail.search.indexOf(b)),
+                  Infinity
+                );
                 let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
                 return {
                   score: indexScore,

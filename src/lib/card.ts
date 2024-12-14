@@ -69,7 +69,15 @@ export function createCardGeometry(card: Card) {
 }
 
 export function getSearchLine(cardDetail) {
-  return [cardDetail.name, cardDetail.type_line, cardDetail.mana_cost, cardDetail.oracle_text]
+  return [
+    cardDetail.name,
+    cardDetail.type_line,
+    cardDetail.cmc,
+    cardDetail.mana_cost,
+    cardDetail.oracle_text,
+    cardDetail.mana_cost?.replace(/[\{\}]/g, ''),
+    ...(cardDetail.card_faces?.map(cardFace => getSearchLine(cardFace)) ?? []),
+  ]
     .join('\n')
     .toLowerCase();
 }
@@ -388,7 +396,6 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
 
   let stack = uniqBy(intersections, intersection => intersection.object.id);
   let stackCount = stack.length - 1;
-
 
   return stackCount * CARD_THICKNESS;
 }
