@@ -86,7 +86,7 @@ const Overlay: Component = () => {
       drawCards(playArea, 1);
     });
 
-    hotkeys('ctrl+d', function (e) {
+    hotkeys('ctrl+d,command+d', function (e) {
       e.preventDefault();
       if (!cardMesh()) return;
       const card = cardsById.get(cardMesh().userData.id);

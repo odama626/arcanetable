@@ -27,7 +27,7 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
 
   onMount(() => {
     function listener(event) {
-      if (event.ctrlKey && event.code === 'Space') {
+      if ((event.metaKey || event.ctrlKey) && event.code === 'Space') {
         event.preventDefault();
         setIsOpen(open => !open);
         if (isOpen() && inputRef) {
@@ -207,9 +207,7 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
-        <CommandGroup heading='hand'>
-          
-        </CommandGroup>
+        <CommandGroup heading='hand'></CommandGroup>
         <CommandSeparator />
         <CommandGroup heading='Dice'>
           <CommandItem
