@@ -338,7 +338,7 @@ export function updateModifiers(card: Card) {
     ...Object.keys(card.modifiers),
   ]);
   modifierCounters.delete('pt');
-  modifierCounters.delete('token')
+  modifierCounters.delete('token');
 
   const modifiers = Array.from(modifierCounters).map(counterId => {
     return {
@@ -352,8 +352,6 @@ export function updateModifiers(card: Card) {
   }
 
   if (!modifiers.length) return;
-
-  console.log({ modifiers, modifierCounters });
 
   modifiers
     .sort((a, b) => {
@@ -391,7 +389,6 @@ export function getYOffsetForTopOfStack(obj: Mesh) {
   let stack = uniqBy(intersections, intersection => intersection.object.id);
   let stackCount = stack.length - 1;
 
-  console.log(stack);
 
   return stackCount * CARD_THICKNESS;
 }
