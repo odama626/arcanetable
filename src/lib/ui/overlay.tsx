@@ -1,4 +1,14 @@
-import { createEffect, createSignal, For, Match, Show, Switch, type Component } from 'solid-js';
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Match,
+  onMount,
+  Show,
+  Switch,
+  type Component,
+} from 'solid-js';
 
 import { Mesh } from 'three';
 import { Menubar, MenubarItem, MenubarMenu } from '../../components/ui/menubar';
@@ -11,6 +21,7 @@ import {
   playAreas,
   players,
   provider,
+  zonesById,
 } from '../globals';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
@@ -32,13 +43,17 @@ import {
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
 import CommandPalette from '../shortcuts/command-palette';
+import hotkeys from 'hotkeys-js';
+import { untapAll } from '../shortcuts/commands/field';
+import { drawCards, searchDeck } from '../shortcuts/commands/deck';
+import { transferCard } from '../transferCard';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
   let [isLogVisible, setIsLogVisible] = createSignal(false);
   const isPublic = () => userData()?.isPublic;
   const isOwner = () => userData()?.clientId === provider?.awareness?.clientID;
-  const location = () => userData()?.location;
+  const location = createMemo(() => userData()?.location);
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = playAreas[provider?.awareness?.clientID];
@@ -54,9 +69,93 @@ const Overlay: Component = () => {
   let [container, setContainer] = createSignal();
 
   createEffect(() => {
+    hotkeys.setScope(location());
+  });
+
+  createEffect(() => {
     let parent = container() as HTMLDivElement;
     if (!parent) return;
     parent.appendChild(focusRenderer.domElement);
+  });
+  onMount(() => {
+    hotkeys('shift+u', function () {
+      untapAll(playArea);
+    });
+
+    hotkeys('d', function () {
+      drawCards(playArea, 1);
+    });
+
+    hotkeys('ctrl+d', function (e) {
+      e.preventDefault();
+      if (!cardMesh()) return;
+      const card = cardsById.get(cardMesh().userData.id);
+      const previousZone = zonesById.get(card.mesh.userData.zoneId);
+      transferCard(card, previousZone, playArea.graveyardZone);
+    });
+
+    hotkeys('e', function (e) {
+      e.preventDefault();
+      if (!cardMesh()) return;
+      const card = cardsById.get(cardMesh().userData.id);
+      const previousZone = zonesById.get(card.mesh.userData.zoneId);
+      transferCard(card, previousZone, playArea.exileZone);
+    });
+
+    hotkeys('b', function (e) {
+      e.preventDefault();
+      if (!cardMesh()) return;
+      const card = cardsById.get(cardMesh().userData.id);
+      const previousZone = zonesById.get(card.mesh.userData.zoneId);
+      transferCard(card, previousZone, playArea.battlefieldZone);
+    });
+
+    hotkeys('p', function (e) {
+      e.preventDefault();
+      if (!cardMesh()) return;
+      const card = cardsById.get(cardMesh().userData.id);
+      const previousZone = zonesById.get(card.mesh.userData.zoneId);
+      transferCard(card, previousZone, playArea.peekZone);
+    });
+
+    hotkeys('s', function (e) {
+      e.preventDefault();
+      searchDeck(playArea);
+    });
+
+    hotkeys('escape', 'peek', function (e) {
+      e.preventDefault();
+      playArea.dismissFromZone(playArea.peekZone);
+    });
+
+    hotkeys('escape', 'tokenSearch', function (e) {
+      e.preventDefault();
+      playArea.dismissFromZone(playArea.tokenSearchZone);
+    });
+
+    hotkeys('escape', 'reveal', function (e) {
+      e.preventDefault();
+      playArea.dismissFromZone(playArea.revealZone);
+    });
+
+    hotkeys('t', 'battlefield', function () {
+      if (!cardMesh()) return;
+      playArea.tap(cardMesh());
+    });
+
+    hotkeys('c', 'battlefield', function () {
+      if (!cardMesh()) return;
+      playArea.clone(cardMesh().userData.id);
+    });
+
+    hotkeys('f', 'battlefield', function () {
+      if (!cardMesh()) return;
+      playArea.flip(cardMesh());
+    });
+
+    return () => {
+      hotkeys.unbind();
+    };
   });
 
   return (
@@ -144,15 +243,7 @@ const Overlay: Component = () => {
           class={`${styles.menu} flex-col items-start`}>
           <MenubarMenu>
             <Show when={!isSpectating()}>
-              <MenubarItem
-                class='w-full flex'
-                onClick={() => {
-                  let tappedCards = playArea.battlefieldZone.mesh.children.filter(
-                    mesh => mesh.userData.isTapped
-                  ) as Mesh[];
-
-                  tappedCards.forEach(card => playArea.tap(card));
-                }}>
+              <MenubarItem class='w-full flex' onClick={() => untapAll(playArea)}>
                 Untap All
               </MenubarItem>
               <MenubarItem class='w-full flex' onClick={() => playArea.toggleTokenMenu()}>

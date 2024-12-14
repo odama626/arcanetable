@@ -90,6 +90,21 @@ export function parseLogEntry(entry) {
           revealed <strong>{card?.detail.name}</strong>
         </>
       );
+    case 'roll':
+      console.log(entry.payload);
+      return (
+        <>
+          rolled{' '}
+          <For each={entry.payload.roll}>
+            {die => (
+              <>
+                [d{die.sides}] <strong>{die.result}</strong>{' '}
+              </>
+            )}
+          </For>
+          Total: <strong>{entry.payload.roll.reduce((a, b) => a + b.result, 0)}</strong>
+        </>
+      );
 
     default:
       return `${entry.type} ${cardReference()}`;

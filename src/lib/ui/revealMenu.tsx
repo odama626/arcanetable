@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import { Component, createEffect, createMemo, Show } from 'solid-js';
 import { Command, CommandInput } from '~/components/ui/command';
 import {
   Menubar,
@@ -21,11 +21,16 @@ import { cleanupCard } from '../card';
 const RevealMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
   const isPublic = () => userData()?.isPublic;
-  const isOwner = () => userData()?.clientId === provider.awareness.clientID;
-  const location = () => userData()?.location;
+  const isOwner = createMemo(() => userData()?.clientId === provider.awareness.clientID);
+  const location = createMemo(() => userData()?.location);
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = playAreas[provider.awareness.clientID];
+  let inputRef;
+
+  createEffect(() => {
+    if (location() === 'reveal' && inputRef) inputRef.focus();
+  });
 
   return (
     <>
@@ -37,7 +42,13 @@ const RevealMenu: Component = props => {
         <div class={styles.search}>
           <Command>
             <CommandInput
+              ref={inputRef}
               placeholder='Search'
+              onKeyUp={e => {
+                if (e.code === 'Escape') {
+                  playArea.dismissFromZone(playArea.revealZone);
+                }
+              }}
               onValueChange={value => {
                 setPeekFilterText(value);
               }}
