@@ -50,6 +50,7 @@ export class PlayArea {
   public revealZone;
   public tokenSearchZone;
   public availableTokens?: CardReference[];
+  private inProgressActions = new Set<string>();
 
   constructor(
     public clientId: number,
@@ -151,6 +152,8 @@ export class PlayArea {
   }
 
   async dismissFromZone(zone: CardZone) {
+    if (this.inProgressActions.has(`dismissFromZone.${zone.id}`)) return;
+    this.inProgressActions.add(`dismissFromZone.${zone.id}`);
     let events = zone.cards
       .map(card => ({
         type: 'transferCard',
@@ -175,6 +178,7 @@ export class PlayArea {
       },
       50
     );
+    this.inProgressActions.delete(`dismissFromZone.${zone.id}`);
   }
 
   async toggleTokenMenu(payload?: { availableTokens: CardReference[]; ids: string[] }) {
@@ -275,6 +279,8 @@ export class PlayArea {
   }
 
   async peekGraveyard() {
+    if (this.inProgressActions.has(`peekGraveyard`)) return;
+    this.inProgressActions.add('peekGraveyard');
     if (this.tokenSearchZone.cards.length) {
       this.dismissFromZone(this.tokenSearchZone);
     }
@@ -291,9 +297,12 @@ export class PlayArea {
         });
       })
     );
+    this.inProgressActions.delete('peekGraveyard');
   }
 
   async peekExile() {
+    if (this.inProgressActions.has(`peekExile`)) return;
+    this.inProgressActions.add('peekExile');
     if (this.tokenSearchZone.cards.length) {
       this.dismissFromZone(this.tokenSearchZone);
     }
@@ -311,6 +320,7 @@ export class PlayArea {
       })
     );
     // this.exileZone.clear();
+    this.inProgressActions.delete('peekExile');
   }
   async deckFlipTop(toggle = false) {
     let card = await this.deck.flipTop(toggle);
@@ -330,9 +340,9 @@ export class PlayArea {
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
     this.emitEvent({ type: 'flip', payload: { userData: cardMesh.userData } });
 
-    const zone = zonesById.get(cardMesh.userData.zoneId)!
+    const zone = zonesById.get(cardMesh.userData.zoneId)!;
 
-    let rotation = new Euler().fromArray(cardMesh.userData.zone[zone.id].rotation)
+    let rotation = new Euler().fromArray(cardMesh.userData.zone[zone.id].rotation);
     let vec = new Vector3();
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
