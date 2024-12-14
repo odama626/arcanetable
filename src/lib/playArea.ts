@@ -168,7 +168,7 @@ export class PlayArea {
       }))
       .reverse();
 
-    this.emitEvent({ type: 'bulk', timing: 50, events: events });
+    this.emitEvent({ type: 'bulk', timing: 25, events: events });
     await doXTimes(
       zone.cards.length,
       () => {
@@ -176,7 +176,7 @@ export class PlayArea {
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
         transferCard(card, zone, previousZone, { preventTransmit: true });
       },
-      50
+      25
     );
     this.inProgressActions.delete(`dismissFromZone.${zone.id}`);
   }
