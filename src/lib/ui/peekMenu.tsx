@@ -1,13 +1,4 @@
-import {
-  Component,
-  createEffect,
-  createMemo,
-  createSignal,
-  Match,
-  onMount,
-  Show,
-  Switch,
-} from 'solid-js';
+import { Component, createEffect, createMemo, createSignal, Match, Show, Switch } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
 import { Menubar, MenubarMenu } from '~/components/ui/menubar';
@@ -17,6 +8,7 @@ import {
   doAfter,
   doXTimes,
   hoverSignal,
+  peekFilterText,
   playAreas,
   provider,
   setHoverSignal,
@@ -48,7 +40,9 @@ const PeekMenu: Component = props => {
   }
 
   createEffect(() => {
-    if (location() === 'peek' && isOwner() && inputRef) inputRef.focus();
+    if (location() === 'peek' && isOwner() && inputRef) {
+      inputRef.focus();
+    }
   });
 
   return (
@@ -89,12 +83,14 @@ const PeekMenu: Component = props => {
               <CommandInput
                 ref={inputRef}
                 placeholder='Search'
+                value={peekFilterText()}
                 onKeyUp={e => {
                   if (e.code === 'Escape') {
                     playArea.dismissFromZone(playArea.peekZone);
                   }
                 }}
                 onValueChange={value => {
+                  console.log({ value });
                   setPeekFilterText(value);
                 }}
               />

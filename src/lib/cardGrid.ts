@@ -5,7 +5,14 @@ import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone } from './constants';
-import { cardsById, peekFilterText, setHoverSignal, setScrollTarget, zonesById } from './globals';
+import {
+  cardsById,
+  peekFilterText,
+  setHoverSignal,
+  setPeekFilterText,
+  setScrollTarget,
+  zonesById,
+} from './globals';
 import { cleanupMesh, getGlobalRotation, isVectorEqual } from './utils';
 
 const CARDS_PER_ROW = 5;
@@ -61,35 +68,39 @@ export class CardGrid implements CardZone {
         });
 
         createEffect(() => {
-          let filterText = peekFilterText().toLowerCase();
-          let filters = filterText.split(',');
-
-          if (filterText.length) {
-            let filterScores = this.cards
-              .map(card => {
-                let indexOf = filters.reduce(
-                  (a, b) => Math.min(a, card.detail.search.indexOf(b)),
-                  Infinity
-                );
-                let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
-                return {
-                  score: indexScore,
-                  card,
-                };
-              })
-              .filter(card => card.score > 0)
-              .sort((a, b) => b.score - a.score);
-            this.filteredCards = filterScores.map(score => score.card);
-          } else {
-            this.filteredCards = undefined;
-          }
-          animateObject(this.scrollContainer, {
-            duration: 0.2,
-            to: { position: new Vector3(0, this.minScroll, 0) },
-          });
+          this.filterCards();
           this.updateCardPositions();
         });
       }
+    });
+  }
+
+  filterCards() {
+    let filterText = peekFilterText().toLowerCase();
+    let filters = filterText.split(',');
+
+    if (filterText.length) {
+      let filterScores = this.cards
+        .map(card => {
+          let indexOf = filters.reduce(
+            (a, b) => Math.min(a, card.detail.search.indexOf(b)),
+            Infinity
+          );
+          let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
+          return {
+            score: indexScore,
+            card,
+          };
+        })
+        .filter(card => card.score > 0)
+        .sort((a, b) => b.score - a.score);
+      this.filteredCards = filterScores.map(score => score.card);
+    } else {
+      this.filteredCards = undefined;
+    }
+    animateObject(this.scrollContainer, {
+      duration: 0.2,
+      to: { position: new Vector3(0, this.minScroll, 0) },
     });
   }
 
@@ -278,8 +289,14 @@ export class CardGrid implements CardZone {
     if (this.cards.length < 1) {
       setHoverSignal();
     }
+    console.log(peekFilterText());
     if (this.filteredCards) {
       this.filteredCards = this.filteredCards.filter(card => card.id !== cardMesh.userData.id);
+    }
+    if (!this.filteredCards?.length) {
+      console.log(this.filteredCards);
+      setPeekFilterText('');
+      this.filterCards();
     }
 
     this.updateCardPositions();
