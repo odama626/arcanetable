@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import { Mesh } from 'three';
 import { Button } from '~/components/ui/button';
 import {
@@ -24,9 +24,11 @@ import { cardsById, doXTimes } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 import MoveMenu from './moveMenu';
+import hotkeys from 'hotkeys-js';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   let card = () => cardsById.get(props.cardMesh?.userData.id)!;
+
 
   return (
     <Menubar>
@@ -37,7 +39,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
             onClick={() => {
               props.playArea.flip(props.cardMesh);
             }}>
-            Flip
+            Flip<MenubarShortcut>F</MenubarShortcut>
           </MenubarItem>
           <MenubarSub overlap>
             <MenubarSubTrigger>Counters</MenubarSubTrigger>
@@ -93,7 +95,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
           </MenubarSub>
           <MenubarSub overlap>
             <MenubarSubTrigger onClick={() => props.playArea.clone(props.cardMesh?.userData.id)}>
-              Clone
+              Clone<MenubarShortcut>C</MenubarShortcut>
             </MenubarSubTrigger>
             <MenubarSubContent>
               <div class='pt-1.5 px-2'>Clone {props.cardMesh?.userData?.card?.detail?.name}</div>

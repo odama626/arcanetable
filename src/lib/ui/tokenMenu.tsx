@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { Component, createSignal, Match, Show, Switch } from 'solid-js';
+import { Component, createEffect, createMemo, createSignal, Match, Show, Switch } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
 import { Menubar, MenubarContent, MenubarMenu, MenubarTrigger } from '~/components/ui/menubar';
@@ -20,12 +20,13 @@ import styles from './peekMenu.module.css';
 const TokenSearchMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
   const isPublic = () => userData()?.isPublic;
-  const isOwner = () => userData()?.clientId === provider.awareness.clientID;
-  const location = () => userData()?.location;
+  const isOwner = createMemo(() => userData()?.clientId === provider.awareness.clientID);
+  const location = createMemo(() => userData()?.location);
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = playAreas[provider.awareness.clientID];
   const [viewField, setViewField] = createSignal(false);
+  let inputRef;
 
   function addToBattlefield(referenceCard: Card) {
     let card = cloneCard(referenceCard, nanoid());
@@ -43,6 +44,10 @@ const TokenSearchMenu: Component = props => {
       },
     });
   }
+
+  createEffect(() => {
+    if (location() === 'tokenSearch' && inputRef) inputRef.focus();
+  });
 
   return (
     <>
@@ -81,7 +86,13 @@ const TokenSearchMenu: Component = props => {
             </h2>
             <Command>
               <CommandInput
+                ref={inputRef}
                 placeholder='Search'
+                onKeyUp={e => {
+                  if (e.code === 'Escape') {
+                    playArea.dismissFromZone(playArea.tokenSearchZone);
+                  }
+                }}
                 onValueChange={value => {
                   setPeekFilterText(value);
                 }}

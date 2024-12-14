@@ -1,4 +1,13 @@
-import { Component, createSignal, Match, Show, Switch } from 'solid-js';
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  Match,
+  onMount,
+  Show,
+  Switch,
+} from 'solid-js';
 import { Button } from '~/components/ui/button';
 import { Command, CommandInput } from '~/components/ui/command';
 import { Menubar, MenubarMenu } from '~/components/ui/menubar';
@@ -20,13 +29,14 @@ import styles from './peekMenu.module.css';
 const PeekMenu: Component = props => {
   let userData = () => hoverSignal()?.mesh?.userData;
   const isPublic = () => userData()?.isPublic;
-  const isOwner = () => userData()?.clientId === provider.awareness.clientID;
-  const location = () => userData()?.location;
+  const isOwner = createMemo(() => userData()?.clientId === provider.awareness.clientID);
+  const location = createMemo(() => userData()?.location);
   const tether = () => hoverSignal()?.tether;
   const playArea = playAreas[provider.awareness.clientID];
   const cardCount = () => playArea.peekZone.cards.length;
   const card = () => cardsById.get(hoverSignal()?.mesh?.userData.id);
   const [viewField, setViewField] = createSignal(false);
+  let inputRef;
 
   function drawAfterRevealing(card: Card) {
     drawWithoutRevealing(card);
@@ -36,6 +46,10 @@ const PeekMenu: Component = props => {
   function drawWithoutRevealing(card: Card) {
     transferCard(card, playArea.peekZone, playArea.hand);
   }
+
+  createEffect(() => {
+    if (location() === 'peek' && isOwner() && inputRef) inputRef.focus();
+  });
 
   return (
     <>
@@ -73,7 +87,13 @@ const PeekMenu: Component = props => {
             </h2>
             <Command>
               <CommandInput
+                ref={inputRef}
                 placeholder='Search'
+                onKeyUp={e => {
+                  if (e.code === 'Escape') {
+                    playArea.dismissFromZone(playArea.peekZone);
+                  }
+                }}
                 onValueChange={value => {
                   setPeekFilterText(value);
                 }}
@@ -83,7 +103,7 @@ const PeekMenu: Component = props => {
                   <Button
                     variant='ghost'
                     onClick={async () => {
-                      await playArea.transferEntireZone(playArea.peekZone, playArea.deck)
+                      await playArea.transferEntireZone(playArea.peekZone, playArea.deck);
                       await doAfter(100, () => playArea.shuffleDeck());
 
                       setHoverSignal();

@@ -5,7 +5,7 @@ import * as ComboboxPrimitive from '@kobalte/core/combobox';
 import type { PolymorphicProps } from '@kobalte/core/polymorphic';
 
 import { cn } from '~/lib/utils';
-import ChevronDownIcon from '~/lib/icons/chevron-down-solid.svg'
+import ChevronDownIcon from 'lucide-solid/icons/chevron-down';
 
 const Combobox = ComboboxPrimitive.Root;
 const ComboboxItemLabel = ComboboxPrimitive.ItemLabel;
@@ -125,11 +125,7 @@ const ComboboxTrigger = <T extends ValidComponent = 'button'>(
   const [local, others] = splitProps(props as ComboboxTriggerProps, ['class', 'children']);
   return (
     <ComboboxPrimitive.Trigger class={cn('size-4 opacity-50', local.class)} {...others}>
-      <ComboboxPrimitive.Icon>
-        {local.children ?? (
-          <ChevronDownIcon />
-        )}
-      </ComboboxPrimitive.Icon>
+      <ComboboxPrimitive.Icon>{local.children ?? <ChevronDownIcon />}</ComboboxPrimitive.Icon>
     </ComboboxPrimitive.Trigger>
   );
 };

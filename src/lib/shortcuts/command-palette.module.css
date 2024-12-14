@@ -1,0 +1,6 @@
+
+.container {
+  pointer-events: initial;
+  margin: auto;
+  max-width: 80ch;
+}

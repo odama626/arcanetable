@@ -19,7 +19,7 @@ export async function transferCard<AddOptions extends {}>(
   }: ExtendedOptions<AddOptions> = {}
 ) {
   await fromZone.removeCard?.(card.mesh);
-  if (toZone?.zone !== 'battlefield') {
+  if (toZone && toZone?.zone !== 'battlefield') {
     if (card.mesh.userData.isToken) {
       addOptions.destroy = true;
     }
