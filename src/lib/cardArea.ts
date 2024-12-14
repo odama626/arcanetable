@@ -97,6 +97,8 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     if (card.mesh.userData.isTapped) {
       rotation.z -= Math.PI / 2;
     }
+    setCardData(card.mesh, `zone.${this.id}.position`, position.toArray());
+    setCardData(card.mesh, `zone.${this.id}.rotation`, rotation.toArray());
 
     if (skipAnimation) {
       card.mesh.position.copy(position);
@@ -123,9 +125,11 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     let globalRotation = getGlobalRotation(cardMesh);
 
     setCardData(cardMesh, `zone.${this.id}.position`, cardMesh.position.toArray());
+    setCardData(cardMesh, `zone.${this.id}.rotation`, cardMesh.rotation.toArray());
 
-    cardMesh.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
-    cardMesh.rotation.set(globalRotation.x, globalRotation.y, globalRotation.z);
+    cardMesh.position.copy(worldPosition);
+    cardMesh.rotation.copy(globalRotation);
+
     this.mesh.remove(cardMesh);
     let index = this.cards.findIndex(c => c.id === cardMesh.userData.id);
     this.cards.splice(index, 1);

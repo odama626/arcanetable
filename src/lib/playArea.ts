@@ -1,6 +1,6 @@
 import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
-import { CatmullRomCurve3, Group, Mesh, Vector3 } from 'three';
+import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { cloneCard, initializeCardMesh, setCardData, updateModifiers } from './card';
 import { CardArea } from './cardArea';
@@ -124,7 +124,7 @@ export class PlayArea {
     );
   }
 
-  async transferEntireZone<A,B>(fromZone: CardZone<A>, toZone: CardZone<B>) {
+  async transferEntireZone<A, B>(fromZone: CardZone<A>, toZone: CardZone<B>) {
     let events = fromZone.cards
       .map(card => ({
         type: 'transferCard',
@@ -330,18 +330,21 @@ export class PlayArea {
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
     this.emitEvent({ type: 'flip', payload: { userData: cardMesh.userData } });
 
-    let rotation = cardMesh.rotation.clone();
+    const zone = zonesById.get(cardMesh.userData.zoneId)!
+
+    let rotation = new Euler().fromArray(cardMesh.userData.zone[zone.id].rotation)
     let vec = new Vector3();
     cardMesh.getWorldDirection(vec);
     rotation.y += Math.PI;
     rotation.z *= -1;
+    setCardData(cardMesh, `zone.${zone.id}.rotation`, rotation.toArray());
 
     animateObject(cardMesh, {
       duration: 0.4,
       path: new CatmullRomCurve3([
         cardMesh.position.clone(),
         cardMesh.position.clone().add(new Vector3(0, 0, 20)),
-        cardMesh.position.clone(),
+        new Vector3().fromArray(cardMesh.userData.zone[zone.id].position),
       ]),
       to: {
         rotation,

@@ -338,21 +338,22 @@ export function updateModifiers(card: Card) {
     ...Object.keys(card.modifiers),
   ]);
   modifierCounters.delete('pt');
+  modifierCounters.delete('token')
 
-  const modifiers = Array.from(modifierCounters).map(
-    (counterId,) => {
-      return {
-        counter: countersById[counterId],
-        value: card.mesh.userData.modifiers?.counters[counterId],
-      };
-    }
-  );
+  const modifiers = Array.from(modifierCounters).map(counterId => {
+    return {
+      counter: countersById[counterId],
+      value: card.mesh.userData.modifiers?.counters[counterId],
+    };
+  });
 
   if (card.mesh.userData.isToken) {
-    modifiers.push({ counter: { name: 'token' }, value: card.mesh.userData.isToken });
+    modifiers.push({ counter: { name: 'token', id: 'token' }, value: card.mesh.userData.isToken });
   }
 
   if (!modifiers.length) return;
+
+  console.log({ modifiers, modifierCounters });
 
   modifiers
     .sort((a, b) => {

@@ -294,6 +294,8 @@ function onDocumentDrop(event) {
           },
         },
       });
+      setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
+      setCardData(target, `zone.${toZone.id}.rotation`, target.rotation.toArray());
       return;
     }
 
