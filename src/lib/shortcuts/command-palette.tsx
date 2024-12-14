@@ -10,12 +10,13 @@ import {
 } from '~/components/ui/command';
 import { PlayArea } from '../playArea';
 import * as deckCommands from './commands/deck';
+import { sendEvent } from '../globals';
 
 export default function CommandPalette(props: { playArea: PlayArea }) {
   const [isOpen, setIsOpen] = createSignal(false);
   const [search, setSearch] = createSignal('');
   let inputRef;
-  let regexMap = new Map();
+  let regexMap = new Map<string, RegExp>();
 
   function getRegex(value: string) {
     if (!regexMap.has(value)) {
@@ -63,8 +64,13 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
   }
 
   function getRegexMatches(value: string) {
-    let regex = getRegex(value);
-    return regex.exec(search()) ?? [];
+    let regex = new RegExp(value.slice(6), 'g');
+    let matches = [];
+    let match;
+    while ((match = regex.exec(search()))) {
+      matches.push(match.slice(1));
+    }
+    return matches;
   }
 
   return (
@@ -83,14 +89,14 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
         <CommandGroup heading='Deck'>
           <CommandItem
             onSelect={value => {
-              const [_, countString] = getRegexMatches(value);
+              const [countString] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 1;
               deckCommands.drawCards(props.playArea, count);
               onActionComplete();
             }}
             keywords={['draw ']}
             value={'regex:draw\\s+(\\d+)'}>
-            Draw [# of cards]
+            Draw [# of cards] from deck
           </CommandItem>
           <CommandItem
             onSelect={() => {
@@ -103,12 +109,12 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
             value={'regex:(discard)\\s(\\d+)'}
             keywords={['discard']}
             onSelect={value => {
-              const [_, __, countString] = getRegexMatches(value);
+              const [[_, countString]] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 1;
               deckCommands.discardFromTop(props.playArea, count);
               onActionComplete();
             }}>
-            Discard [# of cards]
+            Discard [# of cards] from deck
           </CommandItem>
           <CommandItem
             keywords={['discard land']}
@@ -119,18 +125,18 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
               );
               onActionComplete();
             }}>
-            Discard to next land
-          </CommandItem>{' '}
+            Discard to next land from deck
+          </CommandItem>
           <CommandItem
             value={'regex:exile\\s(\\d+)'}
             keywords={['exile ']}
             onSelect={value => {
-              const [_, countString] = getRegexMatches(value);
+              const [countString] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 1;
               deckCommands.exileFromTop(props.playArea, count);
               onActionComplete();
             }}>
-            Exile [# of cards]
+            Exile [# of cards] from deck
           </CommandItem>
           <CommandItem
             keywords={['exile land', 'exile to next land']}
@@ -141,18 +147,18 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
               );
               onActionComplete();
             }}>
-            Exile to next land
+            Exile to next land from deck
           </CommandItem>
           <CommandItem
             value={'regex:peek\\s(\\d+)'}
             keywords={['peek']}
             onSelect={value => {
-              const [_, countString] = getRegexMatches(value);
+              const [countString] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 1;
               deckCommands.peekFromTop(props.playArea, count);
               onActionComplete();
             }}>
-            Peek [# of cards]
+            Peek [# of cards] from deck
           </CommandItem>
           <CommandItem
             keywords={['peek all']}
@@ -160,18 +166,18 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
               deckCommands.peekFromTop(props.playArea, props.playArea.deck.cards.length);
               onActionComplete();
             }}>
-            Peek All
+            Peek All from deck
           </CommandItem>
           <CommandItem
             value={'regex:reveal\\s(\\d+)'}
             keywords={['reveal']}
             onSelect={value => {
-              const [_, countString] = getRegexMatches(value);
+              const [countString] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 1;
               deckCommands.revealFromTop(props.playArea, count);
               onActionComplete();
             }}>
-            Reveal [# of cards]
+            Reveal [# of cards] from deck
           </CommandItem>
           <CommandItem
             keywords={['reveal all']}
@@ -179,32 +185,59 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
               deckCommands.revealFromTop(props.playArea, props.playArea.deck.cards.length);
               onActionComplete();
             }}>
-            Reveal All
+            Reveal All from deck
           </CommandItem>
           <CommandItem
             value={'regex:mulligan\\s(\\d+)'}
             keywords={['mulligan']}
             onSelect={value => {
-              const [_, countString] = getRegexMatches(value);
+              const [countString] = getRegexMatches(value);
               let count = countString ? parseInt(countString, 10) : 7;
               props.playArea.mulligan(count);
               onActionComplete();
             }}>
-            Mulligan [# of cards]
+            Mulligan [# of cards] from deck
           </CommandItem>
           <CommandItem
             onSelect={() => {
               props.playArea.shuffleDeck();
               onActionComplete();
             }}>
-            Shuffle
+            Shuffle deck
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
-        <CommandGroup heading='Settings'>
-          <CommandItem>Profile</CommandItem>
-          <CommandItem>Billing</CommandItem>
-          <CommandItem>Settings</CommandItem>
+        <CommandGroup heading='hand'>
+          
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading='Dice'>
+          <CommandItem
+            value={'regex:roll\\s(\\d*[dD]?\\d*\\s*)+'}
+            onSelect={value => {
+              const regex = /((\d+)[dD](\d+))/g;
+              let matches = [];
+              let match;
+              while ((match = regex.exec(search()))) {
+                matches.push(match.slice(1));
+              }
+              let roll = matches
+                .map(match => {
+                  let length = parseInt(match[1], 10);
+                  let sides = parseInt(match[2], 10);
+                  console.log({ length, sides });
+                  return new Array(length).fill(0).map(() => ({
+                    sides,
+                    result: ((Math.random() * sides) | 0) + 1,
+                  }));
+                })
+                .flat();
+
+              sendEvent({ type: 'roll', payload: { roll } });
+              onActionComplete();
+            }}>
+            Roll [1d6] [2d4]
+          </CommandItem>
         </CommandGroup>
       </CommandList>
     </CommandDialog>
