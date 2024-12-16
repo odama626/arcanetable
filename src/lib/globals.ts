@@ -45,7 +45,7 @@ export let cardsById = new Map<string, Card>();
 export let zonesById = new Map<string, CardZone<unknown>>();
 export let [playAreas, setPlayAreas] = createStore<Record<number, PlayArea>>({});
 export let [peekFilterText, setPeekFilterText] = createSignal('');
-export const ydoc = new Doc();
+export let ydoc = new Doc();
 export let table: Object3D;
 export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
@@ -178,8 +178,13 @@ export function cleanup() {
   setScrollTarget();
   provider?.destroy();
   ydoc.destroy();
+  ydoc = new Doc();
   setAnimating(false);
   setPlayers([]);
+  setDeckIndex();
+  setSelectedDeckIndex(undefined);
+  setIsSpectating(false);
+  setIsIntitialized(false)
 
   if (!renderer) return;
 
