@@ -23,7 +23,7 @@ const Page: Component = props => {
           <div class='relative flex items-center justify-between p-6'>
             <div class='flex items-center space-x-4'>
               <img src='/icon.svg' alt='Arcane Table Logo' class='w-12 h-12' />
-              <span class='text-xl font-bold text-white'>Arcane Table</span>
+              <span class='text-xl font-bold text-white'>Arcanetable</span>
             </div>
             <nav class='space-x-4 flex'>
               <a href='https://github.com/odama626/arcanetable/' target='__blank'>
@@ -35,7 +35,7 @@ const Page: Component = props => {
             </nav>
           </div>
           <div class='relative flex flex-col items-center justify-center py-60 text-center'>
-            <h1 class='text-4xl font-bold text-white mb-6'>Welcome to Arcane Table</h1>
+            <h1 class='text-4xl font-bold text-white mb-6'>Welcome to Arcanetable</h1>
             <p class='text-xl text-white mb-6'>Unleash the power of your deck.</p>
             <A
               href={startUrl()}
@@ -135,7 +135,7 @@ const Page: Component = props => {
               Table. Gone are the days of staring at Archidekt and hoping your card pile will
               execute.
               <br />
-              Use the power of Arcane Table to make sure that it does.
+              Use the power of Arcanetable to make sure that it does.
             </p>
             <div class='grid gap-8 lg:grid-cols-3'>
               {/* <!-- Insight Card 1 --> */}
@@ -248,7 +248,7 @@ const Page: Component = props => {
             <div class='grid grid-cols-1 md:grid-cols-3 gap-8'>
               <div class='p-6 bg-gray-900 rounded-lg'>
                 <p class='text-gray-200'>
-                  Arcane Table has revolutionized the way I play card games. The features are
+                  Arcanetable has revolutionized the way I play card games. The features are
                   incredible!
                 </p>
                 <span class='block mt-4 text-gray-400'>- Player 1</span>
@@ -262,7 +262,7 @@ const Page: Component = props => {
               </div>
               <div class='p-6 bg-gray-900 rounded-lg'>
                 <p class='text-gray-200'>
-                  Playing on Arcane Table is a truly immersive experience. I love the intuitive
+                  Playing on Arcanetable is a truly immersive experience. I love the intuitive
                   interface!
                 </p>
                 <span class='block mt-4 text-gray-400'>- Player 3</span>
