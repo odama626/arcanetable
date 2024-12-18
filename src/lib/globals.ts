@@ -27,6 +27,7 @@ import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
+import * as multiselect from './multiselect';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -146,6 +147,8 @@ export function init({ gameId }) {
 
   scene.add(arrowHelper);
 
+  multiselect.initialize(renderer, camera, scene);
+
   // let helper = new CameraHelper(focusCamera);
   // scene.add(helper);
 
@@ -197,6 +200,8 @@ export function cleanup() {
 
   if (!renderer) return;
 
+  multiselect.destroy();
+
   renderer.domElement.remove();
   renderer.dispose();
 
@@ -239,6 +244,7 @@ export function onConcede(clientId?: string) {
     setIsSpectating(false);
     setIsIntitialized(false);
     orbitControls?.dispose();
+    multiselect.destroy();
   }
 }
 

@@ -37,7 +37,14 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
 
   alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
 
-  const mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, blackMat, cardBackMat]);
+  const mesh = new Mesh(geometry, [
+    blackMat.clone(),
+    blackMat.clone(),
+    blackMat.clone(),
+    blackMat.clone(),
+    blackMat.clone(),
+    cardBackMat.clone(),
+  ]);
   setCardData(mesh, 'isInteractive', true);
   setCardData(mesh, 'card', shared);
   setCardData(mesh, 'id', card.id);
@@ -87,7 +94,7 @@ export async function loadCardTextures(
   let frontPromise = cache.get(front)!;
 
   frontPromise.then(mat => {
-    card.mesh.material[4] = mat;
+    card.mesh.material[4] = mat.clone();
   });
 
   if (back) {
@@ -115,7 +122,7 @@ export async function loadCardTextures(
     let backPromise = cache.get(back)!;
 
     backPromise.then(mat => {
-      card.mesh.userData.cardBack = mat;
+      card.mesh.userData.cardBack = mat.clone();
     });
     await backPromise;
   }
