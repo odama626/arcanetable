@@ -1,4 +1,5 @@
 import ColorHash from 'color-hash';
+import * as Comlink from 'comlink';
 import { createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import * as THREE from 'three';
@@ -24,7 +25,9 @@ import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
 import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
+import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
+
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
     console.error(message, ...supplemental);
@@ -65,6 +68,7 @@ export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.
 export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
+export let textureLoaderWorker;
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -92,8 +96,13 @@ export function headlessInit(opts = {}) {
   setProcessedEvents(0);
   loadingManager = new LoadingManager();
   textureLoader = new TextureLoader(loadingManager);
+  textureLoaderWorker = Comlink.wrap(new TextureLoaderWorker());
   gameLog = opts.gameLog ?? ydoc.getArray('gameLog');
   provider = opts?.provider;
+}
+
+export function initClock() {
+  clock = new Clock();
 }
 
 export function init({ gameId }) {
@@ -184,7 +193,7 @@ export function cleanup() {
   setDeckIndex();
   setSelectedDeckIndex(undefined);
   setIsSpectating(false);
-  setIsIntitialized(false)
+  setIsIntitialized(false);
 
   if (!renderer) return;
 
@@ -228,8 +237,8 @@ export function onConcede(clientId?: string) {
     });
     setSelectedDeckIndex(undefined);
     setIsSpectating(false);
-    setIsIntitialized(false)
-    orbitControls?.dispose()
+    setIsIntitialized(false);
+    orbitControls?.dispose();
   }
 }
 

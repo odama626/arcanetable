@@ -19,6 +19,7 @@ import {
   gameLog,
   hoverSignal,
   init,
+  initClock,
   isSpectating,
   playAreas,
   players,
@@ -146,6 +147,7 @@ export async function loadDeckAndJoin(settings) {
   hand = playArea.hand;
 
   table.add(playArea.mesh);
+  renderer.compile(scene,camera);
 }
 
 function onDocumentScroll(event) {
@@ -423,6 +425,7 @@ export function animate() {
 
 export function startAnimating() {
   if (animating()) return;
+  initClock()
   setAnimating(true);
   animate();
 }

@@ -1,14 +1,26 @@
 import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
-import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
+import { CatmullRomCurve3, Euler, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { animateObject } from './animations';
-import { cloneCard, initializeCardMesh, setCardData, updateModifiers } from './card';
+import {
+  cloneCard,
+  initializeCardMesh,
+  loadCardTextures,
+  setCardData,
+  updateModifiers,
+} from './card';
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
-import { cardsById, doXTimes, focusCamera, provider, zonesById } from './globals';
+import {
+  cardsById,
+  doXTimes,
+  focusCamera,
+  provider,
+  zonesById
+} from './globals';
 import { Hand } from './hand';
 import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
@@ -444,7 +456,25 @@ export class PlayArea {
     }
 
     playArea.deck.shuffle();
+    playArea.loadTextures();
     return playArea;
+  }
+
+  async loadTextures() {
+    const cache = new Map<string, Promise<MeshStandardMaterial>>();
+    const promises = this.battlefieldZone.cards.map(card => loadCardTextures(card, cache));
+    promises.concat(
+      ...this.deck.cards.map(
+        (card, i) =>
+          new Promise<void>(resolve =>
+            setTimeout(() => {
+              loadCardTextures(card, cache).then(resolve);
+            }, i * 10)
+          )
+      )
+    );
+    await Promise.all(promises);
+    cache.clear();
   }
 
   destroy() {
@@ -469,7 +499,7 @@ export class PlayArea {
 
   static FromNetworkState(state: State) {
     let playArea = new PlayArea(state.clientId!, state.cards!, state.deck.cards!, state);
-
+    playArea.loadTextures();
     return playArea;
   }
 }

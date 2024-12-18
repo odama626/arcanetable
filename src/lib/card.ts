@@ -1,8 +1,10 @@
 import set from 'lodash-es/set';
 import uniqBy from 'lodash-es/uniqBy';
+import { splitProps } from 'solid-js';
 import {
   BoxGeometry,
   Color,
+  ImageBitmapLoader,
   LinearFilter,
   Mesh,
   MeshStandardMaterial,
@@ -13,16 +15,18 @@ import {
   Vector3,
 } from 'three';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
-import { cardsById, getProjectionVec, scene, textureLoader } from './globals';
+import { cardsById, getProjectionVec, scene, textureLoader, textureLoaderWorker } from './globals';
 import { counters } from './ui/counterDialog';
 import { cleanupFromNode } from './utils';
-import { splitProps } from 'solid-js';
 
 let cardBackTexture: Texture;
 let alphaMap: Texture;
 const blackMat = new MeshStandardMaterial({ color: 0x000000 });
 
-export function createCardGeometry(card: Card) {
+const bitmapLoader = new ImageBitmapLoader();
+bitmapLoader.setOptions({ imageOrientation: 'flipY' });
+
+export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
   cardBackTexture = cardBackTexture || textureLoader.load('/arcane-table-back.webp');
   cardBackTexture.colorSpace = SRGBColorSpace;
@@ -32,18 +36,8 @@ export function createCardGeometry(card: Card) {
   cardBackMat.transparent = true;
 
   alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
-  let front = textureLoader.load(getCardImage(card));
 
-  front.colorSpace = SRGBColorSpace;
-
-  let frontMat = new MeshStandardMaterial({
-    color: 0xffffff,
-    map: front,
-    alphaMap,
-  });
-  frontMat.transparent = true;
-
-  const mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, frontMat, cardBackMat]);
+  const mesh = new Mesh(geometry, [blackMat, blackMat, blackMat, blackMat, blackMat, cardBackMat]);
   setCardData(mesh, 'isInteractive', true);
   setCardData(mesh, 'card', shared);
   setCardData(mesh, 'id', card.id);
@@ -52,20 +46,80 @@ export function createCardGeometry(card: Card) {
     'isDoubleSided',
     card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris
   );
+
+  mesh.userData.card_face_urls = [getCardImage(card)];
+
   if (mesh.userData.isDoubleSided) {
-    let map = textureLoader.load(card.detail.card_faces[1].image_uris.large);
-    map.colorSpace = SRGBColorSpace;
-    mesh.userData.cardBack = new MeshStandardMaterial({
-      map,
-      alphaMap,
-      color: 0xffffff,
-    });
-    mesh.userData.cardBack.transparent = true;
+    mesh.userData.card_face_urls.push(card.detail.card_faces[1].image_uris.large);
     setCardData(mesh, 'publicCardBack', cardBackMat);
   }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
   return mesh;
+}
+
+export async function loadCardTextures(
+  card: Card,
+  cache: Map<string, Promise<MeshStandardMaterial>>
+) {
+  const [front, back] = card.mesh.userData.card_face_urls;
+
+  if (!cache.has(front)) {
+    cache.set(
+      front,
+      textureLoaderWorker.loadTexture(front).then(image => {
+        const map = new Texture(image);
+        map.colorSpace = SRGBColorSpace;
+        map.needsUpdate = true;
+
+        let mat = new MeshStandardMaterial({
+          color: 0xffffff,
+          map,
+          alphaMap,
+        });
+        mat.transparent = true;
+        mat.needsUpdate = true;
+        return mat;
+      })
+    );
+  }
+
+  let frontPromise = cache.get(front)!;
+
+  frontPromise.then(mat => {
+    card.mesh.material[4] = mat;
+  });
+
+  if (back) {
+    if (!cache.has(back)) {
+      cache.set(
+        back,
+        textureLoaderWorker.loadTexture(front).then(image => {
+          const map = new Texture(image);
+          map.colorSpace = SRGBColorSpace;
+          map.needsUpdate = true;
+
+          let mat = new MeshStandardMaterial({
+            color: 0xffffff,
+            map,
+            alphaMap,
+          });
+          mat.transparent = true;
+          mat.needsUpdate = true;
+
+          return mat;
+        })
+      );
+    }
+
+    let backPromise = cache.get(back)!;
+
+    backPromise.then(mat => {
+      card.mesh.userData.cardBack = mat;
+    });
+    await backPromise;
+  }
+  await frontPromise;
 }
 
 export function getSearchLine(cardDetail) {
