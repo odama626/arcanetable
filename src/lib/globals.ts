@@ -27,7 +27,7 @@ import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
-import { Multiselect } from './multiselect';
+import { Selection } from './selection';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -70,7 +70,7 @@ export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
 export let textureLoaderWorker;
-export let multiselect: Multiselect;
+export let selection: Selection;
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -148,7 +148,7 @@ export function init({ gameId }) {
 
   scene.add(arrowHelper);
 
-  multiselect = new Multiselect(renderer, camera, scene);
+  selection = new Selection(renderer, camera, scene);
 
   // let helper = new CameraHelper(focusCamera);
   // scene.add(helper);
@@ -201,7 +201,7 @@ export function cleanup() {
 
   if (!renderer) return;
 
-  multiselect.destroy();
+  selection.destroy();
 
   renderer.domElement.remove();
   renderer.dispose();
@@ -245,7 +245,7 @@ export function onConcede(clientId?: string) {
     setIsSpectating(false);
     setIsIntitialized(false);
     orbitControls?.dispose();
-    multiselect.destroy();
+    selection.destroy();
   }
 }
 

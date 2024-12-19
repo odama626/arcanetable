@@ -21,7 +21,7 @@ import {
   init,
   initClock,
   isSpectating,
-  multiselect,
+  selection,
   playAreas,
   players,
   provider,
@@ -74,7 +74,6 @@ export async function localInit(gameOptions: GameOptions) {
       entry,
       id,
     }));
-    console.log({ newPlayers, players: players() });
     setPlayers(newPlayers);
   });
 
@@ -161,21 +160,27 @@ function onDocumentMouseDown(event) {}
 
 let isDragging = false;
 
-function onDocumentClick(event) {
-  if (multiselect.justSelected) {
-    multiselect.justSelected = false;
+function onDocumentClick(event: PointerEvent) {
+  if (selection.justSelected) {
+    selection.justSelected = false;
     return;
   }
-  if (!multiselect.justSelected && !multiselect.enabled && !isDragging) {
-    multiselect.clearSelection();
-  }
+  // let modifierKey = event.shiftKey || event.metaKey || event.ctrlKey;
+
+  // if (!selection.justSelected && !selection.enabled && !isDragging) {
+  //   selection.clearSelection();
+  // }
+  raycaster.setFromCamera(mouse, camera);
+  let intersects = raycaster.intersectObject(scene);
+
   if (isDragging) {
     isDragging = false;
     return;
   }
+
+  if (selection.onClick(event, intersects[0]?.object)) return;
+
   if (dragTargets?.length) return;
-  raycaster.setFromCamera(mouse, camera);
-  let intersects = raycaster.intersectObject(scene);
 
   if (!intersects.length) return;
 
@@ -241,8 +246,7 @@ function onDocumentClick(event) {
   target.dispatchEvent({ type: 'click', event });
 }
 
-function onDocumentDragStart(event) {
-  console.log('dragStart');
+function onDocumentDragStart(event: PointerEvent) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
   raycaster.setFromCamera(mouse, camera);
@@ -258,13 +262,12 @@ function onDocumentDragStart(event) {
 
   if (!target.userData.isInteractive) {
     setHoverSignal();
-    multiselect.start(event);
+    selection.startRectangleSelection(event);
     return;
   }
 
-  if (multiselect.selected.length && multiselect.selected.includes(intersection.object)) {
-    console.log('includes');
-    targets = multiselect.selected.slice();
+  if (selection.selectedItems.length && selection.selectedItems.includes(intersection.object)) {
+    targets = selection.selectedItems.slice();
   }
 
   targets.forEach(target => {
@@ -277,7 +280,6 @@ function onDocumentDragStart(event) {
         .multiply(new THREE.Vector3(-1, -1, 1))
         .toArray();
     }
-    console.log({ dragOffset });
 
     setCardData(target, 'dragOffset', dragOffset);
   });
@@ -285,21 +287,24 @@ function onDocumentDragStart(event) {
   dragTargets = targets;
 }
 
-function onDocumentDrop(event) {
+async function onDocumentDrop(event) {
   event.preventDefault();
-  multiselect.select(event);
+  selection.completeRectangleSelection(event);
   if (!dragTargets?.length) return;
   raycaster.setFromCamera(mouse, camera);
 
   let intersects = raycaster.intersectObject(scene);
 
-  dragTargets?.forEach(async target => {
+  let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+  let intersection = intersects.find(
+    i =>
+      !targetsById[i.object.userData.id] &&
+      (i.object.userData.isInteractive || i.object.userData.zone)
+  )!;
+
+  for await (const target of dragTargets ?? []) {
     setCardData(target, 'isDragging', false);
-    let intersection = intersects.find(
-      i =>
-        i.object.userData.id !== target.userData.id &&
-        (i.object.userData.isInteractive || i.object.userData.zone)
-    )!;
+
     let toZoneId = intersection.object.userData.zoneId;
     let fromZoneId = target.userData.zoneId;
     let fromZone = zonesById.get(fromZoneId);
@@ -321,7 +326,7 @@ function onDocumentDrop(event) {
       });
       setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
       setCardData(target, `zone.${toZone.id}.rotation`, target.rotation.toArray());
-      return;
+      continue;
     }
 
     let card = cardsById.get(target.userData.id);
@@ -334,9 +339,11 @@ function onDocumentDrop(event) {
         positionArray: position.toArray(),
       },
     });
+  }
 
+  if (dragTargets.length) {
     setHoverSignal(signal => {
-      let mesh = signal?.mesh ?? target;
+      let mesh = signal?.mesh ?? dragTargets[0];
       focusOn(mesh);
       const tether = getCardMeshTetherPoint(mesh);
       return {
@@ -346,7 +353,7 @@ function onDocumentDrop(event) {
         mesh,
       };
     });
-  });
+  }
 
   dragTargets = [];
 }
@@ -373,7 +380,7 @@ function onDocumentMouseMove(event) {
     -(event.clientY / window.innerHeight) * 2 + 1
   );
 
-  multiselect.onMove(event);
+  selection.onMove(event);
 
   if (dragTargets?.length) {
     isDragging = true;
@@ -509,7 +516,7 @@ function render3d() {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (!multiselect.enabled) {
+  if (!selection.enabled) {
     let intersects = raycaster.intersectObject(scene).filter(hit => {
       if (isSpectating()) return true;
       if (
