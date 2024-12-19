@@ -1,14 +1,5 @@
-import {
-  Frustum,
-  Vector3,
-  Matrix4,
-  Quaternion,
-  Scene,
-  Camera,
-  Vector3Like,
-  Mesh,
-  PerspectiveCamera,
-} from 'three';
+import { Frustum, Matrix4, PerspectiveCamera, Quaternion, Scene, Vector3 } from 'three';
+import { FrustumHelper } from './frustumhelper';
 
 /**
  * This is a class to check whether objects are in a selection area in 3D space
@@ -46,6 +37,7 @@ class SelectionBox {
   deep: number;
   scene: Scene;
   camera: PerspectiveCamera;
+  helper: FrustumHelper;
 
   constructor(camera: PerspectiveCamera, scene: Scene, deep = Number.MAX_VALUE) {
     this.camera = camera;
@@ -57,7 +49,7 @@ class SelectionBox {
     this.deep = deep;
   }
 
-  select(startPoint: Vector3, endPoint: Vector3) {
+  select(startPoint?: Vector3, endPoint?: Vector3) {
     this.startPoint = startPoint || this.startPoint;
     this.endPoint = endPoint || this.endPoint;
     this.collection = [];
@@ -167,7 +159,6 @@ class SelectionBox {
   }
 
   searchChildInFrustum(frustum: Frustum, object) {
-    console.log(object);
     if (object.isMesh || object.isLine || object.isPoints) {
       if (object.isInstancedMesh) {
         this.instances[object.uuid] = [];

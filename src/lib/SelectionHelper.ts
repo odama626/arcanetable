@@ -8,6 +8,8 @@ class SelectionHelper {
   public isDown;
   public enabled;
   public onPointerDown;
+  onPointerMove: (event: any) => void;
+  onPointerUp: () => void;
 
   constructor(private renderer: WebGLRenderer, cssClassName: string) {
     this.element = document.createElement('div');
@@ -45,15 +47,15 @@ class SelectionHelper {
       this.onSelectOver();
     }.bind(this);
 
-    this.renderer.domElement.addEventListener('pointerdown', this.onPointerDown);
-    this.renderer.domElement.addEventListener('pointermove', this.onPointerMove);
-    this.renderer.domElement.addEventListener('pointerup', this.onPointerUp);
+    // this.renderer.domElement.addEventListener('pointerdown', this.onPointerDown);
+    // this.renderer.domElement.addEventListener('pointermove', this.onPointerMove);
+    // this.renderer.domElement.addEventListener('pointerup', this.onPointerUp);
   }
 
   dispose() {
-    this.renderer.domElement.removeEventListener('pointerdown', this.onPointerDown);
-    this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove);
-    this.renderer.domElement.removeEventListener('pointerup', this.onPointerUp);
+    // this.renderer.domElement.removeEventListener('pointerdown', this.onPointerDown);
+    // this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove);
+    // this.renderer.domElement.removeEventListener('pointerup', this.onPointerUp);
   }
 
   onSelectStart(event) {

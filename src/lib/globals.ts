@@ -27,7 +27,7 @@ import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
-import * as multiselect from './multiselect';
+import { Multiselect } from './multiselect';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -70,6 +70,7 @@ export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
 export let textureLoaderWorker;
+export let multiselect: Multiselect;
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -147,7 +148,7 @@ export function init({ gameId }) {
 
   scene.add(arrowHelper);
 
-  multiselect.initialize(renderer, camera, scene);
+  multiselect = new Multiselect(renderer, camera, scene);
 
   // let helper = new CameraHelper(focusCamera);
   // scene.add(helper);

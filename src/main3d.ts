@@ -21,6 +21,7 @@ import {
   init,
   initClock,
   isSpectating,
+  multiselect,
   playAreas,
   players,
   provider,
@@ -44,7 +45,6 @@ import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
 import { getGlobalRotation } from './lib/utils';
 import { processEvents } from './remoteEvents';
-import * as multiselect from './lib/multiselect';
 
 var container;
 
@@ -162,9 +162,13 @@ function onDocumentMouseDown(event) {}
 let isDragging = false;
 
 function onDocumentClick(event) {
-  // if (!isDragging && !dragTargets.length) {
-  //   multiselect.clearSelection();
-  // }
+  if (multiselect.justSelected) {
+    multiselect.justSelected = false;
+    return;
+  }
+  if (!multiselect.justSelected && !multiselect.enabled && !isDragging) {
+    multiselect.clearSelection();
+  }
   if (isDragging) {
     isDragging = false;
     return;
@@ -250,13 +254,11 @@ function onDocumentDragStart(event) {
   let target = intersection.object;
   let targets = [target];
 
-  console.log({ targets, selected: multiselect.selected });
-
   if (target.userData.location === 'deck') return;
 
   if (!target.userData.isInteractive) {
-    multiselect.helper.enabled = true;
-    multiselect.helper.onPointerDown(event);
+    setHoverSignal();
+    multiselect.start(event);
     return;
   }
 
@@ -285,7 +287,7 @@ function onDocumentDragStart(event) {
 
 function onDocumentDrop(event) {
   event.preventDefault();
-  multiselect.helper.enabled = false;
+  multiselect.select(event);
   if (!dragTargets?.length) return;
   raycaster.setFromCamera(mouse, camera);
 
@@ -370,6 +372,8 @@ function onDocumentMouseMove(event) {
     (event.clientX / window.innerWidth) * 2 - 1,
     -(event.clientY / window.innerHeight) * 2 + 1
   );
+
+  multiselect.onMove(event);
 
   if (dragTargets?.length) {
     isDragging = true;
@@ -505,7 +509,7 @@ function render3d() {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (!multiselect.helper.enabled) {
+  if (!multiselect.enabled) {
     let intersects = raycaster.intersectObject(scene).filter(hit => {
       if (isSpectating()) return true;
       if (
