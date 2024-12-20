@@ -25,6 +25,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     this.mesh.position.set(70, -55, cards.length * 0.125 + 2.5);
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'deck';
+    this.mesh.userData.id = id;
     this.zone = 'deck';
 
     cards.forEach((card, i) => {

@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount, Show } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { Mesh } from 'three';
 import { Button } from '~/components/ui/button';
 import {
@@ -20,104 +20,118 @@ import {
   NumberFieldInput,
 } from '~/components/ui/number-field';
 import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
-import { cardsById, doXTimes } from '../globals';
+import { cardsById, doXTimes, selection } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 import MoveMenu from './moveMenu';
-import hotkeys from 'hotkeys-js';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   let card = () => cardsById.get(props.cardMesh?.userData.id)!;
+  let meshes = () =>
+    selection.selectedItems.length > 0 ? selection.selectedItems : [props.cardMesh];
 
+  let cardText = () => {
+    let count = selection.selectedItems.length;
+    if (count > 1) return `${count} cards`;
+    return `1 card`;
+  };
 
   return (
-    <Menubar>
-      <MenubarMenu overlap>
-        <MenubarTrigger>Actions</MenubarTrigger>
-        <MenubarContent>
-          <MenubarItem
-            onClick={() => {
-              props.playArea.flip(props.cardMesh);
-            }}>
-            Flip<MenubarShortcut>F</MenubarShortcut>
-          </MenubarItem>
-          <MenubarSub overlap>
-            <MenubarSubTrigger>Counters</MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem closeOnSelect={false} style='font-family: monospace;'>
-                <CoreCounters {...props} />
-              </MenubarItem>
+    <div class='flex flex-col items-start'>
+      <div class='text-shadow'>{cardText()} selected</div>
+      <Menubar>
+        <MenubarMenu overlap>
+          <MenubarTrigger>Actions</MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem
+              onClick={() => {
+                meshes().forEach(mesh => {
+                  props.playArea.flip(mesh);
+                });
+              }}>
+              Flip<MenubarShortcut>F</MenubarShortcut>
+            </MenubarItem>
+            <MenubarSub overlap>
+              <MenubarSubTrigger>Counters</MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem closeOnSelect={false} style='font-family: monospace;'>
+                  <CoreCounters {...props} />
+                </MenubarItem>
 
-              <Show when={counters().length}>
-                <MenubarSeparator />
-              </Show>
-              <For each={counters()}>
-                {counter => {
-                  return (
-                    <MenubarItem closeOnSelect={false}>
-                      <div
-                        style={`--color: ${counter.color}; width: 1rem; height: 1rem; background: var(--color); margin: 0 0.25rem;`}></div>
-                      <div style='margin: 0 0.25rem;'>{counter.name}</div>
-                      <MenubarShortcut>
-                        <NumberField
-                          defaultValue={
-                            props.cardMesh?.userData.modifiers?.counters?.[counter.id] ?? 0
-                          }
-                          style='width: 6rem'
-                          onChange={value => {
-                            let card = cardsById.get(props.cardMesh?.userData.id)!;
-                            props.playArea.modifyCard(card, modifiers => ({
-                              ...modifiers,
-                              counters: {
-                                ...modifiers.counters,
-                                [counter.id]: parseInt(value.replace(/\,/g, ''), 10),
-                              },
-                            }));
-                          }}>
-                          <div class='relative'>
-                            <NumberFieldInput />
-                            <NumberFieldIncrementTrigger />
-                            <NumberFieldDecrementTrigger />
-                          </div>
-                        </NumberField>
-                      </MenubarShortcut>
-                    </MenubarItem>
-                  );
-                }}
-              </For>
-              <Show when={counters().length > 0}>
-                <MenubarSeparator />
-              </Show>
-              <MenubarItem closeOnSelect={false} onClick={() => setIsCounterDialogOpen(true)}>
-                Create New Counter
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-          <MenubarSub overlap>
-            <MenubarSubTrigger onClick={() => props.playArea.clone(props.cardMesh?.userData.id)}>
-              Clone<MenubarShortcut>C</MenubarShortcut>
-            </MenubarSubTrigger>
-            <MenubarSubContent>
-              <div class='pt-1.5 px-2'>Clone {props.cardMesh?.userData?.card?.detail?.name}</div>
-              <div class='pb-1.5 px-2 text-sm'>consider using counters</div>
-              <NumberFieldMenuItem
-                onSubmit={count =>
-                  doXTimes(count, () => props.playArea.clone(props.cardMesh?.userData.id), 10)
-                }
-              />
-            </MenubarSubContent>
-          </MenubarSub>
-        </MenubarContent>
-      </MenubarMenu>
-      <MenubarMenu>
-        <MoveMenu
-          text='Move To'
-          cards={[card()]}
-          fromZone={props.playArea.battlefieldZone}
-          playArea={props.playArea}
-        />
-      </MenubarMenu>
-    </Menubar>
+                <Show when={counters().length}>
+                  <MenubarSeparator />
+                </Show>
+                <For each={counters()}>
+                  {counter => {
+                    return (
+                      <MenubarItem closeOnSelect={false}>
+                        <div
+                          style={`--color: ${counter.color}; width: 1rem; height: 1rem; background: var(--color); margin: 0 0.25rem;`}></div>
+                        <div style='margin: 0 0.25rem;'>{counter.name}</div>
+                        <MenubarShortcut>
+                          <NumberField
+                            defaultValue={
+                              props.cardMesh?.userData.modifiers?.counters?.[counter.id] ?? 0
+                            }
+                            style='width: 6rem'
+                            onChange={value => {
+                              let card = cardsById.get(props.cardMesh?.userData.id)!;
+                              props.playArea.modifyCard(card, modifiers => ({
+                                ...modifiers,
+                                counters: {
+                                  ...modifiers.counters,
+                                  [counter.id]: parseInt(value.replace(/\,/g, ''), 10),
+                                },
+                              }));
+                            }}>
+                            <div class='relative'>
+                              <NumberFieldInput />
+                              <NumberFieldIncrementTrigger />
+                              <NumberFieldDecrementTrigger />
+                            </div>
+                          </NumberField>
+                        </MenubarShortcut>
+                      </MenubarItem>
+                    );
+                  }}
+                </For>
+                <Show when={counters().length > 0}>
+                  <MenubarSeparator />
+                </Show>
+                <MenubarItem closeOnSelect={false} onClick={() => setIsCounterDialogOpen(true)}>
+                  Create New Counter
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
+            <MenubarSub overlap>
+              <MenubarSubTrigger onClick={() => props.playArea.clone(props.cardMesh?.userData.id)}>
+                Clone<MenubarShortcut>C</MenubarShortcut>
+              </MenubarSubTrigger>
+              <MenubarSubContent>
+                <div class='pt-1.5 px-2'>Clone {cardText()}</div>
+                <div class='pb-1.5 px-2 text-sm'>consider using counters</div>
+                <NumberFieldMenuItem
+                  onSubmit={count =>
+                    doXTimes(count, () => props.playArea.clone(props.cardMesh?.userData.id), 10)
+                  }
+                />
+              </MenubarSubContent>
+            </MenubarSub>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MoveMenu
+            text='Move To'
+            onComplete={() => {
+              selection.clearSelection();
+            }}
+            cards={meshes().map(mesh => cardsById.get(mesh?.userData.id))}
+            fromZone={props.playArea.battlefieldZone}
+            playArea={props.playArea}
+          />
+        </MenubarMenu>
+      </Menubar>
+    </div>
   );
 };
 

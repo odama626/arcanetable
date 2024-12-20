@@ -37,6 +37,7 @@ export class CardGrid implements CardZone {
     zonesById.set(this.id, this);
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = zone;
+    this.mesh.userData.id = id;
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.copy(POSITION);
     this.scrollContainer = new Group();
@@ -289,12 +290,10 @@ export class CardGrid implements CardZone {
     if (this.cards.length < 1) {
       setHoverSignal();
     }
-    console.log(peekFilterText());
     if (this.filteredCards) {
       this.filteredCards = this.filteredCards.filter(card => card.id !== cardMesh.userData.id);
     }
     if (!this.filteredCards?.length) {
-      console.log(this.filteredCards);
       setPeekFilterText('');
       this.filterCards();
     }

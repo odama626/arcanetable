@@ -1,3 +1,5 @@
+import { Dialog } from '@kobalte/core/dialog';
+import hotkeys from 'hotkeys-js';
 import {
   createEffect,
   createMemo,
@@ -9,8 +11,14 @@ import {
   Switch,
   type Component,
 } from 'solid-js';
-
-import { Mesh } from 'three';
+import { Button } from '~/components/ui/button';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+} from '~/components/ui/dialog';
 import { Menubar, MenubarItem, MenubarMenu } from '../../components/ui/menubar';
 import {
   cardsById,
@@ -21,8 +29,13 @@ import {
   playAreas,
   players,
   provider,
+  selection,
   zonesById,
 } from '../globals';
+import CommandPalette from '../shortcuts/command-palette';
+import { drawCards, searchDeck } from '../shortcuts/commands/deck';
+import { untapAll } from '../shortcuts/commands/field';
+import { transferCard } from '../transferCard';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
@@ -33,27 +46,13 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
-import { Dialog } from '@kobalte/core/dialog';
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTrigger,
-} from '~/components/ui/dialog';
-import { Button } from '~/components/ui/button';
-import CommandPalette from '../shortcuts/command-palette';
-import hotkeys from 'hotkeys-js';
-import { untapAll } from '../shortcuts/commands/field';
-import { drawCards, searchDeck } from '../shortcuts/commands/deck';
-import { transferCard } from '../transferCard';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
   let [isLogVisible, setIsLogVisible] = createSignal(false);
   const isPublic = () => userData()?.isPublic;
   const isOwner = () => userData()?.clientId === provider?.awareness?.clientID;
-  const location = createMemo(() => userData()?.location);
+  const location = () => userData()?.location;
   const cardMesh = () => hoverSignal()?.mesh;
   const tether = () => hoverSignal()?.tether;
   const playArea = playAreas[provider?.awareness?.clientID];
@@ -62,6 +61,14 @@ const Overlay: Component = () => {
       return { right: `0px`, bottom: '0' };
     }
     return { right: `0px`, top: `0` };
+  };
+
+  const cards = () => {
+    let items = selection.selectedItems;
+    if (items.length) return items.map(item => cardsById.get(item.userData.id));
+    if (!cardMesh()) return [];
+
+    return [cardsById.get(cardMesh().userData.id)];
   };
 
   let currentPlayer = () => players().find(player => player.id === provider?.awareness?.clientID);
@@ -76,86 +83,6 @@ const Overlay: Component = () => {
     let parent = container() as HTMLDivElement;
     if (!parent) return;
     parent.appendChild(focusRenderer.domElement);
-  });
-  onMount(() => {
-    hotkeys('shift+u', function () {
-      untapAll(playArea);
-    });
-
-    hotkeys('d', function () {
-      drawCards(playArea, 1);
-    });
-
-    hotkeys('ctrl+d,command+d', function (e) {
-      e.preventDefault();
-      if (!cardMesh()) return;
-      const card = cardsById.get(cardMesh().userData.id);
-      const previousZone = zonesById.get(card.mesh.userData.zoneId);
-      transferCard(card, previousZone, playArea.graveyardZone);
-    });
-
-    hotkeys('e', function (e) {
-      e.preventDefault();
-      if (!cardMesh()) return;
-      const card = cardsById.get(cardMesh().userData.id);
-      const previousZone = zonesById.get(card.mesh.userData.zoneId);
-      transferCard(card, previousZone, playArea.exileZone);
-    });
-
-    hotkeys('b', function (e) {
-      e.preventDefault();
-      if (!cardMesh()) return;
-      const card = cardsById.get(cardMesh().userData.id);
-      const previousZone = zonesById.get(card.mesh.userData.zoneId);
-      transferCard(card, previousZone, playArea.battlefieldZone);
-    });
-
-    hotkeys('p', function (e) {
-      e.preventDefault();
-      if (!cardMesh()) return;
-      const card = cardsById.get(cardMesh().userData.id);
-      const previousZone = zonesById.get(card.mesh.userData.zoneId);
-      transferCard(card, previousZone, playArea.peekZone);
-    });
-
-    hotkeys('s', function (e) {
-      e.preventDefault();
-      searchDeck(playArea);
-    });
-
-    hotkeys('escape', 'peek', function (e) {
-      e.preventDefault();
-      playArea.dismissFromZone(playArea.peekZone);
-    });
-
-    hotkeys('escape', 'tokenSearch', function (e) {
-      e.preventDefault();
-      playArea.dismissFromZone(playArea.tokenSearchZone);
-    });
-
-    hotkeys('escape', 'reveal', function (e) {
-      e.preventDefault();
-      playArea.dismissFromZone(playArea.revealZone);
-    });
-
-    hotkeys('t', 'battlefield', function () {
-      if (!cardMesh()) return;
-      playArea.tap(cardMesh());
-    });
-
-    hotkeys('c', 'battlefield', function () {
-      if (!cardMesh()) return;
-      playArea.clone(cardMesh().userData.id);
-    });
-
-    hotkeys('f', 'battlefield', function () {
-      if (!cardMesh()) return;
-      playArea.flip(cardMesh());
-    });
-
-    return () => {
-      hotkeys.unbind();
-    };
   });
 
   return (

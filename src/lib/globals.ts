@@ -27,6 +27,7 @@ import { Card, CARD_WIDTH, CardZone } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
+import { Selection } from './selection';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -69,6 +70,10 @@ export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
 export let textureLoaderWorker;
+export let selection: Selection;
+
+export let cardLoadingTexture: THREE.Texture;
+export let cardBackTexture: THREE.Texture;
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -116,6 +121,14 @@ export function init({ gameId }) {
   loadingManager.onProgress = function (item, loaded, total) {
     console.log(item, loaded, total);
   };
+
+  cardBackTexture = textureLoader.load(`/arcane-table-back.webp`);
+  cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+
+  cardLoadingTexture = textureLoader.load(`/loading-texture.png`);
+  cardLoadingTexture.repeat.setX(1 / 3);
+  cardLoadingTexture.repeat.setY(1 / 2);
+
   THREE.Cache.enabled = true;
 
   camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
@@ -146,13 +159,12 @@ export function init({ gameId }) {
 
   scene.add(arrowHelper);
 
-  // let helper = new CameraHelper(focusCamera);
-  // scene.add(helper);
+  selection = new Selection(renderer, camera, scene);
 
   focusRayCaster = new Raycaster();
 
   const tableGeometry = new BoxGeometry(200, 200, 5);
-  const tableMaterial = new MeshStandardMaterial({ color: 0xdeb887 });
+  const tableMaterial = new MeshStandardMaterial({ color: 0x2c1b4e });
   table = new Mesh(tableGeometry, tableMaterial);
   table.receiveShadow = true;
   table.userData.zone = 'battlefield';
@@ -197,6 +209,8 @@ export function cleanup() {
 
   if (!renderer) return;
 
+  selection.destroy();
+
   renderer.domElement.remove();
   renderer.dispose();
 
@@ -239,6 +253,7 @@ export function onConcede(clientId?: string) {
     setIsSpectating(false);
     setIsIntitialized(false);
     orbitControls?.dispose();
+    selection.destroy();
   }
 }
 

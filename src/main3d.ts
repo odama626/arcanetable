@@ -4,9 +4,9 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { cancelAnimation, renderAnimations } from './lib/animations';
-import { cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
-import { CARD_THICKNESS } from './lib/constants';
+import { animateObject, cancelAnimation, renderAnimations } from './lib/animations';
+import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './lib/constants';
 import {
   animating,
   camera,
@@ -22,11 +22,11 @@ import {
   initClock,
   isSpectating,
   playAreas,
-  players,
   provider,
   renderer,
   scene,
   scrollTarget,
+  selection,
   sendEvent,
   setAnimating,
   setDeckIndex,
@@ -42,8 +42,8 @@ import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
-import { processEvents } from './remoteEvents';
 import { getGlobalRotation } from './lib/utils';
+import { processEvents } from './remoteEvents';
 
 var container;
 
@@ -73,7 +73,6 @@ export async function localInit(gameOptions: GameOptions) {
       entry,
       id,
     }));
-    console.log({ newPlayers, players: players() });
     setPlayers(newPlayers);
   });
 
@@ -147,7 +146,7 @@ export async function loadDeckAndJoin(settings) {
   hand = playArea.hand;
 
   table.add(playArea.mesh);
-  renderer.compile(scene,camera);
+  renderer.compile(scene, camera);
 }
 
 function onDocumentScroll(event) {
@@ -160,14 +159,18 @@ function onDocumentMouseDown(event) {}
 
 let isDragging = false;
 
-function onDocumentClick(event) {
+function onDocumentClick(event: PointerEvent) {
+  raycaster.setFromCamera(mouse, camera);
+  let intersects = raycaster.intersectObject(scene);
+
   if (isDragging) {
     isDragging = false;
     return;
   }
+
+  if (selection.onClick(event, intersects[0]?.object)) return;
+
   if (dragTargets?.length) return;
-  raycaster.setFromCamera(mouse, camera);
-  let intersects = raycaster.intersectObject(scene);
 
   if (!intersects.length) return;
 
@@ -233,7 +236,7 @@ function onDocumentClick(event) {
   target.dispatchEvent({ type: 'click', event });
 }
 
-function onDocumentDragStart(event) {
+function onDocumentDragStart(event: PointerEvent) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
   raycaster.setFromCamera(mouse, camera);
@@ -242,41 +245,71 @@ function onDocumentDragStart(event) {
   if (!intersects.length) return;
 
   let intersection = intersects[0];
-
   let target = intersection.object;
+  let targets = [target];
+
   if (target.userData.location === 'deck') return;
-  if (!target.userData.isInteractive) return;
-  // if (target.userData.isInGrid) return;
 
-  setCardData(target, 'isDragging', true);
-
-  let dragOffset = [0, 0, 0];
-  if (target.userData.location !== 'hand') {
-    dragOffset = target
-      .worldToLocal(intersection.point)
-      .multiply(new THREE.Vector3(-1, -1, 1))
-      .toArray();
+  if (!target.userData.isInteractive) {
+    setHoverSignal();
+    selection.startRectangleSelection(event);
+    return;
   }
 
-  setCardData(target, 'dragOffset', dragOffset);
+  if (selection.selectedItems.length && selection.selectedItems.includes(intersection.object)) {
+    targets = selection.selectedItems.slice();
+  }
 
-  dragTargets = [target];
+  let origin = new THREE.Vector3(0, 0, 0);
+  targets.forEach(target => {
+    target.userData.mouseDistance = target
+      .worldToLocal(intersection.point.clone())
+      .distanceTo(origin);
+  });
+
+  targets
+    .sort((a, b) => {
+      return b.userData.mouseDistance - a.userData.mouseDistance;
+    })
+    .forEach((target, i) => {
+      setCardData(target, 'isDragging', true);
+
+      let dragOffset = [0, 0, 0];
+      if (target.userData.location !== 'hand') {
+        dragOffset = targets
+          .at(-1)
+          .worldToLocal(intersection.point.clone())
+          .multiplyScalar(-1)
+          .add(new THREE.Vector3(0, CARD_STACK_OFFSET * (targets.length - i), i * CARD_THICKNESS))
+          .toArray();
+      }
+
+      setCardData(target, 'dragOffset', dragOffset);
+    });
+
+  dragTargets = targets;
 }
 
-function onDocumentDrop(event) {
+async function onDocumentDrop(event) {
   event.preventDefault();
+  selection.completeRectangleSelection(event);
   if (!dragTargets?.length) return;
   raycaster.setFromCamera(mouse, camera);
 
-  let intersects = raycaster.intersectObject(scene);
+  let intersections = raycaster.intersectObject(scene);
 
-  dragTargets?.forEach(async target => {
+  let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+  let intersection = intersections.find(
+    i =>
+      !targetsById[i.object.userData.id] &&
+      (i.object.userData.isInteractive || i.object.userData.zone)
+  )!;
+
+  let shouldClearSelection = false;
+
+  for await (const target of dragTargets ?? []) {
     setCardData(target, 'isDragging', false);
-    let intersection = intersects.find(
-      i =>
-        i.object.userData.id !== target.userData.id &&
-        (i.object.userData.isInteractive || i.object.userData.zone)
-    )!;
+
     let toZoneId = intersection.object.userData.zoneId;
     let fromZoneId = target.userData.zoneId;
     let fromZone = zonesById.get(fromZoneId);
@@ -298,7 +331,7 @@ function onDocumentDrop(event) {
       });
       setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
       setCardData(target, `zone.${toZone.id}.rotation`, target.rotation.toArray());
-      return;
+      continue;
     }
 
     let card = cardsById.get(target.userData.id);
@@ -311,9 +344,16 @@ function onDocumentDrop(event) {
         positionArray: position.toArray(),
       },
     });
+    shouldClearSelection = true;
+  }
 
+  if (shouldClearSelection) {
+    selection.clearSelection();
+  }
+
+  if (dragTargets.length) {
     setHoverSignal(signal => {
-      let mesh = signal?.mesh ?? target;
+      let mesh = signal?.mesh ?? dragTargets[0];
       focusOn(mesh);
       const tether = getCardMeshTetherPoint(mesh);
       return {
@@ -323,7 +363,7 @@ function onDocumentDrop(event) {
         mesh,
       };
     });
-  });
+  }
 
   dragTargets = [];
 }
@@ -350,16 +390,23 @@ function onDocumentMouseMove(event) {
     -(event.clientY / window.innerHeight) * 2 + 1
   );
 
+  selection.onMove(event);
+
   if (dragTargets?.length) {
     isDragging = true;
     raycaster.setFromCamera(mouse, camera);
 
-    let intersects = raycaster.intersectObject(scene);
+    let intersections = raycaster.intersectObject(scene);
 
-    if (!intersects.length) return;
+    if (!intersections.length) return;
 
+    let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+    let intersection = intersections.find(
+      i =>
+        !targetsById[i.object.userData.id] &&
+        (i.object.userData.isInteractive || i.object.userData.zone)
+    )!;
     for (const target of dragTargets) {
-      let intersection = intersects.find(intersect => intersect.object.uuid !== target.uuid);
       if (!intersection) continue;
       let pointTarget = intersection.point.clone();
       let zone = zonesById.get(target.userData.zoneId)!;
@@ -418,14 +465,14 @@ export function animate() {
   time += delta;
 
   if (ticks >= interval) {
-    render3d();
+    render3d(delta);
     ticks = ticks % interval;
   }
 }
 
 export function startAnimating() {
   if (animating()) return;
-  initClock()
+  initClock();
   setAnimating(true);
   animate();
 }
@@ -479,28 +526,35 @@ function focusOn(target: THREE.Object3D) {
   focusCamera.userData.target = target.uuid;
 }
 
-function render3d() {
+function render3d(delta: number) {
   renderAnimations(time);
+  updateTextureAnimation(delta);
 
   raycaster.setFromCamera(mouse, camera);
 
-  let intersects = raycaster.intersectObject(scene).filter(hit => {
-    if (isSpectating()) return true;
-    if (
-      hit.object?.userData.clientId !== provider.awareness.clientID &&
-      !hit.object?.userData.isPublic
-    )
-      return false;
-    return true;
-  });
+  if (!selection.enabled) {
+    let intersects = raycaster.intersectObject(scene).filter(hit => {
+      if (isSpectating()) return true;
+      if (
+        hit.object?.userData.clientId !== provider.awareness.clientID &&
+        !hit.object?.userData.isPublic
+      )
+        return false;
+      return true;
+    });
 
-  hightlightHover(intersects);
+    hightlightHover(intersects);
+  }
 
-  if (hoverSignal()?.mesh && hoverSignal()?.mesh.userData.location !== 'deck') {
-    setHoverSignal(signal => ({
-      ...signal,
-      tether: getCardMeshTetherPoint(signal.mesh),
-    }));
+  let signal = hoverSignal();
+  if (signal?.mesh && signal?.mesh.userData.location !== 'deck') {
+    const tetherPoint = getCardMeshTetherPoint(signal.mesh);
+    if (!tetherPoint.equals(signal.tether)) {
+      setHoverSignal(signal => ({
+        ...signal,
+        tether: getCardMeshTetherPoint(signal.mesh),
+      }));
+    }
   }
 
   camera.lookAt(scene.position);

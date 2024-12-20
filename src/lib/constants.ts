@@ -5,6 +5,9 @@ export const CARD_HEIGHT = 88 / 4;
 export const CARD_THICKNESS = 0.5 / 4;
 export const CARD_STACK_OFFSET = 2;
 
+export const ZONE_OUTLINE_COLOR = 0xffffff;
+export const CARD_ZONE_COLOR = 0x1a1533;
+
 export interface Card {
   mesh: Mesh;
   id: string;

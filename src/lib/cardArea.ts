@@ -14,7 +14,15 @@ import {
 } from 'three';
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
-import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './constants';
+import {
+  Card,
+  CARD_HEIGHT,
+  CARD_STACK_OFFSET,
+  CARD_THICKNESS,
+  CARD_ZONE_COLOR,
+  CardZone,
+  ZONE_OUTLINE_COLOR,
+} from './constants';
 import { cardsById, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation } from './utils';
 
@@ -27,15 +35,19 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
 
   constructor(public zone: string, public id: string = nanoid()) {
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
-    let material = new MeshStandardMaterial({ color: 0x2b2d3a }); //#9d9eae // 1e2029
+    let material = new MeshStandardMaterial({ color: CARD_ZONE_COLOR }); //#9d9eae // 1e2029
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    this.mesh.userData.id = id;
     this.cards = [];
     this.mesh.position.setY(-50);
     this.mesh.receiveShadow = true;
     let edges = new EdgesGeometry(geometry);
-    let lineSegments = new LineSegments(edges, new LineBasicMaterial({ color: 0xffffff }));
+    let lineSegments = new LineSegments(
+      edges,
+      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR })
+    );
     lineSegments.userData.isOrnament = true;
     lineSegments.position.setZ(0.125);
     this.mesh.add(lineSegments);
