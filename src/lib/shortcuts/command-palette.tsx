@@ -27,7 +27,10 @@ export default function CommandPalette(props: { playArea: PlayArea }) {
 
   onMount(() => {
     function listener(event) {
-      if ((event.metaKey || event.ctrlKey) && event.code === 'Space') {
+      let mod = event.metaKey || event.ctrlKey;
+      let space = event.code === 'Space';
+      let k = event.key === 'k';
+      if (mod && (space || k)) {
         event.preventDefault();
         setIsOpen(open => !open);
         if (isOpen() && inputRef) {
