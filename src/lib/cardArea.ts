@@ -39,6 +39,7 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    this.mesh.userData.id = id;
     this.cards = [];
     this.mesh.position.setY(-50);
     this.mesh.receiveShadow = true;

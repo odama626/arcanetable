@@ -164,7 +164,7 @@ export function init({ gameId }) {
   focusRayCaster = new Raycaster();
 
   const tableGeometry = new BoxGeometry(200, 200, 5);
-  const tableMaterial = new MeshStandardMaterial({ color: 0xc158f3 });
+  const tableMaterial = new MeshStandardMaterial({ color: 0x2c1b4e });
   table = new Mesh(tableGeometry, tableMaterial);
   table.receiveShadow = true;
   table.userData.zone = 'battlefield';

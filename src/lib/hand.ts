@@ -24,6 +24,7 @@ export class Hand implements CardZone {
     this.mesh.userData.zone = 'hand';
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.set(0, -120, 40);
+    this.mesh.userData.id = id;
     this.mesh.userData.restingPosition = this.mesh.position.clone();
     this.zone = 'hand';
 
@@ -176,9 +177,9 @@ export class Hand implements CardZone {
   destroy() {
     this.cards.forEach(card => {
       card.mesh.removeEventListener('mousein', this.cardMouseIn);
-      card.mesh.removeEventListener('mouseout',this.cardMouseOut);
+      card.mesh.removeEventListener('mouseout', this.cardMouseOut);
       cardsById.delete(card.id);
-    })
+    });
     zonesById.delete(this.id);
     this.destroyReactivity();
     this.cards = [];

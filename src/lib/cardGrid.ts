@@ -37,6 +37,7 @@ export class CardGrid implements CardZone {
     zonesById.set(this.id, this);
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = zone;
+    this.mesh.userData.id = id;
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.copy(POSITION);
     this.scrollContainer = new Group();

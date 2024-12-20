@@ -167,7 +167,7 @@ export class Selection {
 
   clearSelection() {
     this.clearSelectionHighlight();
-    this.addSelectedItems([]);
+    this._setSelectedItems([]);
     this.selectionSet.clear();
   }
 

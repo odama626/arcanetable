@@ -4,9 +4,9 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { cancelAnimation, renderAnimations } from './lib/animations';
+import { animateObject, cancelAnimation, renderAnimations } from './lib/animations';
 import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
-import { CARD_THICKNESS } from './lib/constants';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './lib/constants';
 import {
   animating,
   camera,
@@ -160,10 +160,6 @@ function onDocumentMouseDown(event) {}
 let isDragging = false;
 
 function onDocumentClick(event: PointerEvent) {
-  if (selection.justSelected) {
-    selection.justSelected = false;
-    return;
-  }
   raycaster.setFromCamera(mouse, camera);
   let intersects = raycaster.intersectObject(scene);
 
@@ -264,19 +260,32 @@ function onDocumentDragStart(event: PointerEvent) {
     targets = selection.selectedItems.slice();
   }
 
+  let origin = new THREE.Vector3(0, 0, 0);
   targets.forEach(target => {
-    setCardData(target, 'isDragging', true);
-
-    let dragOffset = [0, 0, 0];
-    if (target.userData.location !== 'hand') {
-      dragOffset = target
-        .worldToLocal(intersection.point.clone())
-        .multiply(new THREE.Vector3(-1, -1, 1))
-        .toArray();
-    }
-
-    setCardData(target, 'dragOffset', dragOffset);
+    target.userData.mouseDistance = target
+      .worldToLocal(intersection.point.clone())
+      .distanceTo(origin);
   });
+
+  targets
+    .sort((a, b) => {
+      return b.userData.mouseDistance - a.userData.mouseDistance;
+    })
+    .forEach((target, i) => {
+      setCardData(target, 'isDragging', true);
+
+      let dragOffset = [0, 0, 0];
+      if (target.userData.location !== 'hand') {
+        dragOffset = targets
+          .at(-1)
+          .worldToLocal(intersection.point.clone())
+          .multiplyScalar(-1)
+          .add(new THREE.Vector3(0, CARD_STACK_OFFSET * (targets.length - i), i * CARD_THICKNESS))
+          .toArray();
+      }
+
+      setCardData(target, 'dragOffset', dragOffset);
+    });
 
   dragTargets = targets;
 }
@@ -287,10 +296,10 @@ async function onDocumentDrop(event) {
   if (!dragTargets?.length) return;
   raycaster.setFromCamera(mouse, camera);
 
-  let intersects = raycaster.intersectObject(scene);
+  let intersections = raycaster.intersectObject(scene);
 
   let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
-  let intersection = intersects.find(
+  let intersection = intersections.find(
     i =>
       !targetsById[i.object.userData.id] &&
       (i.object.userData.isInteractive || i.object.userData.zone)
@@ -337,7 +346,10 @@ async function onDocumentDrop(event) {
     });
     shouldClearSelection = true;
   }
-  if (shouldClearSelection) selection.clearSelection();
+
+  if (shouldClearSelection) {
+    selection.clearSelection();
+  }
 
   if (dragTargets.length) {
     setHoverSignal(signal => {
@@ -384,12 +396,17 @@ function onDocumentMouseMove(event) {
     isDragging = true;
     raycaster.setFromCamera(mouse, camera);
 
-    let intersects = raycaster.intersectObject(scene);
+    let intersections = raycaster.intersectObject(scene);
 
-    if (!intersects.length) return;
+    if (!intersections.length) return;
 
+    let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+    let intersection = intersections.find(
+      i =>
+        !targetsById[i.object.userData.id] &&
+        (i.object.userData.isInteractive || i.object.userData.zone)
+    )!;
     for (const target of dragTargets) {
-      let intersection = intersects.find(intersect => intersect.object.uuid !== target.uuid);
       if (!intersection) continue;
       let pointTarget = intersection.point.clone();
       let zone = zonesById.get(target.userData.zoneId)!;

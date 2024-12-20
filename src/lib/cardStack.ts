@@ -48,6 +48,7 @@ export class CardStack implements CardZone {
     this.mesh.add(lineSegments);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
+    this.mesh.userData.id = id;
     createRoot(destroy => {
       this.destroyReactivity = destroy;
 
