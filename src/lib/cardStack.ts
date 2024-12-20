@@ -14,7 +14,14 @@ import {
 } from 'three';
 import { animateObject } from './animations';
 import { cleanupCard, getSerializableCard, setCardData } from './card';
-import { Card, CARD_HEIGHT, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
+import {
+  Card,
+  CARD_HEIGHT,
+  CARD_THICKNESS,
+  CARD_WIDTH,
+  CardZone,
+  ZONE_OUTLINE_COLOR,
+} from './constants';
 import { cardsById, setHoverSignal, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation } from './utils';
 
@@ -29,7 +36,10 @@ export class CardStack implements CardZone {
     let geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
     let material = new MeshStandardMaterial({ color: 0x000000 });
     let edges = new EdgesGeometry(geometry);
-    let lineSegments = new LineSegments(edges, new LineBasicMaterial({ color: 0xffffff }));
+    let lineSegments = new LineSegments(
+      edges,
+      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR })
+    );
     lineSegments.scale.set(1.1, 1.1, 1);
     lineSegments.userData.isOrnament = true;
     material.opacity = 0;

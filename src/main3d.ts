@@ -5,7 +5,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { cancelAnimation, renderAnimations } from './lib/animations';
-import { cloneCard, getCardMeshTetherPoint, setCardData } from './lib/card';
+import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
 import { CARD_THICKNESS } from './lib/constants';
 import {
   animating,
@@ -448,7 +448,7 @@ export function animate() {
   time += delta;
 
   if (ticks >= interval) {
-    render3d();
+    render3d(delta);
     ticks = ticks % interval;
   }
 }
@@ -509,8 +509,9 @@ function focusOn(target: THREE.Object3D) {
   focusCamera.userData.target = target.uuid;
 }
 
-function render3d() {
+function render3d(delta: number) {
   renderAnimations(time);
+  updateTextureAnimation(delta);
 
   raycaster.setFromCamera(mouse, camera);
 

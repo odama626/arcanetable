@@ -14,13 +14,7 @@ import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
-import {
-  cardsById,
-  doXTimes,
-  focusCamera,
-  provider,
-  zonesById
-} from './globals';
+import { cardsById, doXTimes, focusCamera, provider, zonesById } from './globals';
 import { Hand } from './hand';
 import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
@@ -469,7 +463,7 @@ export class PlayArea {
           new Promise<void>(resolve =>
             setTimeout(() => {
               loadCardTextures(card, cache).then(resolve);
-            }, i * 10)
+            }, i * 20)
           )
       )
     );

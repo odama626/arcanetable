@@ -4,7 +4,6 @@ import { splitProps } from 'solid-js';
 import {
   BoxGeometry,
   Color,
-  ImageBitmapLoader,
   LinearFilter,
   Mesh,
   MeshStandardMaterial,
@@ -15,25 +14,50 @@ import {
   Vector3,
 } from 'three';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
-import { cardsById, getProjectionVec, scene, textureLoader, textureLoaderWorker } from './globals';
+import {
+  cardBackTexture,
+  cardLoadingTexture,
+  cardsById,
+  getProjectionVec,
+  scene,
+  textureLoader,
+  textureLoaderWorker,
+} from './globals';
 import { counters } from './ui/counterDialog';
 import { cleanupFromNode } from './utils';
 
-let cardBackTexture: Texture;
 let alphaMap: Texture;
 const blackMat = new MeshStandardMaterial({ color: 0x000000 });
 
-const bitmapLoader = new ImageBitmapLoader();
-bitmapLoader.setOptions({ imageOrientation: 'flipY' });
+let currentSlide = 0;
+let totalSlides = 6;
+let xSlides = 3;
+let ySlides = 2;
+let ticks = 0;
+let interval = 1 / 7;
+
+export function updateTextureAnimation(delta: number) {
+  ticks += delta;
+  if (ticks < interval) return;
+  ticks %= interval;
+  if (!cardLoadingTexture) return;
+  let x = (currentSlide % xSlides) / xSlides;
+  let y = ((currentSlide / xSlides) | 0) / ySlides;
+  cardLoadingTexture.offset.y = y;
+  cardLoadingTexture.offset.x = x;
+  currentSlide++;
+  currentSlide = currentSlide % totalSlides;
+}
 
 export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>) {
   const geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
-  cardBackTexture = cardBackTexture || textureLoader.load('/arcane-table-back.webp');
-  cardBackTexture.colorSpace = SRGBColorSpace;
   let cardBackMat = new MeshStandardMaterial({ map: cardBackTexture });
-  let { mesh: _, modifiers, ...shared } = card;
-
   cardBackMat.transparent = true;
+
+  let loadingMat = new MeshStandardMaterial({ map: cardLoadingTexture, alphaMap });
+  loadingMat.transparent = true;
+
+  let { mesh: _, modifiers, ...shared } = card;
 
   alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
 
@@ -42,7 +66,7 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
     blackMat.clone(),
     blackMat.clone(),
     blackMat.clone(),
-    blackMat.clone(),
+    loadingMat.clone(),
     cardBackMat.clone(),
   ]);
   setCardData(mesh, 'isInteractive', true);
