@@ -1,5 +1,5 @@
 import hotkeys from 'hotkeys-js';
-import { onMount } from 'solid-js';
+import { createEffect, onMount } from 'solid-js';
 import { selection, cardsById, zonesById, playAreas, provider, hoverSignal } from '../globals';
 import { transferCard } from '../transferCard';
 import { drawCards, searchDeck } from './commands/deck';
@@ -15,6 +15,11 @@ export function HotKeys() {
 
     return [cardsById.get(cardMesh().userData.id)];
   };
+  createEffect(() => {
+    if (selection.selectedItems.length) {
+      hotkeys.setScope(selection.selectedItems[0].userData.location);
+    }
+  });
 
   onMount(() => {
     hotkeys('shift+u', function () {
@@ -91,6 +96,7 @@ export function HotKeys() {
     });
 
     hotkeys('f', 'battlefield', function (e) {
+      console.log('f');
       e.preventDefault();
       cards().forEach(card => playArea.flip(card.mesh));
     });
