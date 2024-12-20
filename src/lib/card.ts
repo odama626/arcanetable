@@ -67,7 +67,7 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
 
 export async function loadCardTextures(
   card: Card,
-  cache: Map<string, Promise<MeshStandardMaterial>>
+  cache: Map<string, Promise<MeshStandardMaterial>> = new Map()
 ) {
   const [front, back] = card.mesh.userData.card_face_urls;
 
@@ -168,6 +168,7 @@ export function cloneCard(card: Card, newId: string): Card {
   updateModifiers(newCard);
   newCard.detail.search = card.detail.search ?? getSearchLine(newCard.detail);
   cardsById.set(newCard.id, newCard);
+  loadCardTextures(newCard);
   return newCard;
 }
 

@@ -11,6 +11,7 @@ interface Props {
   fromZone: CardZone;
   playArea: PlayArea;
   text: string;
+  onComplete?(): void;
 }
 
 const MoveMenu: Component<Props> = props => {
@@ -19,6 +20,7 @@ const MoveMenu: Component<Props> = props => {
     doXTimes(cards.length, () => {
       transferCard(cards.shift()!, props.fromZone, zone, { addOptions });
     });
+    props.onComplete?.();
   }
 
   function moveToFaceDown<T extends {}>(zone: CardZone<T>, addOptions?: T) {
@@ -27,6 +29,7 @@ const MoveMenu: Component<Props> = props => {
       let card = cards.shift()!;
       transferCard(card, props.fromZone, zone, { addOptions, userData: { isFlipped: true } });
     });
+    props.onComplete?.();
   }
 
   return (

@@ -11,6 +11,7 @@ import {
   selectedDeckIndex,
   setSelectedDeckIndex,
 } from '~/lib/globals';
+import { HotKeys } from '~/lib/shortcuts/hotkeys';
 import DeckPicker from '~/lib/ui/deckPicker';
 import Overlay from '~/lib/ui/overlay';
 import { loadDeckAndJoin, localInit } from '~/main3d';
@@ -34,6 +35,7 @@ const GamePage: Component = props => {
     <>
       <Show when={isInitialized()}>
         <Overlay />
+        <HotKeys />
       </Show>
       <Show when={selectedDeckIndex() === undefined && !isSpectating()}>
         <DeckPicker

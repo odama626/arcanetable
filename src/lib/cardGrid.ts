@@ -289,12 +289,10 @@ export class CardGrid implements CardZone {
     if (this.cards.length < 1) {
       setHoverSignal();
     }
-    console.log(peekFilterText());
     if (this.filteredCards) {
       this.filteredCards = this.filteredCards.filter(card => card.id !== cardMesh.userData.id);
     }
     if (!this.filteredCards?.length) {
-      console.log(this.filteredCards);
       setPeekFilterText('');
       this.filterCards();
     }

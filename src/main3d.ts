@@ -21,13 +21,12 @@ import {
   init,
   initClock,
   isSpectating,
-  selection,
   playAreas,
-  players,
   provider,
   renderer,
   scene,
   scrollTarget,
+  selection,
   sendEvent,
   setAnimating,
   setDeckIndex,
@@ -165,11 +164,6 @@ function onDocumentClick(event: PointerEvent) {
     selection.justSelected = false;
     return;
   }
-  // let modifierKey = event.shiftKey || event.metaKey || event.ctrlKey;
-
-  // if (!selection.justSelected && !selection.enabled && !isDragging) {
-  //   selection.clearSelection();
-  // }
   raycaster.setFromCamera(mouse, camera);
   let intersects = raycaster.intersectObject(scene);
 
@@ -302,6 +296,8 @@ async function onDocumentDrop(event) {
       (i.object.userData.isInteractive || i.object.userData.zone)
   )!;
 
+  let shouldClearSelection = false;
+
   for await (const target of dragTargets ?? []) {
     setCardData(target, 'isDragging', false);
 
@@ -339,7 +335,9 @@ async function onDocumentDrop(event) {
         positionArray: position.toArray(),
       },
     });
+    shouldClearSelection = true;
   }
+  if (shouldClearSelection) selection.clearSelection();
 
   if (dragTargets.length) {
     setHoverSignal(signal => {
@@ -530,11 +528,15 @@ function render3d() {
     hightlightHover(intersects);
   }
 
-  if (hoverSignal()?.mesh && hoverSignal()?.mesh.userData.location !== 'deck') {
-    setHoverSignal(signal => ({
-      ...signal,
-      tether: getCardMeshTetherPoint(signal.mesh),
-    }));
+  let signal = hoverSignal();
+  if (signal?.mesh && signal?.mesh.userData.location !== 'deck') {
+    const tetherPoint = getCardMeshTetherPoint(signal.mesh);
+    if (!tetherPoint.equals(signal.tether)) {
+      setHoverSignal(signal => ({
+        ...signal,
+        tether: getCardMeshTetherPoint(signal.mesh),
+      }));
+    }
   }
 
   camera.lookAt(scene.position);
