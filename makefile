@@ -12,5 +12,5 @@ push: build
 	make -C websocket-server push
 
 deploy:	build push
-	kubectl apply -f deployment.yml
+	kubectl apply -f secrets.yml -f deployment.yml
 	kubectl rollout restart -f deployment.yml

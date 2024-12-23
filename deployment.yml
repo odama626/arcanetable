@@ -24,7 +24,12 @@ spec:
             - containerPort: 80
           env:
             - name: API_URL
-              value: "signaling"
+              value: "signaling"            
+            - name: VITE_GOOGLE_TAG_MANAGER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-tag-manager-secret # The name of the secret
+                  key: VITE_GOOGLE_TAG_MANAGER_ID # The key in the secret containing the value
 
       restartPolicy: Always
 ---
