@@ -88,7 +88,7 @@ Contributors should ensure that all additions comply with AGPL requirements.
 
 For questions, suggestions, or just to say hi:
 
-- ![bluesky logo](./public/Bluesky_Logox32.png) [@odama626.bsky.social](https://bsky.app/profile/sparkstone.bsky.social)
+- ![bluesky logo](./public/Bluesky_Logox32.png) [@sparkstone.bsky.social](https://bsky.app/profile/sparkstone.bsky.social)
 - Discord: Join our [Community Server](https://discord.gg/TJGJTGff)
 
 ---
