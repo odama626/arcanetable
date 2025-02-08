@@ -52,7 +52,14 @@ kind: Ingress
 metadata:
   name: caddy
   namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - arcanetable.app
+      secretName: arcanetable-cert
   rules:
     - host: "arcanetable.app"
       http:
@@ -172,7 +179,14 @@ kind: Ingress
 metadata:
   name: ws # Name of the ingress object
   namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - ws.arcanetable.app
+      secretName: ws-arcanetable-cert
   rules:
   - host: "ws.arcanetable.app"  # Your hostname
     http:
