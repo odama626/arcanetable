@@ -1,8 +1,8 @@
-import { Dialog } from '@kobalte/core/dialog';
 import hotkeys from 'hotkeys-js';
 import {
   createEffect,
   createMemo,
+  createSelector,
   createSignal,
   For,
   Match,
@@ -13,6 +13,7 @@ import {
 } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -46,10 +47,13 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
+import HotkeysTable from '../shortcuts/hotkeys-table';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
   let [isLogVisible, setIsLogVisible] = createSignal(false);
+  const [visibleDialog, setVisibleDialog] = createSignal();
+  const isVisibleDialog = createSelector(visibleDialog);
   const isPublic = () => userData()?.isPublic;
   const isOwner = () => userData()?.clientId === provider?.awareness?.clientID;
   const location = () => userData()?.location;
@@ -98,7 +102,7 @@ const Overlay: Component = () => {
           </Show>
           <For
             each={players().filter(
-              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating
+              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating,
             )}>
             {player => <NetworkPlayer {...player?.entry} />}
           </For>
@@ -188,9 +192,11 @@ const Overlay: Component = () => {
                 playArea={playArea}
                 fromZone={playArea.hand}
               />
-              <Dialog>
+              <Dialog
+                open={isVisibleDialog('concede')}
+                onOpenChange={isOpen => setVisibleDialog(isOpen ? 'concede' : undefined)}>
                 <DialogTrigger>
-                  <MenubarItem>Concede</MenubarItem>
+                  <MenubarItem class='width-full'>Concede</MenubarItem>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>Are you sure you want to concede?</DialogHeader>
@@ -198,7 +204,9 @@ const Overlay: Component = () => {
                     Conceding will allow you to spectate until the session ends
                   </DialogDescription>
                   <DialogFooter>
-                    <Button variant='ghost'>Cancel</Button>
+                    <Button onClick={() => setVisibleDialog()} variant='ghost'>
+                      Cancel
+                    </Button>
                     <Button onClick={() => onConcede()}>Concede</Button>
                   </DialogFooter>
                 </DialogContent>
@@ -207,6 +215,22 @@ const Overlay: Component = () => {
             <MenubarItem class='width-full' onClick={() => setIsLogVisible(visible => !visible)}>
               {isLogVisible() ? 'Hide Log' : 'Show Log'}
             </MenubarItem>
+            <Dialog
+              open={isVisibleDialog('shortcuts')}
+              onOpenChange={isOpen => setVisibleDialog(isOpen ? 'shortcuts' : undefined)}>
+              <DialogTrigger>
+                <MenubarItem class='width-full'>Shortcuts</MenubarItem>
+              </DialogTrigger>
+              <DialogContent class='max-w-xl'>
+                <DialogHeader>Shortcuts</DialogHeader>
+                <DialogDescription>
+                  <HotkeysTable />
+                </DialogDescription>
+                <DialogFooter>
+                  <Button onClick={() => setVisibleDialog()}>Close</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </MenubarMenu>
         </Menubar>
         <Show when={isLogVisible()}>
