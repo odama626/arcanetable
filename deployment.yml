@@ -118,6 +118,11 @@ metadata:
   name: signaling # Name of the ingress object
   namespace: arcanetable
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - signaling.arcanetable.app
+      secretName: signaling-arcanetable-cert
   rules:
   - host: "signaling.arcanetable.app"  # Your hostname
     http:
