@@ -82,7 +82,8 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
 
   if (mesh.userData.isDoubleSided) {
     mesh.userData.card_face_urls.push(card.detail.card_faces[1].image_uris.large);
-    setCardData(mesh, 'publicCardBack', cardBackMat);
+    setCardData(mesh, 'publicCardBack', cardBackMat.clone());
+    setCardData(mesh, 'cardBack', cardBackMat.clone());
   }
   mesh.receiveShadow = true;
   mesh.castShadow = true;
@@ -125,7 +126,7 @@ export async function loadCardTextures(
     if (!cache.has(back)) {
       cache.set(
         back,
-        textureLoaderWorker.loadTexture(front).then(image => {
+        textureLoaderWorker.loadTexture(back).then(image => {
           const map = new Texture(image);
           map.colorSpace = SRGBColorSpace;
           map.needsUpdate = true;
@@ -147,6 +148,10 @@ export async function loadCardTextures(
 
     backPromise.then(mat => {
       card.mesh.userData.cardBack = mat.clone();
+      if (card.mesh.userData.isPublic) {
+        card.mesh.material[5] = card.mesh.userData.cardBack;
+        card.mesh.material[5].needsUpdate = true;
+      }
     });
     await backPromise;
   }
@@ -208,7 +213,7 @@ export function getCardImage(card: Card) {
   return image_uris?.large;
 }
 
-export function initializeCardMesh(card, clientId) {
+export function initializeCardMesh(card: Card, clientId: string): Card {
   const mesh = createCardGeometry(card);
   setCardData(mesh, 'clientId', clientId);
 
@@ -274,8 +279,12 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
   // before setting value
   if (field === 'isPublic') {
     if (cardMesh.userData.isDoubleSided) {
-      cardMesh.material[cardMesh.material.length - 1] =
-        cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
+      let material = cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
+
+      cardMesh.material[cardMesh.material.length - 1] = material;
+    }
+    if (!value) {
+      setCardData(cardMesh, 'isFlipped', false);
     }
   }
   if (

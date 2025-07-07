@@ -114,6 +114,7 @@ export class PlayArea {
     if (state?.battlefield?.cards) {
       state.battlefield.cards.forEach(mesh => {
         let card = initializeCardMesh(mesh.userData.card, clientId);
+        setCardData(card.mesh, 'isPublic', true);
         this.battlefieldZone.addCard(card, {
           skipAnimation: true,
           positionArray: mesh.position,
@@ -442,6 +443,7 @@ export class PlayArea {
       cardsInPlay.forEach((card, i) => {
         card.id = card.id || nanoid();
         let initializedCard = initializeCardMesh(card, clientId);
+        setCardData(initializedCard.mesh, 'isPublic', true);
         playArea.battlefieldZone.addCard(initializedCard, {
           skipAnimation: true,
           positionArray: [100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125],
