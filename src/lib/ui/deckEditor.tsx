@@ -49,6 +49,8 @@ interface Props {
   deck?: Deck;
 }
 
+let cache = new Map();
+
 export const DeckEditor: Component<Props> = props => {
   const [cardListText, setCardListText] = createSignal(props?.deck.cardList ?? '');
   const [name, setName] = createSignal(props.deck?.name ?? '');
@@ -57,7 +59,6 @@ export const DeckEditor: Component<Props> = props => {
   const [isCardsInPlayDirty, setIsCardsInPlayDirty] = createSignal(false);
   const [tags, setTags] = createSignal(props?.deck?.tags ?? []);
   let isEditing = () => !!props?.deck?.id;
-  let cache = new Map();
 
   function onSaveDeck(e) {
     e.preventDefault();
@@ -102,13 +103,14 @@ export const DeckEditor: Component<Props> = props => {
         }
         setName(props.deck.name);
         updateCardList(props.deck.cardList);
-      }
-    )
+      },
+    ),
   );
 
   async function updateCardList(cardListText: string) {
     setCardListText(cardListText);
     let newCardEntries = loadCardList(cardListText);
+    console.log({ newCardEntries });
     let newCardList = await Promise.all(newCardEntries.map(entry => fetchCardInfo(entry, cache)));
     setCardList(newCardList);
 
@@ -120,8 +122,8 @@ export const DeckEditor: Component<Props> = props => {
     if (!isCardsInPlayDirty() && !cardsInPlay().length) {
       setCardsInPlay(
         newCardList.filter(
-          card => card.categories?.filter(cat => cat.startsWith('Commander')).length
-        )
+          card => card.categories?.filter(cat => cat.startsWith('Commander')).length,
+        ),
       );
     }
   }
@@ -286,7 +288,7 @@ export const DeckEditor: Component<Props> = props => {
                                 <Button
                                   size='xs'
                                   variant='secondary'
-                                  style={`background-color: ${colorHashDark.hex(option.name)}`}
+                                  style={`background-color: ${colorHashDark.hex(option.name)}; color: white;`}
                                   onClick={() => state.remove(option)}>
                                   {option.name}
                                 </Button>
@@ -331,7 +333,22 @@ export const DeckEditor: Component<Props> = props => {
             <div style='position: relative'>
               <div class={styles.cardList}>
                 <For each={cardList()}>
-                  {card => <img crossOrigin='' src={getCardImage(card)} />}
+                  {card => (
+                    <div style='position: relative;'>
+                      <img crossOrigin='' src={getCardImage(card)} />
+                      <div
+                        class='text-xl font-bold rounded-md px-4 py-1'
+                        style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          'background-color': 'black',
+                          color: 'white',
+                        }}>
+                        {card.qty ?? 1}
+                      </div>
+                    </div>
+                  )}
                 </For>
               </div>
             </div>

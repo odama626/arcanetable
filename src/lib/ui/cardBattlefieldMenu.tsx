@@ -1,5 +1,5 @@
 import { Component, createSignal, For, Show } from 'solid-js';
-import { Mesh } from 'three';
+import { Mesh, Raycaster, Vector3 } from 'three';
 import { Button } from '~/components/ui/button';
 import {
   Menubar,
@@ -20,10 +20,11 @@ import {
   NumberFieldInput,
 } from '~/components/ui/number-field';
 import NumberFieldMenuItem from '~/components/ui/number-field-menu-item';
-import { cardsById, doXTimes, selection } from '../globals';
+import { cardsById, doXTimes, scene, selection } from '../globals';
 import { PlayArea } from '../playArea';
 import { counters, setIsCounterDialogOpen } from './counterDialog';
 import MoveMenu from './moveMenu';
+import { restackItems, shuffleItems } from '../utils';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
   let card = () => cardsById.get(props.cardMesh?.userData.id)!;
@@ -50,6 +51,34 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
                 });
               }}>
               Flip<MenubarShortcut>F</MenubarShortcut>
+            </MenubarItem>
+
+            <MenubarItem
+              onClick={() => {
+                if (!selection.selectedItems?.length) return;
+                selection._setSelectedItems(items => {
+                  let newItems = [...items];
+                  let itemPositions = items.map(item => item.position.toArray());
+                  console.log(newItems);
+                  const newOrder = shuffleItems(newItems);
+                  console.log(newOrder);
+                  newItems.forEach((item, i) => {
+                    item.position.fromArray(itemPositions[i]);
+                  });
+                  return newItems;
+                });
+                meshes().forEach(mesh => {
+                  props.playArea.flip(mesh);
+                });
+                // const raycaster = new Raycaster();
+                // let direction = selection.selectedItems[0].parent
+                //   ?.getWorldDirection(new Vector3(0, -1, 0))
+                //   .multiplyScalar(-1);
+                // raycaster.set(selection.selectedItems[0].position, direction);
+                // const intersections = raycaster.intersectObject(scene);
+                // console.log(intersections);
+              }}>
+              Shuffle<MenubarShortcut>S</MenubarShortcut>
             </MenubarItem>
             <MenubarSub overlap>
               <MenubarSubTrigger>Counters</MenubarSubTrigger>

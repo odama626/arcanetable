@@ -42,7 +42,7 @@ import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
-import { getGlobalRotation } from './lib/utils';
+import { getGlobalRotation, restackItems } from './lib/utils';
 import { processEvents } from './remoteEvents';
 
 var container;
@@ -398,35 +398,37 @@ function onDocumentMouseMove(event) {
 
     let intersections = raycaster.intersectObject(scene);
 
-    if (!intersections.length) return;
+    restackItems(dragTargets, intersections);
 
-    let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
-    let intersection = intersections.find(
-      i =>
-        !targetsById[i.object.userData.id] &&
-        (i.object.userData.isInteractive || i.object.userData.zone)
-    )!;
-    for (const target of dragTargets) {
-      if (!intersection) continue;
-      let pointTarget = intersection.point.clone();
-      let zone = zonesById.get(target.userData.zoneId)!;
-      if (['hand', 'peek', 'tokenSearch'].includes(target.userData.location)) {
-        let globalRotation = getGlobalRotation(target.parent);
-        globalRotation.x += Math.PI / 2;
-        let quarternion = new THREE.Quaternion().setFromEuler(globalRotation).invert();
-        target.rotation.setFromQuaternion(quarternion);
-      }
-      target.parent.worldToLocal(pointTarget);
+    // if (!intersections.length) return;
 
-      let rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(target.rotation);
-      pointTarget.add(
-        new THREE.Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
-      );
+    // let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+    // let intersection = intersections.find(
+    //   i =>
+    //     !targetsById[i.object.userData.id] &&
+    //     (i.object.userData.isInteractive || i.object.userData.zone)
+    // )!;
+    // for (const target of dragTargets) {
+    //   if (!intersection) continue;
+    //   let pointTarget = intersection.point.clone();
+    //   let zone = zonesById.get(target.userData.zoneId)!;
+    //   if (['hand', 'peek', 'tokenSearch'].includes(target.userData.location)) {
+    //     let globalRotation = getGlobalRotation(target.parent);
+    //     globalRotation.x += Math.PI / 2;
+    //     let quarternion = new THREE.Quaternion().setFromEuler(globalRotation).invert();
+    //     target.rotation.setFromQuaternion(quarternion);
+    //   }
+    //   target.parent.worldToLocal(pointTarget);
 
-      pointTarget.add(new THREE.Vector3(0, 0, CARD_THICKNESS / 2));
+    //   let rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(target.rotation);
+    //   pointTarget.add(
+    //     new THREE.Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
+    //   );
 
-      target.position.copy(pointTarget);
-    }
+    //   pointTarget.add(new THREE.Vector3(0, 0, CARD_THICKNESS / 2));
+
+    //   target.position.copy(pointTarget);
+    // }
 
     if (hoverSignal()) {
       setHoverSignal(signal => {

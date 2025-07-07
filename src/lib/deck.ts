@@ -6,7 +6,7 @@ import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './
 import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
 import { cardsById, setHoverSignal, zonesById } from './globals';
-import { cleanupMesh, getGlobalRotation } from './utils';
+import { cleanupMesh, getGlobalRotation, shuffleItems } from './utils';
 import { createRoot } from 'solid-js';
 
 export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
@@ -165,16 +165,11 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   }
 
   async shuffle(order?: number[]) {
-    let newOrder = [];
     if (this.cards[0].mesh.userData.isPublic) {
       await this.flipTop();
     }
 
-    for (let i = 0; i < this.cards.length - 2; i++) {
-      let j = order?.[i] ?? (Math.random() * i) | 0;
-      [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
-      newOrder[i] = j;
-    }
+    let newOrder = shuffleItems(this.cards, order);
 
     await this.animateReorder().then(async () => {
       if (this.isTopPublic) {

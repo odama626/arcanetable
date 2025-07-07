@@ -3,9 +3,9 @@ import { clsx } from 'clsx';
 import get from 'lodash-es/get';
 import set from 'lodash-es/set';
 import { twMerge } from 'tailwind-merge';
-import { Euler, Mesh, Object3D, Quaternion, Vector3 } from 'three';
-import { CARD_WIDTH } from './constants';
-import { provider } from './globals';
+import { Euler, Intersection, Matrix4, Mesh, Object3D, Quaternion, Vector3 } from 'three';
+import { CARD_THICKNESS, CARD_WIDTH } from './constants';
+import { provider, zonesById } from './globals';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,6 +86,7 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
     rotation,
   };
 }
+
 export async function sha1(input) {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
@@ -93,4 +94,46 @@ export async function sha1(input) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   return hashHex;
+}
+
+export function shuffleItems<T>(items: T[], order?: number[]) {
+  let newOrder = [];
+  for (let i = 0; i < items.length; i++) {
+    let j = order?.[i] ?? (Math.random() * i) | 0;
+    [items[i], items[j]] = [items[j], items[i]];
+    newOrder[i] = j;
+  }
+  return newOrder;
+}
+
+export function restackItems<T>(items: T[], intersections: Intersection[]) {
+  if (!intersections.length) return;
+
+  let targetsById = Object.fromEntries(items.map(target => [target.userData.id, target]));
+  let intersection = intersections.find(
+    i =>
+      !targetsById[i.object.userData.id] &&
+      (i.object.userData.isInteractive || i.object.userData.zone)
+  )!;
+  for (const target of items) {
+    if (!intersection) continue;
+    let pointTarget = intersection.point.clone();
+    let zone = zonesById.get(target.userData.zoneId)!;
+    if (['hand', 'peek', 'tokenSearch'].includes(target.userData.location)) {
+      let globalRotation = getGlobalRotation(target.parent);
+      globalRotation.x += Math.PI / 2;
+      let quarternion = new Quaternion().setFromEuler(globalRotation).invert();
+      target.rotation.setFromQuaternion(quarternion);
+    }
+    target.parent.worldToLocal(pointTarget);
+
+    let rotationMatrix = new Matrix4().makeRotationFromEuler(target.rotation);
+    pointTarget.add(
+      new Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
+    );
+
+    pointTarget.add(new Vector3(0, 0, CARD_THICKNESS / 2));
+
+    target.position.copy(pointTarget);
+  }
 }

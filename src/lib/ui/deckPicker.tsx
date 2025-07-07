@@ -128,7 +128,7 @@ const DeckPicker: Component = props => {
                       </button>
                       <div class='absolute top-2 right-2'>
                         <button type='button' onClick={() => setEditingDeck(deck)}>
-                          <PencilIcon />
+                          <PencilIcon style='color: white;' />
                         </button>
                       </div>
                     </div>

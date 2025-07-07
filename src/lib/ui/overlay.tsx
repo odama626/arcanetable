@@ -1,12 +1,10 @@
 import hotkeys from 'hotkeys-js';
 import {
   createEffect,
-  createMemo,
   createSelector,
   createSignal,
   For,
   Match,
-  onMount,
   Show,
   Switch,
   type Component,
@@ -31,12 +29,10 @@ import {
   players,
   provider,
   selection,
-  zonesById,
 } from '../globals';
 import CommandPalette from '../shortcuts/command-palette';
-import { drawCards, searchDeck } from '../shortcuts/commands/deck';
 import { untapAll } from '../shortcuts/commands/field';
-import { transferCard } from '../transferCard';
+import HotkeysTable from '../shortcuts/hotkeys-table';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
 import DeckMenu from './deckMenu';
@@ -47,7 +43,6 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
-import HotkeysTable from '../shortcuts/hotkeys-table';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -102,7 +97,7 @@ const Overlay: Component = () => {
           </Show>
           <For
             each={players().filter(
-              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating,
+              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating
             )}>
             {player => <NetworkPlayer {...player?.entry} />}
           </For>
