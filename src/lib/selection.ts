@@ -77,8 +77,8 @@ export class Selection {
       new Vector3(
         (event.clientX / window.innerWidth) * 2 - 1,
         -(event.clientY / window.innerHeight) * 2 + 1,
-        0.5
-      )
+        0.5,
+      ),
     );
   }
 
@@ -95,8 +95,8 @@ export class Selection {
         new Vector3(
           (event.clientX / window.innerWidth) * 2 - 1,
           -(event.clientY / window.innerHeight) * 2 + 1,
-          0.5
-        )
+          0.5,
+        ),
       );
 
       const allSelected = new Set(this.selectionBox.select().filter(isSelectable));
@@ -122,8 +122,8 @@ export class Selection {
         new Vector3(
           (event.clientX / window.innerWidth) * 2 - 1,
           -(event.clientY / window.innerHeight) * 2 + 1,
-          0.5
-        )
+          0.5,
+        ),
       );
       for (let i = 0; i < this.selectionBox.collection.length; i++) {
         if (!this.selectionSet.has(this.selectionBox.collection[i])) {

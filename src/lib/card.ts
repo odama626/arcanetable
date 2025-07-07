@@ -75,7 +75,7 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
   setCardData(
     mesh,
     'isDoubleSided',
-    card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris
+    card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris,
   );
 
   mesh.userData.card_face_urls = [getCardImage(card)];
@@ -92,7 +92,7 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
 
 export async function loadCardTextures(
   card: Card,
-  cache: Map<string, Promise<MeshStandardMaterial>> = new Map()
+  cache: Map<string, Promise<MeshStandardMaterial>> = new Map(),
 ) {
   const [front, back] = card.mesh.userData.card_face_urls;
 
@@ -112,7 +112,7 @@ export async function loadCardTextures(
         mat.transparent = true;
         mat.needsUpdate = true;
         return mat;
-      })
+      }),
     );
   }
 
@@ -140,7 +140,7 @@ export async function loadCardTextures(
           mat.needsUpdate = true;
 
           return mat;
-        })
+        }),
       );
     }
 
@@ -182,7 +182,7 @@ export function cloneCard(card: Card, newId: string): Card {
     const [transferable, _, cloneable] = splitProps(
       card.mesh.userData,
       ['cardBack', 'publicCardBack'],
-      ['resting']
+      ['resting'],
     );
     newCard.mesh.userData = structuredClone(cloneable);
     Object.assign(newCard.mesh.userData, transferable);
@@ -262,7 +262,7 @@ export function getCardMeshTetherPoint(cardMesh: Mesh) {
   }
 
   let vec = new Vector3().fromArray(
-    cardMesh.geometry.attributes.position.array.slice(targetVertex * 3)
+    cardMesh.geometry.attributes.position.array.slice(targetVertex * 3),
   );
   cardMesh.localToWorld(vec);
   const tether = getProjectionVec(vec);
@@ -368,7 +368,7 @@ function updateCounter(
   card: Card,
   counter: { id: string; name: string; color: string },
   value: number | string | boolean,
-  index: number
+  index: number,
 ) {
   if (!card.modifiers[counter.id]) {
     let geometry = new BoxGeometry(1, 1, 1);
@@ -391,7 +391,7 @@ function updateCounter(
     mesh.position.set(
       (CARD_WIDTH / 2 + label.width / 2) * (card.mesh.userData.isFlipped ? -1 : 1),
       CARD_HEIGHT / 2 - index * 3.25 - 2.5,
-      0
+      0,
     );
     mesh.material[4].needsUpdate = true;
     mesh.material[5].needsUpdate = true;
@@ -421,7 +421,7 @@ export function updateModifiers(card: Card) {
       card.mesh.add(mesh);
     }
     let label = createLabel(
-      `${power > 0 ? '+' : ''}${power} / ${toughness > 0 ? '+' : ''}${toughness}`
+      `${power > 0 ? '+' : ''}${power} / ${toughness > 0 ? '+' : ''}${toughness}`,
     );
     mesh.material[4].map = label.texture;
     mesh.material[5].map = label.texture;

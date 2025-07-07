@@ -18,7 +18,10 @@ export class Hand implements CardZone {
   private setObservable: SetStoreFunction<CardZone['observable']>;
   private destroyReactivity(): void;
 
-  constructor(public id = nanoid(), public isLocalHand: boolean) {
+  constructor(
+    public id = nanoid(),
+    public isLocalHand: boolean,
+  ) {
     this.mesh = new Group();
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'hand';
@@ -191,7 +194,7 @@ function animateFocusCard(handMesh: Group, cards: Card[], index: number) {
     to: {
       position: new Vector3().addVectors(
         cards[index].mesh.userData.resting.position,
-        new Vector3(10, 13, 5)
+        new Vector3(10, 13, 5),
       ),
       rotation: cards[index].mesh.userData.resting.rotation,
     },

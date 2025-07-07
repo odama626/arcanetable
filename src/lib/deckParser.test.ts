@@ -44,7 +44,7 @@ test('deck', () => {
 1x Ardenn, Intrepid Archaeologist (cmr) 10 [Ramp]
 1x Athreos, God of Passage (plst) JOU-146 [Recursion]
 1x Avacyn, Angel of Hope (avr) 6 [Protection]
-1x Bojuka Bog (blc) 294 [Land]    `).result
+1x Bojuka Bog (blc) 294 [Land]    `).result,
   ).toMatchInlineSnapshot(`
       [
         {
@@ -138,7 +138,7 @@ test('deck', () => {
 1x Vampiric Link (plc) 92 [Lifegain]
 1x Vow of Duty (c21) 110 [Removal]
 1x Winds of Rath (mkc) 93 [Removal]
-1x Zur the Enchanter (dmr) 206 [Commander{top}] `).result
+1x Zur the Enchanter (dmr) 206 [Commander{top}] `).result,
   ).toMatchInlineSnapshot(`
       [
         {
@@ -191,7 +191,7 @@ test('mtgo format', () => {
     deck.run(`1 Altar of the Pantheon [THB] (F)
 1 Arcane Signet [M3C]
 1 Archangel Avacyn [SOI]
-1 Arlinn Kord [SOI]`)
+1 Arlinn Kord [SOI]`),
   ).toMatchInlineSnapshot(`
     {
       "data": null,
@@ -230,7 +230,7 @@ test('mtgo format', () => {
 test('mtga format', () => {
   expect.soft(
     deck.run(`1 Barkchannel Pathway <prerelease> [KHM] (F)
-1 Beast Whisperer <magic 30> [DMU]`)
+1 Beast Whisperer <magic 30> [DMU]`),
   ).toMatchInlineSnapshot(`
       {
         "data": null,
@@ -284,7 +284,7 @@ test('mtg.wtf', () => {
 1 Byrke, Long Ear of the Law [BLB:380] [foil]
 1 Serra Redeemer [BLB:387]
 1 Colossification [BLB:392]
-`)
+`),
   ).toMatchInlineSnapshot(`
     {
       "data": null,

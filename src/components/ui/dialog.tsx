@@ -24,14 +24,14 @@ type DialogOverlayProps<T extends ValidComponent = 'div'> =
   DialogPrimitive.DialogOverlayProps<T> & { class?: string | undefined };
 
 const DialogOverlay = <T extends ValidComponent = 'div'>(
-  props: PolymorphicProps<T, DialogOverlayProps<T>>
+  props: PolymorphicProps<T, DialogOverlayProps<T>>,
 ) => {
   const [, rest] = splitProps(props as DialogOverlayProps, ['class']);
   return (
     <DialogPrimitive.Overlay
       class={cn(
         'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0',
-        props.class
+        props.class,
       )}
       {...rest}
     />
@@ -50,7 +50,7 @@ const DialogContentExtended = props => {
     <DialogPrimitive.Content
       class={cn(
         'fixed left-1/2 top-1/2 z-50 grid max-h-screen w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto border bg-background p-6 shadow-lg duration-200 data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95 data-[closed]:slide-out-to-left-1/2 data-[closed]:slide-out-to-top-[48%] data-[expanded]:slide-in-from-left-1/2 data-[expanded]:slide-in-from-top-[48%] sm:rounded-lg',
-        props.class
+        props.class,
       )}
       {...rest}>
       {props.children}
@@ -74,7 +74,7 @@ const DialogContentExtended = props => {
 };
 
 const DialogContent = <T extends ValidComponent = 'div'>(
-  props: PolymorphicProps<T, DialogContentProps<T>>
+  props: PolymorphicProps<T, DialogContentProps<T>>,
 ) => {
   return (
     <DialogPortal>
@@ -106,7 +106,7 @@ type DialogTitleProps<T extends ValidComponent = 'h2'> = DialogPrimitive.DialogT
 };
 
 const DialogTitle = <T extends ValidComponent = 'h2'>(
-  props: PolymorphicProps<T, DialogTitleProps<T>>
+  props: PolymorphicProps<T, DialogTitleProps<T>>,
 ) => {
   const [, rest] = splitProps(props as DialogTitleProps, ['class']);
   return (
@@ -123,7 +123,7 @@ type DialogDescriptionProps<T extends ValidComponent = 'p'> =
   };
 
 const DialogDescription = <T extends ValidComponent = 'p'>(
-  props: PolymorphicProps<T, DialogDescriptionProps<T>>
+  props: PolymorphicProps<T, DialogDescriptionProps<T>>,
 ) => {
   const [, rest] = splitProps(props as DialogDescriptionProps, ['class']);
   return (

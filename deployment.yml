@@ -24,7 +24,7 @@ spec:
             - containerPort: 80
           env:
             - name: API_URL
-              value: "signaling"            
+              value: 'signaling'
             - name: VITE_GOOGLE_TAG_MANAGER_ID
               valueFrom:
                 secretKeyRef:
@@ -53,24 +53,24 @@ metadata:
   name: caddy
   namespace: arcanetable
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - arcanetable.app
+        - arcanetable.app
       secretName: arcanetable-cert
   rules:
-    - host: "arcanetable.app"
+    - host: 'arcanetable.app'
       http:
         paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: caddy
-              port:
-                number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: caddy
+                port:
+                  number: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -121,20 +121,20 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - signaling.arcanetable.app
+        - signaling.arcanetable.app
       secretName: signaling-arcanetable-cert
   rules:
-  - host: "signaling.arcanetable.app"  # Your hostname
-    http:
-      paths:
-      # Path-based routing settings:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: signaling  # The name of the service
-            port:
-              number: 80 # Service Portnumber
+    - host: 'signaling.arcanetable.app' # Your hostname
+      http:
+        paths:
+          # Path-based routing settings:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: signaling # The name of the service
+                port:
+                  number: 80 # Service Portnumber
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -162,7 +162,7 @@ spec:
             - containerPort: 4444
           env:
             - name: PORT
-              value: "4444"
+              value: '4444'
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -185,22 +185,22 @@ metadata:
   name: ws # Name of the ingress object
   namespace: arcanetable
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - ws.arcanetable.app
+        - ws.arcanetable.app
       secretName: ws-arcanetable-cert
   rules:
-  - host: "ws.arcanetable.app"  # Your hostname
-    http:
-      paths:
-      # Path-based routing settings:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ws # The name of the service
-            port:
-              number: 80 # Service Portnumber
+    - host: 'ws.arcanetable.app' # Your hostname
+      http:
+        paths:
+          # Path-based routing settings:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ws # The name of the service
+                port:
+                  number: 80 # Service Portnumber

@@ -79,7 +79,7 @@ export async function localInit(gameOptions: GameOptions) {
   outlinePass = new OutlinePass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     scene,
-    camera
+    camera,
   );
   outlinePass.pulsePeriod = 2;
 
@@ -302,7 +302,7 @@ async function onDocumentDrop(event) {
   let intersection = intersections.find(
     i =>
       !targetsById[i.object.userData.id] &&
-      (i.object.userData.isInteractive || i.object.userData.zone)
+      (i.object.userData.isInteractive || i.object.userData.zone),
   )!;
 
   let shouldClearSelection = false;
@@ -387,7 +387,7 @@ function onWindowResize() {
 function onDocumentMouseMove(event) {
   mouse.set(
     (event.clientX / window.innerWidth) * 2 - 1,
-    -(event.clientY / window.innerHeight) * 2 + 1
+    -(event.clientY / window.innerHeight) * 2 + 1,
   );
 
   selection.onMove(event);
@@ -567,7 +567,7 @@ function render3d(delta: number) {
 
     focusRayCaster.set(
       focusCamera.position,
-      mesh.localToWorld(new THREE.Vector3()).sub(focusCamera.position).normalize()
+      mesh.localToWorld(new THREE.Vector3()).sub(focusCamera.position).normalize(),
     );
     let intersections = focusRayCaster.intersectObject(scene);
     let targetDistance;

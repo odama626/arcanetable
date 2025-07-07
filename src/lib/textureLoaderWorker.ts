@@ -1,9 +1,8 @@
 import * as Comlink from 'comlink';
-import { ImageBitmapLoader} from 'three';
+import { ImageBitmapLoader } from 'three';
 
 const bitmapLoader = new ImageBitmapLoader();
 bitmapLoader.setOptions({ imageOrientation: 'flipY' });
-
 
 function getNearestPowerOfTwo(value: number) {
   return Math.pow(2, Math.round(Math.log2(value)));

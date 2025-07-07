@@ -11,7 +11,10 @@ class SelectionHelper {
   onPointerMove: (event: any) => void;
   onPointerUp: () => void;
 
-  constructor(private renderer: WebGLRenderer, cssClassName: string) {
+  constructor(
+    private renderer: WebGLRenderer,
+    cssClassName: string,
+  ) {
     this.element = document.createElement('div');
     this.element.classList.add(cssClassName);
     this.element.style.pointerEvents = 'none';

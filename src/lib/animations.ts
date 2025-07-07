@@ -93,12 +93,12 @@ function renderAnimation(animation, delta: number): boolean {
 
   if (animation.to?.position) {
     animation.obj.position.copy(
-      animation.from!.position!.clone().lerp(animation.to.position, delta)
+      animation.from!.position!.clone().lerp(animation.to.position, delta),
     );
   }
   if (animation.to?.rotation) {
     animation.obj.rotation.setFromQuaternion(
-      animation.from!.quarternion!.clone().slerp(animation.to.quarternion!.clone(), delta)
+      animation.from!.quarternion!.clone().slerp(animation.to.quarternion!.clone(), delta),
     );
   }
 

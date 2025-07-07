@@ -15,6 +15,6 @@ test('deck sort', async () => {
 
   expect(order).toEqual(secondOrder);
   expect(deck.cards.map(card => card.mesh.position.toArray())).toEqual(
-    remoteDeck.cards.map(card => card.mesh.position.toArray())
+    remoteDeck.cards.map(card => card.mesh.position.toArray()),
   );
 });

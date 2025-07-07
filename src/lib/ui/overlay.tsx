@@ -97,7 +97,7 @@ const Overlay: Component = () => {
           </Show>
           <For
             each={players().filter(
-              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating
+              player => player.id !== provider.awareness.clientID && !player.entry.isSpectating,
             )}>
             {player => <NetworkPlayer {...player?.entry} />}
           </For>

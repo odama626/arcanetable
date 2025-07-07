@@ -32,13 +32,16 @@ export class CardStack implements CardZone {
   private setObservable: SetStoreFunction<CardZone['observable']>;
   private destroyReactivity(): void;
 
-  constructor(public zone: string, public id: string = nanoid()) {
+  constructor(
+    public zone: string,
+    public id: string = nanoid(),
+  ) {
     let geometry = new BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_THICKNESS);
     let material = new MeshStandardMaterial({ color: 0x000000 });
     let edges = new EdgesGeometry(geometry);
     let lineSegments = new LineSegments(
       edges,
-      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR })
+      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR }),
     );
     lineSegments.scale.set(1.1, 1.1, 1);
     lineSegments.userData.isOrnament = true;

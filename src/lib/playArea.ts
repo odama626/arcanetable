@@ -62,7 +62,7 @@ export class PlayArea {
     public clientId: number,
     public cards: CardReference[],
     cardsInDeck: Card[],
-    state: State
+    state: State,
   ) {
     this.mesh = new Group();
     this.isLocalPlayArea = !!state.isLocalPlayer;
@@ -74,7 +74,7 @@ export class PlayArea {
     this.tokenSearchZone = new CardGrid(
       this.isLocalPlayArea,
       'tokenSearch',
-      state.tokenSearchZone?.id
+      state.tokenSearchZone?.id,
     );
     this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
     this.exileZone = new CardStack('exile', state.exile?.id);
@@ -95,7 +95,7 @@ export class PlayArea {
     this.mesh.add(this.graveyardZone.mesh);
 
     let deckCards = (state?.deck?.cards || cardsInDeck).map(card =>
-      initializeCardMesh(card, clientId)
+      initializeCardMesh(card, clientId),
     );
 
     this.deck = new Deck(deckCards, state?.deck?.id);
@@ -128,7 +128,7 @@ export class PlayArea {
     await Promise.all(
       zones.map(name => {
         if (this[name].cards.length > 0) return this.dismissFromZone(this[name]);
-      })
+      }),
     );
   }
 
@@ -154,7 +154,7 @@ export class PlayArea {
         let card = fromZone.cards.at(-1);
         transferCard(card, fromZone, toZone, { preventTransmit: true });
       },
-      50
+      50,
     );
   }
 
@@ -183,7 +183,7 @@ export class PlayArea {
         let previousZone = zonesById.get(card.mesh.userData.previousZoneId);
         transferCard(card, zone, previousZone, { preventTransmit: true });
       },
-      25
+      25,
     );
     this.inProgressActions.delete(`dismissFromZone.${zone.id}`);
   }
@@ -201,7 +201,7 @@ export class PlayArea {
         cardsInPlay
           .map(card => (card.detail.all_parts ?? []).filter(part => part.component === 'token'))
           .flat()
-          .map(part => part.uri)
+          .map(part => part.uri),
       );
 
       this.availableTokens = await Promise.all(
@@ -211,7 +211,7 @@ export class PlayArea {
             ...payload,
             clientId: this.clientId,
           };
-        })
+        }),
       ).then(cards => uniqBy(cards, 'oracle_id').sort((a, b) => a.name.localeCompare(b.name)));
     }
 
@@ -242,7 +242,7 @@ export class PlayArea {
 
   modifyCard(card: Card, update = x => x) {
     card.mesh.userData.modifiers = update(
-      card.mesh.userData.modifiers ?? { power: 0, toughness: 0, counters: {} }
+      card.mesh.userData.modifiers ?? { power: 0, toughness: 0, counters: {} },
     );
     this.emitEvent({ type: 'modifyCard', payload: { userData: card.mesh.userData } });
 
@@ -262,7 +262,7 @@ export class PlayArea {
         this.hand.removeCard(card.mesh);
         this.deck.addCardBottom(card);
       },
-      50
+      50,
     );
     let order = await this.deck.shuffle(existingOrder);
     this.emitEvent({ type: 'mulligan', payload: { order, drawCount } });
@@ -272,7 +272,7 @@ export class PlayArea {
       () => {
         transferCard(this.deck.cards[0], this.deck, this.hand, { preventTransmit: true });
       },
-      50
+      50,
     );
   }
 
@@ -297,12 +297,15 @@ export class PlayArea {
         return new Promise<void>(resolve => {
           let card = cardsById.get(child.userData.id);
 
-          setTimeout(() => {
-            transferCard(card, this.graveyardZone, this.peekZone);
-            resolve();
-          }, (this.graveyardZone.mesh.children.length - i) * 50);
+          setTimeout(
+            () => {
+              transferCard(card, this.graveyardZone, this.peekZone);
+              resolve();
+            },
+            (this.graveyardZone.mesh.children.length - i) * 50,
+          );
         });
-      })
+      }),
     );
     this.inProgressActions.delete('peekGraveyard');
   }
@@ -319,12 +322,15 @@ export class PlayArea {
         return new Promise<void>(resolve => {
           let card = cardsById.get(child.userData.id);
 
-          setTimeout(() => {
-            transferCard(card, this.exileZone, this.peekZone);
-            resolve();
-          }, (this.exileZone.mesh.children.length - i) * 50);
+          setTimeout(
+            () => {
+              transferCard(card, this.exileZone, this.peekZone);
+              resolve();
+            },
+            (this.exileZone.mesh.children.length - i) * 50,
+          );
         });
-      })
+      }),
     );
     // this.exileZone.clear();
     this.inProgressActions.delete('peekExile');
@@ -342,7 +348,7 @@ export class PlayArea {
   flip(cardMesh: Mesh) {
     let focusCameraTarget = getFocusCameraPositionRelativeTo(
       cardMesh,
-      new Vector3(CARD_WIDTH / 4, 0, 0)
+      new Vector3(CARD_WIDTH / 4, 0, 0),
     );
     setCardData(cardMesh, 'isFlipped', !cardMesh.userData.isFlipped);
     this.emitEvent({ type: 'flip', payload: { userData: cardMesh.userData } });
@@ -465,9 +471,9 @@ export class PlayArea {
           new Promise<void>(resolve =>
             setTimeout(() => {
               loadCardTextures(card, cache).then(resolve);
-            }, i * 20)
-          )
-      )
+            }, i * 20),
+          ),
+      ),
     );
     await Promise.all(promises);
     cache.clear();

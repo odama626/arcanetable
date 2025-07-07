@@ -31,7 +31,11 @@ export class CardGrid implements CardZone {
   private setObservable: SetStoreFunction<CardZone['observable']>;
   private destroyReactivity;
 
-  constructor(isLocalPlayArea: boolean, public zone: string, public id: string = nanoid()) {
+  constructor(
+    isLocalPlayArea: boolean,
+    public zone: string,
+    public id: string = nanoid(),
+  ) {
     const POSITION = new Vector3(-((CARD_WIDTH + 1) * CARDS_PER_ROW) / 2 + CARD_WIDTH / 2, -95, 50);
     this.mesh = new Group();
     zonesById.set(this.id, this);
@@ -85,7 +89,7 @@ export class CardGrid implements CardZone {
         .map(card => {
           let indexOf = filters.reduce(
             (a, b) => Math.min(a, card.detail.search.indexOf(b)),
-            Infinity
+            Infinity,
           );
           let indexScore = indexOf < 0 ? 0 : 1 - indexOf / card.detail.search.length;
           return {
@@ -128,7 +132,7 @@ export class CardGrid implements CardZone {
       if (index < 0) {
         let { position, rotation } = this.getCardPosition(
           (this.filteredCards?.length ?? 0) + missed,
-          true
+          true,
         );
         if (
           !isVectorEqual(position, cardMesh.userData.resting.position) ||
@@ -192,7 +196,7 @@ export class CardGrid implements CardZone {
     let position = new Vector3(
       (index % CARDS_PER_ROW) * (CARD_WIDTH + 1),
       -((index / CARDS_PER_ROW) | 0) * (CARD_HEIGHT + 1),
-      0
+      0,
     );
 
     switch (this.mode) {

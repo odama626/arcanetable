@@ -33,7 +33,10 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
   private setObservable: SetStoreFunction<CardZone['observable']>;
   private destroyReactivity(): void;
 
-  constructor(public zone: string, public id: string = nanoid()) {
+  constructor(
+    public zone: string,
+    public id: string = nanoid(),
+  ) {
     let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
     let material = new MeshStandardMaterial({ color: CARD_ZONE_COLOR }); //#9d9eae // 1e2029
     this.mesh = new Mesh(geometry, material);
@@ -46,7 +49,7 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     let edges = new EdgesGeometry(geometry);
     let lineSegments = new LineSegments(
       edges,
-      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR })
+      new LineBasicMaterial({ color: ZONE_OUTLINE_COLOR }),
     );
     lineSegments.userData.isOrnament = true;
     lineSegments.position.setZ(0.125);

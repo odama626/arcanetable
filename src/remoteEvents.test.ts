@@ -48,11 +48,11 @@ test('remote mulligan then join', async () => {
   expect(remotePlayArea.deck.cards.length).toEqual(totalCard - 7);
 
   expect(playArea.hand.cards.map(card => card.id)).toEqual(
-    remotePlayArea.hand.cards.map(card => card.id)
+    remotePlayArea.hand.cards.map(card => card.id),
   );
 
   expect(playArea.deck.cards.map(card => card.id)).toEqual(
-    remotePlayArea.deck.cards.map(card => card.id)
+    remotePlayArea.deck.cards.map(card => card.id),
   );
 });
 
@@ -74,7 +74,7 @@ test('remote shuffle then join', async () => {
   }
 
   expect(remotePlayArea.deck.cards.map(card => card.id)).toEqual(
-    playArea.deck.cards.map(card => card.id)
+    playArea.deck.cards.map(card => card.id),
   );
 });
 
@@ -103,6 +103,6 @@ test('remote shuffle then join', async () => {
   }
 
   expect(remotePlayArea.deck.cards.map(card => card.id)).toEqual(
-    playArea.deck.cards.map(card => card.id)
+    playArea.deck.cards.map(card => card.id),
   );
 });

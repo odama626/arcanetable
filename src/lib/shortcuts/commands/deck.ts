@@ -19,7 +19,7 @@ export function discardFromTop(playArea: PlayArea, count = 1) {
   doXTimes(
     count,
     () => transferCard(playArea.deck.cards[0], playArea.deck, playArea.graveyardZone),
-    25
+    25,
   );
 }
 
@@ -27,7 +27,7 @@ export function exileFromTop(playArea: PlayArea, count = 1) {
   doXTimes(
     count,
     () => transferCard(playArea.deck.cards[0], playArea.deck, playArea.exileZone),
-    25
+    25,
   );
 }
 
@@ -44,6 +44,6 @@ export function revealFromTop(playArea: PlayArea, count = 1) {
       playArea.reveal(playArea.deck.cards[0]);
       transferCard(playArea.deck.cards[0], playArea.deck, playArea.peekZone);
     },
-    25
+    25,
   );
 }

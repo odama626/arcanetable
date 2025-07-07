@@ -1,4 +1,4 @@
-import { createStore, unwrap } from "solid-js/store";
+import { createStore, unwrap } from 'solid-js/store';
 
 export const createDeckStore = () => {
   const [store, setStore] = createStore({ decks: [] });

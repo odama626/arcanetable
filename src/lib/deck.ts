@@ -17,7 +17,10 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   private setObservable: SetStoreFunction<CardZone['observable']>;
   private destroyReactivity(): void;
 
-  constructor(public cards: Card[], public id = nanoid()) {
+  constructor(
+    public cards: Card[],
+    public id = nanoid(),
+  ) {
     this.mesh = new Group();
     zonesById.set(this.id, this);
 
@@ -141,7 +144,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
             resolve();
           },
         });
-      })
+      }),
     );
 
     if (this.isTopPublic) {
@@ -228,7 +231,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
             onComplete: resolve,
           });
         });
-      })
+      }),
     );
     queueAnimationGroup();
   }

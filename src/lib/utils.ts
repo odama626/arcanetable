@@ -78,7 +78,7 @@ export function getFocusCameraPositionRelativeTo(target: Object3D, offset: Vecto
   }
 
   let position = targetWorldPosition.add(
-    worldDirection.multiply(new Vector3(distance, distance, distance))
+    worldDirection.multiply(new Vector3(distance, distance, distance)),
   );
 
   return {
@@ -113,7 +113,7 @@ export function restackItems<T>(items: T[], intersections: Intersection[]) {
   let intersection = intersections.find(
     i =>
       !targetsById[i.object.userData.id] &&
-      (i.object.userData.isInteractive || i.object.userData.zone)
+      (i.object.userData.isInteractive || i.object.userData.zone),
   )!;
   for (const target of items) {
     if (!intersection) continue;
@@ -129,7 +129,7 @@ export function restackItems<T>(items: T[], intersections: Intersection[]) {
 
     let rotationMatrix = new Matrix4().makeRotationFromEuler(target.rotation);
     pointTarget.add(
-      new Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix)
+      new Vector3().fromArray(target.userData.dragOffset).applyMatrix4(rotationMatrix),
     );
 
     pointTarget.add(new Vector3(0, 0, CARD_THICKNESS / 2));

@@ -16,14 +16,14 @@ type ComboboxItemProps<T extends ValidComponent = 'li'> = ComboboxPrimitive.Comb
 };
 
 const ComboboxItem = <T extends ValidComponent = 'li'>(
-  props: PolymorphicProps<T, ComboboxItemProps<T>>
+  props: PolymorphicProps<T, ComboboxItemProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxItemProps, ['class']);
   return (
     <ComboboxPrimitive.Item
       class={cn(
         'relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:opacity-50',
-        local.class
+        local.class,
       )}
       {...others}
     />
@@ -36,7 +36,7 @@ type ComboboxItemIndicatorProps<T extends ValidComponent = 'div'> =
   };
 
 const ComboboxItemIndicator = <T extends ValidComponent = 'div'>(
-  props: PolymorphicProps<T, ComboboxItemIndicatorProps<T>>
+  props: PolymorphicProps<T, ComboboxItemIndicatorProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxItemIndicatorProps, ['children']);
   return (
@@ -62,14 +62,14 @@ type ComboboxSectionProps<T extends ValidComponent = 'li'> =
   ComboboxPrimitive.ComboboxSectionProps<T> & { class?: string | undefined };
 
 const ComboboxSection = <T extends ValidComponent = 'li'>(
-  props: PolymorphicProps<T, ComboboxSectionProps<T>>
+  props: PolymorphicProps<T, ComboboxSectionProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxSectionProps, ['class']);
   return (
     <ComboboxPrimitive.Section
       class={cn(
         'overflow-hidden p-1 px-2 py-1.5 text-xs font-medium text-muted-foreground ',
-        local.class
+        local.class,
       )}
       {...others}
     />
@@ -78,13 +78,13 @@ const ComboboxSection = <T extends ValidComponent = 'li'>(
 
 type ComboboxControlProps<
   U,
-  T extends ValidComponent = 'div'
+  T extends ValidComponent = 'div',
 > = ComboboxPrimitive.ComboboxControlProps<U, T> & {
   class?: string | undefined;
 };
 
 const ComboboxControl = <T, U extends ValidComponent = 'div'>(
-  props: PolymorphicProps<U, ComboboxControlProps<T>>
+  props: PolymorphicProps<U, ComboboxControlProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxControlProps<T>, ['class']);
   return (
@@ -99,14 +99,14 @@ type ComboboxInputProps<T extends ValidComponent = 'input'> =
   ComboboxPrimitive.ComboboxInputProps<T> & { class?: string | undefined };
 
 const ComboboxInput = <T extends ValidComponent = 'input'>(
-  props: PolymorphicProps<T, ComboboxInputProps<T>>
+  props: PolymorphicProps<T, ComboboxInputProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxInputProps, ['class']);
   return (
     <ComboboxPrimitive.Input
       class={cn(
         'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
-        local.class
+        local.class,
       )}
       {...others}
     />
@@ -120,7 +120,7 @@ type ComboboxTriggerProps<T extends ValidComponent = 'button'> =
   };
 
 const ComboboxTrigger = <T extends ValidComponent = 'button'>(
-  props: PolymorphicProps<T, ComboboxTriggerProps<T>>
+  props: PolymorphicProps<T, ComboboxTriggerProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxTriggerProps, ['class', 'children']);
   return (
@@ -134,7 +134,7 @@ type ComboboxContentProps<T extends ValidComponent = 'div'> =
   ComboboxPrimitive.ComboboxContentProps<T> & { class?: string | undefined };
 
 const ComboboxContent = <T extends ValidComponent = 'div'>(
-  props: PolymorphicProps<T, ComboboxContentProps<T>>
+  props: PolymorphicProps<T, ComboboxContentProps<T>>,
 ) => {
   const [local, others] = splitProps(props as ComboboxContentProps, ['class']);
   return (
@@ -142,7 +142,7 @@ const ComboboxContent = <T extends ValidComponent = 'div'>(
       <ComboboxPrimitive.Content
         class={cn(
           'relative z-50 min-w-32 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80',
-          local.class
+          local.class,
         )}
         {...others}>
         <ComboboxPrimitive.Listbox class='m-0 p-1' />

@@ -24,7 +24,7 @@ import {
 const DeckMenu: Component<{ playArea: PlayArea }> = props => {
   function getNextLandIndex() {
     return props.playArea.deck.cards.findIndex(card =>
-      card.detail.type_line.toLowerCase().includes('land')
+      card.detail.type_line.toLowerCase().includes('land'),
     );
   }
 

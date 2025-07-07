@@ -4,7 +4,7 @@ import { Button, ButtonProps } from './button';
 import { PolymorphicProps } from '@kobalte/core/polymorphic';
 
 export default function CopyLinkButton<T extends ValidComponent = 'button'>(
-  props: PolymorphicProps<T, ButtonProps<T>>
+  props: PolymorphicProps<T, ButtonProps<T>>,
 ) {
   const location = useLocation();
   const [copied, setCopied] = createSignal(false);

@@ -48,6 +48,6 @@ export const deck = a
         a.everyCharUntil(a.choice([a.char('\n'), a.endOfInput])),
         a.optionalWhitespace,
       ])
-      .map(r => r?.[1])
+      .map(r => r?.[1]),
   )
   .map(r => r.filter(Boolean));

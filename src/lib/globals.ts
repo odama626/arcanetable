@@ -82,7 +82,7 @@ export function doXTimes(x: number, callback, delay = 100): Promise<void> {
       setTimeout(() => {
         callback();
         if (i === x - 1) resolve();
-      }, delay * i)
+      }, delay * i),
     );
   });
 }
@@ -224,10 +224,10 @@ export function getProjectionVec(vec: Vector3) {
   let projectionVec = vec.clone();
   projectionVec.project(camera);
   projectionVec.x = Math.round(
-    (0.5 + projectionVec.x / 2) * (canvas.width / window.devicePixelRatio)
+    (0.5 + projectionVec.x / 2) * (canvas.width / window.devicePixelRatio),
   );
   projectionVec.y = Math.round(
-    (0.5 - projectionVec.y / 2) * (canvas.height / window.devicePixelRatio)
+    (0.5 - projectionVec.y / 2) * (canvas.height / window.devicePixelRatio),
   );
   return projectionVec;
 }
