@@ -107,6 +107,7 @@ const EVENTS = {
     setCounters(counters => uniqBy([...counters, event.counter], 'id'));
   },
   animateObject(event: Event, _playArea: PlayArea, card: Card) {
+    card.mesh.userData = event.payload.userData;
     animateObject(card.mesh, event.payload.animation);
   },
   async transferCard(event: Event, playArea: PlayArea, card: Card) {

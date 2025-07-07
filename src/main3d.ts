@@ -79,7 +79,7 @@ export async function localInit(gameOptions: GameOptions) {
   outlinePass = new OutlinePass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     scene,
-    camera,
+    camera
   );
   outlinePass.pulsePeriod = 2;
 
@@ -302,7 +302,7 @@ async function onDocumentDrop(event) {
   let intersection = intersections.find(
     i =>
       !targetsById[i.object.userData.id] &&
-      (i.object.userData.isInteractive || i.object.userData.zone),
+      (i.object.userData.isInteractive || i.object.userData.zone)
   )!;
 
   let shouldClearSelection = false;
@@ -316,6 +316,8 @@ async function onDocumentDrop(event) {
     let toZone = zonesById.get(toZoneId);
 
     if (fromZoneId && fromZoneId === toZoneId) {
+      setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
+      setCardData(target, `zone.${toZone.id}.rotation`, target.rotation.toArray());
       sendEvent({
         type: 'animateObject',
         payload: {
@@ -329,14 +331,14 @@ async function onDocumentDrop(event) {
           },
         },
       });
-      setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
-      setCardData(target, `zone.${toZone.id}.rotation`, target.rotation.toArray());
       continue;
     }
 
     let card = cardsById.get(target.userData.id);
     let position = toZone.mesh.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
+
+    console.log({ card, target });
 
     await transferCard(card, fromZone, toZone, {
       addOptions: {
@@ -387,7 +389,7 @@ function onWindowResize() {
 function onDocumentMouseMove(event) {
   mouse.set(
     (event.clientX / window.innerWidth) * 2 - 1,
-    -(event.clientY / window.innerHeight) * 2 + 1,
+    -(event.clientY / window.innerHeight) * 2 + 1
   );
 
   selection.onMove(event);
@@ -567,7 +569,7 @@ function render3d(delta: number) {
 
     focusRayCaster.set(
       focusCamera.position,
-      mesh.localToWorld(new THREE.Vector3()).sub(focusCamera.position).normalize(),
+      mesh.localToWorld(new THREE.Vector3()).sub(focusCamera.position).normalize()
     );
     let intersections = focusRayCaster.intersectObject(scene);
     let targetDistance;
