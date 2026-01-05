@@ -5,7 +5,7 @@ import GithubIcon from '~/lib/icons/github.svg';
 import PatreonIcon from '~/lib/icons/patreon.svg';
 import DiscordIcon from '~/lib/icons/discord-brands-solid.svg';
 
-const Page: Component = props => {
+export default function Page(props) {
   const [startUrl, setStartUrl] = createSignal(`/game/${nanoid()}`);
 
   onMount(() => {
@@ -183,6 +183,27 @@ const Page: Component = props => {
             </div>
           </div>
         </section>
+        <section class='py-20 bg-gray-900 border-t border-gray-800'>
+          <div class='max-w-4xl mx-auto px-6 text-center flex flex-col gap-6'>
+            <h2 class='text-3xl font-bold text-white'>Built by Sparkstone</h2>
+
+            <p class='text-gray-400 max-w-2xl mx-auto'>
+              Arcanetable is crafted by Sparkstone — an independent product studio focused on
+              building thoughtful, open tools for creative and technical communities.
+            </p>
+
+            <div class='flex justify-center'>
+              <a
+                href='https://sparkstonepdx.com'
+                target='_blank'
+                rel='noopener noreferrer'
+                class='inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-xl border border-gray-700 hover:bg-gray-700 hover:border-gray-600 transition'>
+                Visit Sparkstone
+                <span aria-hidden>→</span>
+              </a>
+            </div>
+          </div>
+        </section>
 
         {/* */}
         {/* <section class='py-16 bg-gray-900'>
@@ -295,7 +316,7 @@ const Page: Component = props => {
 
         {/* */}
         <footer class='py-12 bg-gray-800 text-center'>
-          <p class='text-gray-400 mb-6'>
+          <p class='text-gray-400 mb-4'>
             Found a bug, or just want to help contribute the next great feature? Head over to the{' '}
             <a
               href='https://github.com/odama626/arcanetable/'
@@ -306,23 +327,19 @@ const Page: Component = props => {
             </a>
             .
           </p>
-          {/* */}
-          {/* <p class='text-gray-500 mb-6'>© 2024 Arcane Table. All rights reserved.</p>
-          <div class='space-x-4'>
-             <a href='#' class='text-gray-400 hover:text-white'>
-               Privacy Policy
-             </a>
-             <a href='#' class='text-gray-400 hover:text-white'>
-               Terms of Service
-             </a>
-             <a href='#' class='text-gray-400 hover:text-white'>
-               Contact
-             </a>
-           </div> */}
+
+          <p class='text-gray-500 text-sm'>
+            Built by{' '}
+            <a
+              href='https://sparkstonepdx.com'
+              target='_blank'
+              rel='noopener noreferrer'
+              class='text-gray-300 hover:text-white underline'>
+              Sparkstone
+            </a>
+          </p>
         </footer>
       </div>
     </div>
   );
-};
-
-export default Page;
+}
