@@ -28,7 +28,7 @@ export class Hand implements CardZone {
     this.mesh.rotateX(Math.PI * 0.25);
     this.mesh.position.set(0, -120, 40);
     this.mesh.userData.id = id;
-    this.mesh.userData.restingPosition = this.mesh.position.clone();
+    this.mesh.userData.resting = this.mesh.position.clone();
     this.zone = 'hand';
 
     createRoot(destroy => {

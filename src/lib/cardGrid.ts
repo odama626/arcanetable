@@ -51,7 +51,7 @@ export class CardGrid implements CardZone {
     this.isLocalPlayArea = isLocalPlayArea;
     this.cardMap = new Map<string, Card>();
 
-    this.mesh.userData.restingPosition = this.mesh.position.clone();
+    this.mesh.userData.resting = this.mesh.position.clone();
 
     createRoot(destroy => {
       this.destroyReactivity = destroy;
