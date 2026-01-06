@@ -167,8 +167,13 @@ export class Hand implements CardZone {
 
     this.adjustHandPosition();
     for (let i = cardIndex; i < this.cards.length; i++) {
-      let cardMesh = this.cards[i].mesh;
-      if (cardMesh.userData.location !== 'hand') continue;
+      let cardMesh = this.cards[i]?.mesh;
+      if (!cardMesh) {
+        console.warn(`card mesh undefined`, new Error().stack);
+        console.warn(i, this.cards.length, this.cards.slice());
+        continue;
+      }
+      if (cardMesh.userData.location !== 'hand' || !cardMesh.userData.resting) continue;
       cardMesh.userData.resting.position = new Vector3(i * 5, 0, i * -0.125);
       animateObject(cardMesh, {
         to: cardMesh.userData.resting,

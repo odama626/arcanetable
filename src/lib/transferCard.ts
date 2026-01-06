@@ -2,7 +2,11 @@ import { setCardData, updateModifiers } from './card';
 import { Card, CardZone } from './constants';
 import { cardsById, sendEvent } from './globals';
 
-interface ExtendedOptions<AddOptions extends {} = {}> {
+interface DefaultAddOptions {
+  destroy?: boolean;
+}
+
+interface ExtendedOptions<AddOptions extends DefaultAddOptions = {}> {
   addOptions?: AddOptions;
   userData?: unknown;
   preventTransmit?: boolean;
@@ -18,6 +22,12 @@ export async function transferCard<AddOptions extends {}>(
     preventTransmit = false,
   }: ExtendedOptions<AddOptions> = {},
 ) {
+  if (!card) {
+    console.warn(`card is undefined`, new Error().stack);
+    console.log({ card, fromZone, toZone });
+    return;
+  }
+
   await fromZone.removeCard?.(card.mesh);
   if (toZone && toZone?.zone !== 'battlefield') {
     if (card.mesh.userData.isToken) {

@@ -179,11 +179,7 @@ export function cloneCard(card: Card, newId: string): Card {
   newCard.id = newId;
   newCard.mesh = createCardGeometry(newCard);
   if (card.mesh) {
-    const [transferable, _, cloneable] = splitProps(
-      card.mesh.userData,
-      ['cardBack', 'publicCardBack'],
-      ['resting'],
-    );
+    const [transferable, cloneable] = splitUserdata(card.mesh.userData);
     newCard.mesh.userData = structuredClone(cloneable);
     Object.assign(newCard.mesh.userData, transferable);
 
@@ -199,6 +195,15 @@ export function cloneCard(card: Card, newId: string): Card {
   cardsById.set(newCard.id, newCard);
   loadCardTextures(newCard);
   return newCard;
+}
+
+export function splitUserdata(userData: CardUserData) {
+  const [transferable, _, cloneable] = splitProps(
+    userData,
+    ['cardBack', 'publicCardBack'],
+    ['resting'],
+  );
+  return [transferable, cloneable];
 }
 
 export function shuffle(cards: Card[]) {

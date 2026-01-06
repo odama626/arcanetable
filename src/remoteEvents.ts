@@ -2,7 +2,7 @@ import uniqBy from 'lodash-es/uniqBy';
 import { nanoid } from 'nanoid';
 import { Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './lib/animations';
-import { cloneCard, setCardData } from './lib/card';
+import { cloneCard, splitUserdata, setCardData } from './lib/card';
 import { Card } from './lib/constants';
 import {
   cardsById,
@@ -71,7 +71,7 @@ export async function processEvents() {
   }
 }
 
-export async function handleEvent(event, playArea) {
+export async function handleEvent(event, playArea: PlayArea) {
   console.log(event);
   expect(!!EVENTS[event.type], `${event.type} not implemented`);
   let card = cardsById.get(event.payload?.userData?.id);
@@ -107,7 +107,8 @@ const EVENTS = {
     setCounters(counters => uniqBy([...counters, event.counter], 'id'));
   },
   animateObject(event: Event, _playArea: PlayArea, card: Card) {
-    card.mesh.userData = event.payload.userData;
+    const [_, cloneable] = splitUserdata(event.payload.userData);
+    Object.assign(card.mesh.userData, cloneable);
     animateObject(card.mesh, event.payload.animation);
   },
   async transferCard(event: Event, playArea: PlayArea, card: Card) {

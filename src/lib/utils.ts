@@ -36,6 +36,16 @@ export function cleanMaterial(material: Material) {
   }
 }
 
+export function isValidMaterial(mat) {
+  return mat && mat.isMaterial === true && typeof mat.onBeforeRender === 'function';
+}
+
+export function sanityCheckMaterial(mat) {
+  if (!isValidMaterial(mat)) {
+    console.warn(`Invalid material referenced`, mat);
+  }
+}
+
 export function cleanupMesh(object: Mesh) {
   if (!object.isMesh) return;
   object.geometry.dispose();
