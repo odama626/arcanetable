@@ -29,6 +29,7 @@ import {
   selection,
   sendEvent,
   setAnimating,
+  setCapturedErrors,
   setDeckIndex,
   setHoverSignal,
   setIsIntitialized,
@@ -428,19 +429,55 @@ function onDocumentMouseMove(event) {
   }
 }
 
-//
+function checkSceneMaterials() {
+  scene.traverse((obj: any) => {
+    if (!obj.isMesh) return;
+
+    const mat = obj.material;
+
+    const bad =
+      mat == null ||
+      (Array.isArray(mat)
+        ? mat.some(m => !m || m.isMaterial !== true || typeof m.onBeforeRender !== 'function')
+        : mat.isMaterial !== true || typeof mat.onBeforeRender !== 'function');
+
+    if (bad) {
+      console.warn('BAD MATERIAL FOUND', {
+        name: obj.name,
+        uuid: obj.uuid,
+        object: obj,
+        material: mat,
+        materialType: mat?.type,
+        isArray: Array.isArray(mat),
+      });
+
+      // optional: throw to stop exactly when it first occurs
+      throw new Error('Bad material detected (see console)');
+    }
+  });
+}
 
 let ticks = 0;
 let interval = 1 / 30;
-export function animate() {
-  if (animating()) requestAnimationFrame(animate);
-  let delta = clock.getDelta();
-  ticks += delta;
-  time += delta;
+let isErrored = false;
 
-  if (ticks >= interval) {
-    render3d(delta);
-    ticks = ticks % interval;
+export function animate() {
+  try {
+    if (isErrored) return;
+    if (animating()) requestAnimationFrame(animate);
+    let delta = clock.getDelta();
+    ticks += delta;
+    time += delta;
+
+    if (ticks >= interval) {
+      checkSceneMaterials();
+      render3d(delta);
+      ticks = ticks % interval;
+    }
+  } catch (e) {
+    console.error(e);
+    setCapturedErrors(errors => [...errors, e]);
+    isErrored = true;
   }
 }
 

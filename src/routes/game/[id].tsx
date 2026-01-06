@@ -12,6 +12,7 @@ import {
   setSelectedDeckIndex,
 } from '~/lib/globals';
 import { HotKeys } from '~/lib/shortcuts/hotkeys';
+import StackTraceDialog from '~/lib/stack-trace-dialog';
 import DeckPicker from '~/lib/ui/deckPicker';
 import Overlay from '~/lib/ui/overlay';
 import { loadDeckAndJoin, localInit } from '~/main3d';
@@ -55,6 +56,7 @@ const GamePage: Component = props => {
           </DialogContent>
         </Dialog>
       </Show>
+      <StackTraceDialog />
     </>
   );
 };

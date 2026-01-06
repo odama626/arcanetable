@@ -28,6 +28,7 @@ import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
 import { Selection } from './selection';
+import { captureConsole } from './console-capture';
 
 export function expect(test: boolean, message: string, ...supplemental: any) {
   if (!test) {
@@ -71,9 +72,12 @@ export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
 export let textureLoaderWorker;
 export let selection: Selection;
+export let [capturedErrors, setCapturedErrors] = createSignal([]);
 
 export let cardLoadingTexture: THREE.Texture;
 export let cardBackTexture: THREE.Texture;
+
+['warn', 'error'].forEach(captureConsole);
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();
@@ -204,6 +208,7 @@ export function cleanup() {
   setPlayers([]);
   setDeckIndex();
   setSelectedDeckIndex(undefined);
+  setCapturedErrors([]);
   setIsSpectating(false);
   setIsIntitialized(false);
 

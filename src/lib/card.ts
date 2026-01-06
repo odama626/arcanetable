@@ -5,6 +5,7 @@ import {
   BoxGeometry,
   Color,
   LinearFilter,
+  Material,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -12,6 +13,7 @@ import {
   SRGBColorSpace,
   Texture,
   Vector3,
+  Vector3Like,
 } from 'three';
 import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
 import {
@@ -24,7 +26,13 @@ import {
   textureLoaderWorker,
 } from './globals';
 import { counters } from './ui/counterDialog';
-import { cleanupFromNode } from './utils';
+import { cleanupFromNode, isValidMaterial } from './utils';
+
+interface CardUserData {
+  cardBack?: Material;
+  publicCardBack?: Material;
+  resting?: Vector3Like;
+}
 
 let alphaMap: Texture;
 const blackMat = new MeshStandardMaterial({ color: 0x000000 });
@@ -285,6 +293,14 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
   if (field === 'isPublic') {
     if (cardMesh.userData.isDoubleSided) {
       let material = cardMesh.userData[value ? 'cardBack' : 'publicCardBack'];
+
+      if (!isValidMaterial(material)) {
+        console.warn(`Invalid material assigned to mesh!`, {
+          material,
+          cardMesh,
+        });
+        console.trace(`Material Assignment Trace`);
+      }
 
       cardMesh.material[cardMesh.material.length - 1] = material;
     }
