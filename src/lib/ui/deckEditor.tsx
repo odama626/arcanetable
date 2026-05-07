@@ -28,17 +28,32 @@ import {
   TextFieldTextArea,
 } from '~/components/ui/text-field';
 import { getCardArtImage, getCardImage } from '../card';
-import { FORMATS } from '../constants';
-import { fetchCardInfo, loadCardList } from '../deck';
+import { CardEntryDetail, FORMATS } from '../constants';
+import { DetailedCardEntry, fetchCardInfo, loadCardList } from '../deck';
 import { colorHashDark } from '../globals';
 import CircleInfoIcon from 'lucide-solid/icons/info';
 import { cn } from '../utils';
 import styles from './deckEditor.module.css';
 
-type Deck = any;
+interface CardReference {
+  qty: number;
+  name: string;
+  set: string;
+}
 
-function sortByPopularity(a, b) {
-  return a.detail.edhrec_rank - b.detail.edhrec_rank;
+interface Deck {
+  id: string;
+  deck: CardReference[];
+  inPlay: CardReference[];
+  tags?: string[];
+  startingLife: string;
+  name: string;
+  cardList: string;
+  coverImage?: string;
+}
+
+function sortByPopularity(a: { detail: CardEntryDetail }, b: { detail: CardEntryDetail }) {
+  return a.detail.popularity - b.detail.popularity;
 }
 
 interface Props {
@@ -54,7 +69,7 @@ let cache = new Map();
 export const DeckEditor: Component<Props> = props => {
   const [cardListText, setCardListText] = createSignal(props?.deck.cardList ?? '');
   const [name, setName] = createSignal(props.deck?.name ?? '');
-  const [cardList, setCardList] = createSignal([]);
+  const [cardList, setCardList] = createSignal<DetailedCardEntry[]>([]);
   const [cardsInPlay, setCardsInPlay] = createSignal(props?.deck?.inPlay ?? []);
   const [isCardsInPlayDirty, setIsCardsInPlayDirty] = createSignal(false);
   const [tags, setTags] = createSignal(props?.deck?.tags ?? []);
@@ -86,7 +101,7 @@ export const DeckEditor: Component<Props> = props => {
       () => props.open,
       () => {
         console.log(props.deck);
-        if (!props.deck.cardList) {
+        if (!props.deck?.cardList) {
           setName('');
           setCardListText('');
           setCardList([]);
@@ -95,10 +110,10 @@ export const DeckEditor: Component<Props> = props => {
           setIsCardsInPlayDirty(false);
           return;
         }
-        if (props.deck.inPlay) {
+        if (props.deck?.inPlay) {
           setCardsInPlay(props.deck.inPlay);
         }
-        if (props.deck.tags) {
+        if (props.deck?.tags) {
           setTags(props.deck.tags);
         }
         setName(props.deck.name);

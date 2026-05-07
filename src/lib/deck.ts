@@ -3,7 +3,7 @@ import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
 import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
-import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
+import { Card, CARD_THICKNESS, CARD_WIDTH, CardEntryDetail, CardZone } from './constants';
 import { deck as deckParser } from './deckParser';
 import { cardsById, setHoverSignal, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation, shuffleItems } from './utils';
@@ -289,11 +289,16 @@ interface CardEntry {
   set: string;
 }
 
+export interface DetailedCardEntry extends CardEntry {
+  detail: CardEntryDetail;
+}
+
+
 export function loadCardList(cardList: string): CardEntry[] {
   return deckParser.run(cardList).result;
 }
 
-export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>) {
+export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>): Promise<DetailedCardEntry> {
   const url = new URL(`https://api.scryfall.com/cards/named`);
   url.searchParams.set('exact', entry.name);
   if (entry.set) {
@@ -315,6 +320,7 @@ export async function fetchCardInfo(entry: CardEntry, cache?: Map<string, any>) 
     })
     .then(async payload => {
       payload.search = getSearchLine(payload);
+      payload.popularity = payload.edhrec_rank
       return {
         ...entry,
         detail: payload,

@@ -8,10 +8,26 @@ export const CARD_STACK_OFFSET = 2;
 export const ZONE_OUTLINE_COLOR = 0xffffff;
 export const CARD_ZONE_COLOR = 0x1a1533;
 
+interface CardDetailPart {
+  name: string;
+  component: 'token' | unknown;
+
+}
+
+export interface CardEntryDetail {
+  image_uris: Record<string, string>;
+  name: string;
+  search: string;
+  type_line: string;
+  popularity: number;
+  all_parts?: CardDetailPart[];
+}
+
 export interface Card {
   mesh: Mesh;
   id: string;
   clientId: number;
+  detail: CardEntryDetail;
   modifiers: {
     pt: Mesh;
     [id: string]: Mesh;
