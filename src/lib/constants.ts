@@ -23,6 +23,17 @@ export interface CardEntryDetail {
   all_parts?: CardDetailPart[];
 }
 
+export interface CardEntry {
+  name: string;
+  qty: number;
+  categories: string[];
+  set: string;
+}
+
+export interface DetailedCardEntry extends CardEntry {
+  detail: CardEntryDetail;
+}
+
 export interface Card {
   mesh: Mesh;
   id: string;

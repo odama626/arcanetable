@@ -23,7 +23,7 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { Card, CARD_WIDTH, CardZone } from './constants';
+import { Card, CARD_WIDTH, CardEntry, CardZone, DetailedCardEntry } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
@@ -77,7 +77,18 @@ export let [capturedErrors, setCapturedErrors] = createSignal([]);
 export let cardLoadingTexture: THREE.Texture;
 export let cardBackTexture: THREE.Texture;
 
-['warn', 'error'].forEach(captureConsole);
+type CardFetchMethod = (
+  entry: CardEntry,
+  cache?: Map<string, DetailedCardEntry>,
+) => Promise<DetailedCardEntry>;
+
+export let CardSystem: { cardFetchMethod: CardFetchMethod | undefined; scryServer: string, name: string } = {
+  name: 'mtg',
+  cardFetchMethod: undefined,
+  scryServer: 'https://api.scryfall.com/cards/named',
+};
+
+[('warn', 'error')].forEach(captureConsole);
 
 export function doXTimes(x: number, callback, delay = 100): Promise<void> {
   if (x < 1) return Promise.resolve();

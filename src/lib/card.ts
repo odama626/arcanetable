@@ -20,6 +20,7 @@ import {
   cardBackTexture,
   cardLoadingTexture,
   cardsById,
+  CardSystem,
   getProjectionVec,
   scene,
   textureLoader,
@@ -179,6 +180,34 @@ export function getSearchLine(cardDetail) {
     .join('\n')
     .toLowerCase();
 }
+export function getCTBSearchLine(cardDetail) {
+  const cost = cardDetail.cost
+    ? Object.entries(cardDetail.cost)
+        .flatMap(([resource, count]) => Array(count).fill(resource))
+        .join(' ')
+    : '';
+
+  return [
+    cardDetail.name,
+    cardDetail.type_line,
+    cardDetail.effect,
+    cardDetail.flavor,
+    cardDetail.special,
+    cardDetail.on_enter,
+    cost,
+    cardDetail.subtype,
+    cardDetail.damage_type,
+    cardDetail.primary_resource,
+    cardDetail.secondary_resource,
+    ...(cardDetail.all_parts?.map(part => part.name) ?? []),
+    ...(cardDetail.tokens?.map(tok =>
+      [tok.type, tok.effect, tok.placed_on, tok.removal].join(' ')
+    ) ?? []),
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+}
 
 export function cloneCard(card: Card, newId: string): Card {
   let { mesh, modifiers, ...shared } = card;
@@ -222,6 +251,10 @@ export function shuffle(cards: Card[]) {
 }
 
 export function getCardImage(card: Card) {
+  if (CardSystem.name === 'ctb') {
+    let options = Object.values(card?.detail?.image_uris ?? {})
+    return options[(Math.random() * options.length) | 0]
+  }
   let image_uris = card?.detail?.card_faces?.[0].image_uris ?? card?.detail?.image_uris;
   return image_uris?.large;
 }
@@ -240,6 +273,10 @@ export function initializeCardMesh(card: Card, clientId: string): Card {
 }
 
 export function getCardArtImage(card: Card) {
+  if (CardSystem.name === 'ctb') {
+    let options = Object.values(card?.detail?.art_image_uris ?? {})
+    return options[(Math.random() * options.length) | 0]
+  }
   let image_uris = card?.detail?.card_faces?.[0].image_uris ?? card?.detail?.image_uris;
   return image_uris?.art_crop;
 }
