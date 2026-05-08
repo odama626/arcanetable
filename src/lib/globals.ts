@@ -77,15 +77,31 @@ export let [capturedErrors, setCapturedErrors] = createSignal([]);
 export let cardLoadingTexture: THREE.Texture;
 export let cardBackTexture: THREE.Texture;
 
-type CardFetchMethod = (
-  entry: CardEntry,
-  cache?: Map<string, DetailedCardEntry>,
-) => Promise<DetailedCardEntry>;
+export let CardSystem: {
+  cardDetailEndpoint: string;
+  name: string;
+  cardBack: string;
+  searchField: unknown;
+  popularity: string;
+} = {};
 
-export let CardSystem: { cardFetchMethod: CardFetchMethod | undefined; scryServer: string, name: string } = {
+const MTG_CARD_SYSTEM = {
   name: 'mtg',
-  cardFetchMethod: undefined,
-  scryServer: 'https://api.scryfall.com/cards/named',
+  cardDetailEndpoint: 'https://api.scryfall.com/cards/named',
+  cardBack: '/arcane-table-back.webp',
+  popularity: 'edhrec_rank',
+  searchField: {
+    filterEmpty: false,
+    searchFields: [
+      { field: 'name' },
+      { field: 'type_line' },
+      { field: 'cmc' },
+      { field: 'mana_cost' },
+      { field: 'oracle_text' },
+      { field: 'mana_cost', transform: 'stripBracces' },
+      { field: 'card_faces', recurse: true },
+    ],
+  },
 };
 
 [('warn', 'error')].forEach(captureConsole);
@@ -125,7 +141,20 @@ export function initClock() {
   clock = new Clock();
 }
 
-export function init({ gameId }) {
+async function initCardSystem() {
+  let searchParams = new URLSearchParams(window.location.search);
+  let system = searchParams.get('system');
+  if (!system?.length) return CardSystem = MTG_CARD_SYSTEM;
+
+  const cardSystem = await fetch(system).then(r => r.json());
+
+  Object.assign(CardSystem, cardSystem);
+  console.log({ CardSystem });
+}
+
+let cardSystemInit = initCardSystem();
+
+export async function init({ gameId }) {
   headlessInit();
   if (import.meta.env.PROD) {
     provider = new WebsocketProvider('wss://ws.arcanetable.app', gameId, ydoc);
@@ -137,7 +166,9 @@ export function init({ gameId }) {
     console.log(item, loaded, total);
   };
 
-  cardBackTexture = textureLoader.load(`/arcane-table-back.webp`);
+  await initCardSystem()
+
+  cardBackTexture = textureLoader.load(CardSystem.cardBack);
   cardBackTexture.colorSpace = THREE.SRGBColorSpace;
 
   cardLoadingTexture = textureLoader.load(`/loading-texture.png`);

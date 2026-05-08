@@ -2,8 +2,21 @@ import { nanoid } from 'nanoid';
 import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
-import { cleanupCard, getCTBSearchLine, getSearchLine, getSerializableCard, setCardData } from './card';
-import { Card, CARD_THICKNESS, CARD_WIDTH, CardEntry, CardEntryDetail, CardZone, DetailedCardEntry } from './constants';
+import {
+  cleanupCard,
+  getSearchLine,
+  getSerializableCard,
+  setCardData,
+} from './card';
+import {
+  Card,
+  CARD_THICKNESS,
+  CARD_WIDTH,
+  CardEntry,
+  CardEntryDetail,
+  CardZone,
+  DetailedCardEntry,
+} from './constants';
 import { deck as deckParser } from './deckParser';
 import { cardsById, CardSystem, setHoverSignal, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation, shuffleItems } from './utils';
@@ -282,85 +295,15 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
   }
 }
 
-
-
 export function loadCardList(cardList: string): CardEntry[] {
   return deckParser.run(cardList).result;
 }
-
 
 export async function fetchCardInfo(
   entry: CardEntry,
   cache?: Map<string, DetailedCardEntry>,
 ): Promise<DetailedCardEntry> {
-  if (!CardSystem.cardFetchMethod) {
-    let searchParams = new URLSearchParams(window.location.search);
-    let scryServer = searchParams.get('scryserver');
-    let system = searchParams.get('system');
-
-    if (scryServer?.length) {
-      CardSystem.scryServer = scryServer;
-    }
-
-    if (system?.length) {
-      CardSystem.name = system
-      CardSystem.cardFetchMethod = {
-        ctb: fetchCtbCardInfo,
-      }[system];
-    } else {
-      CardSystem.cardFetchMethod = fetchMtgCardInfo;
-    }
-  }
-  if (!CardSystem.cardFetchMethod) throw new Error('failed to set card fetch method');
-  return CardSystem.cardFetchMethod(entry, cache);
-}
-
-async function fetchCtbCardInfo(
-  entry: CardEntry,
-  cache?: Map<string, DetailedCardEntry>,
-): Promise<DetailedCardEntry> {
-
-  const url = new URL(CardSystem.scryServer);
-  url.searchParams.set('exact', entry.name);
-  if (entry.set) {
-    url.searchParams.set('set', entry.set);
-  }
-  let urlString = url.toString();
-
-  if (cache && cache.has(urlString + entry.qty)) {
-    return cache.get(urlString + entry.qty)!;
-  }
-
-  let result = fetch(urlString, { cache: 'force-cache' })
-    .then(r => r.json())
-    .then(r => {
-      if (r.status !== 404) return r;
-      url.searchParams.delete('set');
-      return fetch(url.toString(), { cache: 'force-cache' }).then(r => r.json());
-    })
-    .then(async payload => {
-      payload.search = getCTBSearchLine(payload);
-      payload.popularity = payload.edhrec_rank;
-      console.log({ payload })
-      return {
-        ...entry,
-        detail: payload,
-      };
-    });
-
-  if (cache) {
-    cache.set(urlString + entry.qty, result);
-  }
-  console.log({result})
-
-  return result;
-}
-
-async function fetchMtgCardInfo(
-  entry: CardEntry,
-  cache?: Map<string, DetailedCardEntry>,
-): Promise<DetailedCardEntry> {
-  const url = new URL(CardSystem.scryServer);
+  const url = new URL(CardSystem.cardDetailEndpoint);
   url.searchParams.set('exact', entry.name);
   if (entry.set) {
     url.searchParams.set('set', entry.set);
@@ -381,7 +324,9 @@ async function fetchMtgCardInfo(
     })
     .then(async payload => {
       payload.search = getSearchLine(payload);
-      payload.popularity = payload.edhrec_rank;
+      if (!payload.popularity) {
+        payload.popularity = payload[CardSystem.popularity];
+      }
       return {
         ...entry,
         detail: payload,

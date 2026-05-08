@@ -15,7 +15,7 @@ import {
   Vector3,
   Vector3Like,
 } from 'three';
-import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH } from './constants';
+import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH, CardEntryDetail } from './constants';
 import {
   cardBackTexture,
   cardLoadingTexture,
@@ -167,47 +167,30 @@ export async function loadCardTextures(
   await frontPromise;
 }
 
-export function getSearchLine(cardDetail) {
-  return [
-    cardDetail.name,
-    cardDetail.type_line,
-    cardDetail.cmc,
-    cardDetail.mana_cost,
-    cardDetail.oracle_text,
-    cardDetail.mana_cost?.replace(/[\{\}]/g, ''),
-    ...(cardDetail.card_faces?.map(cardFace => getSearchLine(cardFace)) ?? []),
-  ]
-    .join('\n')
-    .toLowerCase();
-}
-export function getCTBSearchLine(cardDetail) {
-  const cost = cardDetail.cost
-    ? Object.entries(cardDetail.cost)
-        .flatMap(([resource, count]) => Array(count).fill(resource))
-        .join(' ')
-    : '';
+const TRANSFORMS = {
+  stripBraces: (val) => val?.replace(/[\{\}]/g, ''),
+};
 
-  return [
-    cardDetail.name,
-    cardDetail.type_line,
-    cardDetail.effect,
-    cardDetail.flavor,
-    cardDetail.special,
-    cardDetail.on_enter,
-    cost,
-    cardDetail.subtype,
-    cardDetail.damage_type,
-    cardDetail.primary_resource,
-    cardDetail.secondary_resource,
-    ...(cardDetail.all_parts?.map(part => part.name) ?? []),
-    ...(cardDetail.tokens?.map(tok =>
-      [tok.type, tok.effect, tok.placed_on, tok.removal].join(' ')
-    ) ?? []),
-  ]
-    .filter(Boolean)
+function buildSearchLine(cardDetail: CardEntryDetail, config) {
+  const values = config.searchFields.flatMap(({ field, transform, recurse }) => {
+    const val = cardDetail[field];
+    if (recurse && Array.isArray(val)) {
+      return val.map(child => buildSearchLine(child, config));
+    }
+    const result = transform ? TRANSFORMS[transform]?.(val) : val;
+    return result ?? '';
+  });
+
+  return (config.filterEmpty ? values.filter(Boolean) : values)
     .join('\n')
     .toLowerCase();
 }
+
+
+export function getSearchLine(cardDetail: CardEntryDetail) {
+  return buildSearchLine(cardDetail, CardSystem.searchField);
+}
+
 
 export function cloneCard(card: Card, newId: string): Card {
   let { mesh, modifiers, ...shared } = card;

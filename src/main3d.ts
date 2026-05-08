@@ -64,7 +64,7 @@ interface GameOptions {
 export async function localInit(gameOptions: GameOptions) {
   container = document.createElement('div');
   document.body.appendChild(container);
-  init(gameOptions);
+  await init(gameOptions);
 
   time = 0;
   dragTargets = [];
