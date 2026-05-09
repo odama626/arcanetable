@@ -11,7 +11,7 @@ export const CARD_ZONE_COLOR = 0x1a1533;
 interface CardDetailPart {
   name: string;
   component: 'token' | unknown;
-
+  uri: string;
 }
 
 export interface CardEntryDetail {

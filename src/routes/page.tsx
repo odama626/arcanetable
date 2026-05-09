@@ -5,6 +5,13 @@ import GithubIcon from '~/lib/icons/github.svg';
 import PatreonIcon from '~/lib/icons/patreon.svg';
 import DiscordIcon from '~/lib/icons/discord-brands-solid.svg';
 
+const posterStyle = `
+  background-image:  linear-gradient(transparent, transparent 65%, black), var(--image);
+  aspect-ratio: 2/3;
+  background-size: cover;
+  background-position: center;
+`;
+
 export default function Page(props) {
   const [startUrl, setStartUrl] = createSignal(`/game/${nanoid()}`);
 
@@ -40,7 +47,7 @@ export default function Page(props) {
           </div>
           <div class='relative flex flex-col items-center justify-center py-60 text-center'>
             <h1 class='text-4xl font-bold text-white mb-6'>Welcome to Arcanetable</h1>
-            <p class='text-xl text-white mb-6'>Unleash the power of your deck.</p>
+            <p class='text-xl text-white mb-6'>Stop wondering if your deck works. Find out.</p>
             <A
               href={startUrl()}
               class='bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700'>
@@ -67,13 +74,12 @@ export default function Page(props) {
 
         {/* */}
         <section class='py-20 bg-gray-900'>
-          <div class='max-w-4xl mx-auto'>
+          <div class='max-w-7xl mx-auto'>
             <div class='flex gap-4 max-lg:flex-col-reverse max-lg:px-4'>
               <div class='flex flex-col gap-4'>
-                <h2 class='text-3xl font-bold'>Master the Art of Playtesting</h2>
+                <h2 class='text-3xl font-bold'>Stop Theorycrafting. Start Playtesting.</h2>
                 <p class='text-gray-400'>
-                  Develop your strategies and master deck design so that you will always best your
-                  playgroup
+                  Know exactly how your deck performs before you sleeve up.
                 </p>
                 <ul class='flex flex-col gap-4 items-start text-gray-400'>
                   <li>
@@ -87,15 +93,20 @@ export default function Page(props) {
                     Playtest with friends by sharing an invite link
                   </li>
                   <li>
-                    {' '}
                     🔍 <strong class='text-white'>Deck Management:</strong>
                     <br />
                     Import, export, and manage your decks seamlessly.
                   </li>
                   <li>
-                    <strong class='text-white'>🔧 Customizable Settings:</strong>
+                    🔧 <strong class='text-white'>Customizable Settings:</strong>
                     <br />
                     Tailor the app to fit your playstyle and preferences.
+                  </li>
+                  <li>
+                    🧩 <strong class='text-white'>Custom Card Systems:</strong>
+                    <br />
+                    Bring your own card data source — perfect for proxies, custom cubes, or entirely
+                    different TCGs.
                   </li>
                 </ul>
                 <div>
@@ -109,7 +120,8 @@ export default function Page(props) {
               <img
                 src='/playtesting.png'
                 alt='Playtesting Image'
-                class='mx-auto rounded-lg w-full shrink object-cover min-w-0'
+                style='width: 50%;'
+                class='mx-auto rounded-lg object-cover min-w-0'
               />
             </div>
           </div>
@@ -133,50 +145,45 @@ export default function Page(props) {
         {/* */}
         <section class='py-16 bg-gray-950'>
           <div class='max-w-7xl mx-auto px-6 lg:px-8 flex flex-col gap-4'>
-            <h2 class='text-3xl font-bold text-white text-center'>Arcane what?</h2>
-
+            <h2 class='text-3xl font-bold text-white text-center'>Why Arcanetable?</h2>
             <p class='text-gray-400 text-center'>
-              Table. Gone are the days of staring at Archidekt and hoping your card pile will
-              execute.
-              <br />
-              Use the power of Arcanetable to make sure that it does.
+              You've spent hours building the perfect deck. Now actually test it — before you sit
+              down across from someone who did.
             </p>
             <div class='grid gap-8 lg:grid-cols-3'>
-              {/* */}
               <div
-                class='relative bg-gray-900 rounded-lg overflow-hidden h-64 flex items-end p-6'
-                style="background-image: url('insight-deckbuilding.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-60'></div>
+                class='relative bg-gray-900 rounded-lg overflow-hidden flex items-end p-6'
+                style={`${posterStyle} --image: url('insight-deckbuilding.png'); `}>
+                <div class='absolute inset-0 bg-black opacity-10'></div>
                 <div class='relative'>
-                  <h3 class='text-2xl font-bold text-white'>Mastering Deck Building</h3>
+                  <h3 class='text-2xl font-bold text-white'>Does the combo go off?</h3>
                   <p class='text-white mt-2'>
-                    Cultivate strategies for an edge, from drafting to shuffling your winning hand.
+                    Goldfish your deck in 3D and find out if your gameplan actually works on turn 4.
                   </p>
                 </div>
               </div>
 
-              {/* */}
               <div
-                class='relative -900 rounded-lg overflow-hidden h-64 flex items-end p-6'
-                style="background-image: url('insight-strategy.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-60'></div>
+                class='relative -900 rounded-lg overflow-hidden flex items-end p-6'
+                style={`${posterStyle} --image: url('insight-strategy.png')`}>
+                <div class='absolute inset-0 bg-black opacity-10'></div>
                 <div class='relative'>
-                  <h3 class='text-2xl font-bold text-white'>Improve Your Strategies</h3>
+                  <h3 class='text-2xl font-bold text-white'>Playtest with anyone</h3>
                   <p class='text-white mt-2'>
-                    Refine your tactics with expert insights and advanced game theories.
+                    Share a link and you're in the same game. No accounts, no installs, no friction.
                   </p>
                 </div>
               </div>
 
-              {/* */}
               <div
-                class='relative bg-gray-900 rounded-lg overflow-hidden h-64 flex items-end p-6'
-                style="background-image: url('insight-balance.png'); background-size: cover; background-position: center;">
-                <div class='absolute inset-0 bg-black opacity-60'></div>
+                class='relative bg-gray-900 rounded-lg overflow-hidden flex items-end p-6'
+                style={`${posterStyle} --image: url('insight-balance.png')`}>
+                <div class='absolute inset-0 bg-black opacity-10'></div>
                 <div class='relative'>
-                  <h3 class='text-2xl font-bold text-white'>Balance Your Deck</h3>
+                  <h3 class='text-2xl font-bold text-white'>Bring your own cards</h3>
                   <p class='text-white mt-2'>
-                    Achieve harmony in your deck, balancing power and strategy for optimal gameplay.
+                    Proxies, custom cubes, or a completely different TCG — point Arcanetable at your
+                    own card server and go.
                   </p>
                 </div>
               </div>

@@ -83,6 +83,7 @@ export let CardSystem: {
   cardBack: string;
   searchField: unknown;
   popularity: string;
+  imageUriFormat: 'standard' | 'scryfall';
 } = {};
 
 const MTG_CARD_SYSTEM = {
@@ -90,6 +91,7 @@ const MTG_CARD_SYSTEM = {
   cardDetailEndpoint: 'https://api.scryfall.com/cards/named',
   cardBack: '/arcane-table-back.webp',
   popularity: 'edhrec_rank',
+  imageUriFormat: 'scryfall',
   searchField: {
     filterEmpty: false,
     searchFields: [
@@ -151,8 +153,6 @@ async function initCardSystem() {
   Object.assign(CardSystem, cardSystem);
   console.log({ CardSystem });
 }
-
-let cardSystemInit = initCardSystem();
 
 export async function init({ gameId }) {
   headlessInit();

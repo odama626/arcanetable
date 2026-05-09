@@ -15,7 +15,14 @@ import {
   Vector3,
   Vector3Like,
 } from 'three';
-import { Card, CARD_HEIGHT, CARD_STACK_OFFSET, CARD_THICKNESS, CARD_WIDTH, CardEntryDetail } from './constants';
+import {
+  Card,
+  CARD_HEIGHT,
+  CARD_STACK_OFFSET,
+  CARD_THICKNESS,
+  CARD_WIDTH,
+  CardEntryDetail,
+} from './constants';
 import {
   cardBackTexture,
   cardLoadingTexture,
@@ -84,13 +91,13 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
   setCardData(
     mesh,
     'isDoubleSided',
-    card.detail.card_faces?.length > 1 && card.detail.card_faces[1]?.image_uris,
+    card.detail.card_faces?.length > 1 && !!card.detail.card_faces[1]?.image_uris,
   );
 
   mesh.userData.card_face_urls = [getCardImage(card)];
 
   if (mesh.userData.isDoubleSided) {
-    mesh.userData.card_face_urls.push(card.detail.card_faces[1].image_uris.large);
+    mesh.userData.card_face_urls.push(getCardImage(card, 1));
     setCardData(mesh, 'publicCardBack', cardBackMat.clone());
     setCardData(mesh, 'cardBack', cardBackMat.clone());
   }
@@ -168,7 +175,7 @@ export async function loadCardTextures(
 }
 
 const TRANSFORMS = {
-  stripBraces: (val) => val?.replace(/[\{\}]/g, ''),
+  stripBraces: val => val?.replace(/[\{\}]/g, ''),
 };
 
 function buildSearchLine(cardDetail: CardEntryDetail, config) {
@@ -181,16 +188,12 @@ function buildSearchLine(cardDetail: CardEntryDetail, config) {
     return result ?? '';
   });
 
-  return (config.filterEmpty ? values.filter(Boolean) : values)
-    .join('\n')
-    .toLowerCase();
+  return (config.filterEmpty ? values.filter(Boolean) : values).join('\n').toLowerCase();
 }
-
 
 export function getSearchLine(cardDetail: CardEntryDetail) {
   return buildSearchLine(cardDetail, CardSystem.searchField);
 }
-
 
 export function cloneCard(card: Card, newId: string): Card {
   let { mesh, modifiers, ...shared } = card;
@@ -233,13 +236,26 @@ export function shuffle(cards: Card[]) {
   }
 }
 
-export function getCardImage(card: Card) {
-  if (CardSystem.name === 'ctb') {
-    let options = Object.values(card?.detail?.image_uris ?? {})
-    return options[(Math.random() * options.length) | 0]
+function getImageUris(card: Card, face = 0) {
+  return card?.detail?.card_faces?.[face].image_uris ?? card?.detail?.image_uris;
+}
+
+export function getCardImage(card: Card, face = 0) {
+  const uris = getImageUris(card, face);
+  if (CardSystem.imageUriFormat === 'scryfall') {
+    return uris?.large;
   }
-  let image_uris = card?.detail?.card_faces?.[0].image_uris ?? card?.detail?.image_uris;
-  return image_uris?.large;
+  let options = Object.values(uris.full ?? {});
+  return options[(Math.random() * options.length) | 0];
+}
+
+export function getCardArtImage(card: Card) {
+  const uris = getImageUris(card, face);
+  if (CardSystem.imageUriFormat === 'scryfall') {
+    return uris?.art_crop;
+  }
+  let options = Object.values(uris.art ?? {});
+  return options[(Math.random() * options.length) | 0];
 }
 
 export function initializeCardMesh(card: Card, clientId: string): Card {
@@ -255,14 +271,7 @@ export function initializeCardMesh(card: Card, clientId: string): Card {
   return result;
 }
 
-export function getCardArtImage(card: Card) {
-  if (CardSystem.name === 'ctb') {
-    let options = Object.values(card?.detail?.art_image_uris ?? {})
-    return options[(Math.random() * options.length) | 0]
-  }
-  let image_uris = card?.detail?.card_faces?.[0].image_uris ?? card?.detail?.image_uris;
-  return image_uris?.art_crop;
-}
+
 
 export function getCardMeshTetherPoint(cardMesh: Mesh) {
   let targetVertex = 6;
