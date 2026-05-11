@@ -8,8 +8,8 @@ import {
   isInitialized,
   isSpectating,
   players,
-  selectedDeckIndex,
-  setSelectedDeckIndex,
+  selectedDeckId,
+  setSelectedDeckId,
 } from '~/lib/globals';
 import { HotKeys } from '~/lib/shortcuts/hotkeys';
 import StackTraceDialog from '~/lib/stack-trace-dialog';
@@ -21,7 +21,7 @@ const GamePage: Component = props => {
   const [inviteDismissed, setInviteDismissed] = createSignal(false);
 
   onMount(() => {
-    localInit({ gameId: props.params.gameId, deckIndex: selectedDeckIndex() });
+    localInit({ gameId: props.params.gameId, deckId: selectedDeckId() });
   });
 
   useBeforeLeave(() => {
@@ -32,21 +32,23 @@ const GamePage: Component = props => {
     cleanup();
   });
 
+  console.log({ selectedDeckId: selectedDeckId() });
+
   return (
     <>
       <Show when={isInitialized()}>
         <Overlay />
         <HotKeys />
       </Show>
-      <Show when={selectedDeckIndex() === undefined && !isSpectating()}>
+      <Show when={!selectedDeckId() && !isSpectating()}>
         <DeckPicker
-          onSelectDeck={settings => {
-            setSelectedDeckIndex(settings.deckIndex);
+          onStart={settings => {
+            setSelectedDeckId(settings.deckId);
             loadDeckAndJoin(settings);
           }}
         />
       </Show>
-      <Show when={selectedDeckIndex() !== undefined && players().length < 2 && !inviteDismissed()}>
+      <Show when={selectedDeckId() && players().length < 2 && !inviteDismissed()}>
         <Dialog open onOpenChange={open => setInviteDismissed(!open)}>
           <DialogContent>
             <DialogHeader>

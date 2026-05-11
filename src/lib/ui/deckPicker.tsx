@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For } from 'solid-js';
+import { Component, createEffect, createSignal, For, onMount, Show } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
   Dialog,
@@ -20,64 +20,75 @@ import {
   TextFieldInput,
   TextFieldLabel,
 } from '~/components/ui/text-field';
-import { createDeckStore } from '../deckStore';
-import { colorHashDark, startSpectating } from '../globals';
+import { createCardSystemStore, createDeckStore } from '../deckStore';
+import { colorHashDark, getCardSystem, startSpectating } from '../globals';
 import PencilIcon from 'lucide-solid/icons/pencil';
 import { cn } from '../utils';
-import { DeckEditor } from './deckEditor';
+import { Deck, DeckEditor } from './deckEditor';
 import styles from './deckPicker.module.css';
 import CopyLinkButton from '~/components/ui/copy-link-button';
+import { LoadSettings } from '../constants';
 
-const DeckPicker: Component = props => {
+interface Props {
+  onStart(settings: LoadSettings): void;
+}
+
+export default function DeckPicker(props: Props) {
   const [deckStore, setDeckStore] = createDeckStore();
-  const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(0);
-  const [editingDeck, setEditingDeck] = createSignal(false);
+  const [cardSystemStore, setCardSystemStore] = createCardSystemStore();
+  const [selectedDeckId, setSelectedDeckId] = createSignal<string>();
+  const [editingDeck, setEditingDeck] = createSignal<Deck>();
   const [startingLife, setStartingLife] = createSignal(40);
 
+  onMount(() => {
+    setSelectedDeckId(deckStore.decks[0]?.id);
+    getCardSystem().then(system => {
+      setCardSystemStore('systems', system.name, system.uri);
+    });
+  });
+
   createEffect(() => {
-    let startingLife = deckStore.decks[selectedDeckIndex()]?.startingLife;
+    const deck = deckStore.decks.find(deck => deck.id === selectedDeckId());
+    let startingLife = deck?.startingLife;
     if (startingLife) {
-      setStartingLife(startingLife);
+      setStartingLife(parseInt(startingLife));
     }
   });
 
-  function selectDeck(index: number) {
-    setSelectedDeckIndex(index);
-    let deck = deckStore.decks[index];
-    if (deck.startingLife) {
-      console.log({ deck });
-      setStartingLife(deck.startingLife);
-    }
+  function onSubmit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    e.currentTarget.reset();
+
+    props.onStart(data);
   }
 
   return (
     <>
-      <DeckEditor
-        open={!!editingDeck()}
-        setOpen={setEditingDeck}
-        deck={editingDeck()}
-        onChange={deck => {
-          setDeckStore('decks', decks => [deck, ...decks.filter(d => d.id !== deck.id)]);
-        }}
-        onDelete={id => {
-          setDeckStore('decks', decks => decks.filter(deck => deck.id !== id));
-        }}
-      />
+      <Show when={editingDeck()}>
+        {deck => (
+          <DeckEditor
+            onClose={() => setEditingDeck()}
+            deck={deck()}
+            onChange={deck => {
+              setDeckStore('decks', (decks: Deck[]) => [
+                deck,
+                ...decks.filter(d => d.id !== deck.id),
+              ]);
+            }}
+            onDelete={() => {
+              setDeckStore('decks', (decks: Deck[]) => decks.filter(d => d.id !== deck().id));
+            }}
+          />
+        )}
+      </Show>
       <Dialog open={!editingDeck()}>
         <DialogContent class='max-w-3xl'>
           <DialogHeader>
             <DialogTitle>Start Session</DialogTitle>
           </DialogHeader>
-          <form
-            class='flex flex-col gap-5'
-            onSubmit={e => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const data = Object.fromEntries(formData.entries());
-              e.currentTarget.reset();
-
-              props.onSelectDeck(data);
-            }}>
+          <form class='flex flex-col gap-5' onSubmit={onSubmit}>
             <TextField
               defaultValue={localStorage.getItem('arcanetable-name') ?? ''}
               onChange={value => localStorage.setItem('arcanetable-name', value)}>
@@ -94,44 +105,16 @@ const DeckPicker: Component = props => {
             </NumberField>
             <div>
               <label class={cn(labelVariants())}>Select a deck</label>
-              <input type='hidden' name='deckIndex' value={selectedDeckIndex()} />
+              <input type='hidden' name='deckId' value={selectedDeckId()} />
               <div class='grid grid-cols-3 gap-4 my-2'>
                 <For each={deckStore.decks}>
                   {(deck, i) => (
-                    <div
-                      style='position: relative; aspect-ratio: 626/457;'
-                      class='relative rounded-lg overflow-hidden shadow-lg'
-                      classList={{ [styles.selectedRadioItem]: selectedDeckIndex() === i() }}>
-                      <button
-                        style='width: 100%; height: 100%;'
-                        type='button'
-                        onClick={() => selectDeck(i())}>
-                        <div
-                          class='bg-cover'
-                          style={`background-image: url(${
-                            deck.coverImage ?? '/arcane-table-back.webp'
-                          }); height: 100%;`}></div>
-                        <div class='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent py-4 px-2 text-left'>
-                          <h3 class='text-white text-xl font-semibold'>{deck.name}</h3>
-                          <div class='flex flex-row gap-2 pt-2'>
-                            <For each={deck.tags}>
-                              {tag => (
-                                <span
-                                  class='text-white rounded-md h-7 px-3 text-sm inline-flex items-center justify-center'
-                                  style={`background-color: ${colorHashDark.hex(tag.name)};`}>
-                                  {tag.name}
-                                </span>
-                              )}
-                            </For>
-                          </div>
-                        </div>
-                      </button>
-                      <div class='absolute top-2 right-2'>
-                        <button type='button' onClick={() => setEditingDeck(deck)}>
-                          <PencilIcon style='color: white;' />
-                        </button>
-                      </div>
-                    </div>
+                    <DeckOption
+                      deck={deck}
+                      isSelected={deck.id === selectedDeckId()}
+                      onSelect={() => setSelectedDeckId(deck.id)}
+                      onEdit={() => setEditingDeck(deck)}
+                    />
                   )}
                 </For>
               </div>
@@ -143,10 +126,12 @@ const DeckPicker: Component = props => {
               </Button>
               <Button
                 variant='ghost'
-                onClick={() => setEditingDeck(deckStore.decks[selectedDeckIndex()])}>
+                onClick={() =>
+                  setEditingDeck(deckStore.decks.find(deck => deck.id === selectedDeckId()))
+                }>
                 Edit Deck
               </Button>
-              <Button variant='outline' type='button' onClick={() => setEditingDeck(true)}>
+              <Button variant='outline' type='button' onClick={() => setEditingDeck({})}>
                 Create Deck
               </Button>
               <Button type='submit'>Start Playtest</Button>
@@ -156,5 +141,47 @@ const DeckPicker: Component = props => {
       </Dialog>
     </>
   );
-};
-export default DeckPicker;
+}
+
+interface DeckOptionProps {
+  onSelect(): void;
+  onEdit(): void;
+  isSelected: boolean;
+  deck: Deck;
+}
+
+function DeckOption(props: DeckOptionProps) {
+  return (
+    <div
+      style='position: relative; aspect-ratio: 626/457;'
+      class='relative rounded-lg overflow-hidden shadow-lg'
+      classList={{ [styles.selectedRadioItem]: props.isSelected }}>
+      <button style='width: 100%; height: 100%;' type='button' onClick={props.onSelect}>
+        <div
+          class='bg-cover'
+          style={`background-image: url(${
+            props.deck.coverImage ?? '/arcane-table-back.webp'
+          }); height: 100%;`}></div>
+        <div class='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent py-4 px-2 text-left'>
+          <h3 class='text-white text-xl font-semibold'>{props.deck.name}</h3>
+          <div class='flex flex-row gap-2 pt-2 flex-wrap'>
+            <For each={props.deck.tags}>
+              {tag => (
+                <span
+                  class='text-white rounded-md h-7 px-3 text-sm inline-flex items-center justify-center whitespace-nowrap'
+                  style={`background-color: ${colorHashDark.hex(tag.name)};`}>
+                  {tag.name}
+                </span>
+              )}
+            </For>
+          </div>
+        </div>
+      </button>
+      <div class='absolute top-2 right-2'>
+        <button type='button' style='cursor: pointer;' onClick={props.onEdit}>
+          <PencilIcon style='color: white; filter: drop-shadow(2px 4px 6px black);' />
+        </button>
+      </div>
+    </div>
+  );
+}

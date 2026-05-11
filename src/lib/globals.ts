@@ -55,7 +55,6 @@ export let table: Object3D;
 export let gameLog: YArray<any>;
 export let [animating, setAnimating] = createSignal(false);
 export let [players, setPlayers] = createSignal([]);
-export let [deckIndex, setDeckIndex] = createSignal();
 export let [isInitialized, setIsIntitialized] = createSignal(false);
 export let focusRayCaster: Raycaster;
 export let arrowHelper = new ArrowHelper();
@@ -69,7 +68,7 @@ export let orbitControls: OrbitControls;
 export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.PI];
 export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
-export const [selectedDeckIndex, setSelectedDeckIndex] = createSignal(undefined);
+export const [selectedDeckId, setSelectedDeckId] = createSignal<string | undefined>();
 export let textureLoaderWorker;
 export let selection: Selection;
 export let [capturedErrors, setCapturedErrors] = createSignal([]);
@@ -79,6 +78,7 @@ export let cardBackTexture: THREE.Texture;
 
 export let CardSystem: {
   cardDetailEndpoint: string;
+  uri?: string;
   name: string;
   cardBack: string;
   searchField: unknown;
@@ -88,6 +88,7 @@ export let CardSystem: {
 
 const MTG_CARD_SYSTEM = {
   name: 'mtg',
+  uri: null,
   cardDetailEndpoint: 'https://api.scryfall.com/cards/named',
   cardBack: '/arcane-table-back.webp',
   popularity: 'edhrec_rank',
@@ -143,13 +144,20 @@ export function initClock() {
   clock = new Clock();
 }
 
-async function initCardSystem() {
+export async function getCardSystem() {
   let searchParams = new URLSearchParams(window.location.search);
-  let system = searchParams.get('system');
-  if (!system?.length) return CardSystem = MTG_CARD_SYSTEM;
+  let uri = searchParams.get('system');
+  if (!uri?.length) {
+    return MTG_CARD_SYSTEM;
+  }
 
-  const cardSystem = await fetch(system).then(r => r.json());
+  const cardSystem = await fetch(uri).then(r => r.json());
+  cardSystem.uri = uri;
+  return cardSystem;
+}
 
+async function initCardSystem() {
+  const cardSystem = await getCardSystem();
   Object.assign(CardSystem, cardSystem);
   console.log({ CardSystem });
 }
@@ -166,7 +174,7 @@ export async function init({ gameId }) {
     console.log(item, loaded, total);
   };
 
-  await initCardSystem()
+  await initCardSystem();
 
   cardBackTexture = textureLoader.load(CardSystem.cardBack);
   cardBackTexture.colorSpace = THREE.SRGBColorSpace;
@@ -248,8 +256,7 @@ export function cleanup() {
   ydoc = new Doc();
   setAnimating(false);
   setPlayers([]);
-  setDeckIndex();
-  setSelectedDeckIndex(undefined);
+  setSelectedDeckId();
   setCapturedErrors([]);
   setIsSpectating(false);
   setIsIntitialized(false);
@@ -296,7 +303,7 @@ export function onConcede(clientId?: string) {
     Object.values(playAreas).forEach(playArea => {
       playArea.destroy();
     });
-    setSelectedDeckIndex(undefined);
+    setSelectedDeckId();
     setIsSpectating(false);
     setIsIntitialized(false);
     orbitControls?.dispose();

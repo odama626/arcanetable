@@ -21,6 +21,7 @@ export interface CardEntryDetail {
   type_line: string;
   popularity: number;
   all_parts?: CardDetailPart[];
+  card_faces?: CardEntryDetail[];
 }
 
 export interface CardEntry {
@@ -60,6 +61,15 @@ export interface CardZone<AddOptions = {} & { skipAnimation?: boolean; destroy?:
   getSerializable(): { id: string };
   observable: { cardCount: number };
   cards: Card[];
+}
+
+export interface LoadSettings {
+  name: string;
+  deckId: string;
+}
+
+export interface GameOptions extends LoadSettings {
+  gameId: string;
 }
 
 export const FORMATS = [

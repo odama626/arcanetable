@@ -6,7 +6,13 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { animateObject, cancelAnimation, renderAnimations } from './lib/animations';
 import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
-import { CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './lib/constants';
+import {
+  CARD_STACK_OFFSET,
+  CARD_THICKNESS,
+  CardZone,
+  GameOptions,
+  LoadSettings,
+} from './lib/constants';
 import {
   animating,
   camera,
@@ -30,7 +36,6 @@ import {
   sendEvent,
   setAnimating,
   setCapturedErrors,
-  setDeckIndex,
   setHoverSignal,
   setIsIntitialized,
   setPlayAreas,
@@ -56,10 +61,6 @@ let dragTargets: THREE.Object3D[];
 let hand: Hand;
 let time = 0;
 let playArea: PlayArea;
-
-interface GameOptions {
-  gameId: string;
-}
 
 export async function localInit(gameOptions: GameOptions) {
   container = document.createElement('div');
@@ -112,25 +113,22 @@ export async function localInit(gameOptions: GameOptions) {
   composer.addPass(new RenderPass(scene, camera));
 
   renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
-  document.addEventListener('mousedown', onDocumentMouseDown, false);
   document.addEventListener('click', onDocumentClick, false);
   document.addEventListener('dragstart', onDocumentDragStart, false);
   document.addEventListener('mouseup', onDocumentDrop, false);
   document.addEventListener('wheel', onDocumentScroll, false);
   window.addEventListener('resize', onWindowResize, false);
 
-  if (gameOptions.deckIndex) {
-    loadDeckAndJoin(gameOptions.deckIndex);
+  if (gameOptions.deckId) {
+    loadDeckAndJoin(gameOptions);
   }
   startAnimating();
 }
 
-export async function loadDeckAndJoin(settings) {
-  let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
+export async function loadDeckAndJoin(settings: LoadSettings) {
+  let deckStore = JSON.parse(localStorage.getItem('decks') || `{}`);
 
-  setDeckIndex(settings.deckIndex);
-
-  let deck = decks?.decks[settings.deckIndex];
+  let deck = deckStore?.decks.find(deck => deck.id === settings.deckId);
   let counters = deck?.counters ?? [];
 
   playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);
@@ -155,8 +153,6 @@ function onDocumentScroll(event) {
 
   scrollTarget().dispatchEvent({ type: 'scroll', event });
 }
-
-function onDocumentMouseDown(event) {}
 
 let isDragging = false;
 

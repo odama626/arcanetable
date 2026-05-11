@@ -8,8 +8,9 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
-import { colorHashLight, deckIndex, sendEvent } from '../globals';
+import { colorHashLight, selectedDeckId, sendEvent } from '../globals';
 import { sha1 } from '../utils';
+import { Deck } from './deckEditor';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal([]);
@@ -19,8 +20,9 @@ function createCounter(counter) {
   sendEvent({ type: 'createCounter', counter });
 
   let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
-  decks.decks[deckIndex()].counters = decks.decks[deckIndex()].counters ?? [];
-  decks.decks[deckIndex()].counters.push(counter);
+  const deck = decks.decks.find((deck: Deck) => deck.id === selectedDeckId());
+  deck.counters ??= [];
+  deck.counters.push(counter);
   localStorage.setItem('decks', JSON.stringify(decks));
 }
 

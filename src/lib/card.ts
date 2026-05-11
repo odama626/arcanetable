@@ -236,7 +236,7 @@ export function shuffle(cards: Card[]) {
   }
 }
 
-function getImageUris(card: Card, face = 0) {
+function getImageUris(card: { detail: CardEntryDetail}, face = 0) {
   return card?.detail?.card_faces?.[face].image_uris ?? card?.detail?.image_uris;
 }
 
@@ -245,12 +245,12 @@ export function getCardImage(card: Card, face = 0) {
   if (CardSystem.imageUriFormat === 'scryfall') {
     return uris?.large;
   }
-  let options = Object.values(uris.full ?? {});
+  let options = Object.values(uris?.full ?? {});
   return options[(Math.random() * options.length) | 0];
 }
 
-export function getCardArtImage(card: Card) {
-  const uris = getImageUris(card, face);
+export function getCardArtImage(card: { detail: CardEntryDetail}) {
+  const uris = getImageUris(card);
   if (CardSystem.imageUriFormat === 'scryfall') {
     return uris?.art_crop;
   }
