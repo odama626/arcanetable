@@ -9,16 +9,17 @@ export default function CopyLinkButton<T extends ValidComponent = 'button'>(
   const location = useLocation();
   const [copied, setCopied] = createSignal(false);
 
-  let url = new URL(document.location);
-  url.pathname = location.pathname;
-  url.searchParams.forEach((value, key) => {
-    url.searchParams.delete(key);
-  });
+  // let url = new URL(document.location);
+  // url.pathname = location.pathname;
+  // url.searchParams.forEach((value, key) => {
+  //   url.searchParams.delete(key);
+  // });
+  
   return (
     <Button
       {...props}
       onClick={() => {
-        navigator.clipboard.writeText(url.toString());
+        navigator.clipboard.writeText(window.location.href);
         setCopied(true);
         setTimeout(() => setCopied(false), 1000);
       }}>
