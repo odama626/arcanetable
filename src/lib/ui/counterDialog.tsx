@@ -10,23 +10,27 @@ import {
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
 import { colorHashLight, selectedDeckId, sendEvent } from '../globals';
 import { sha1 } from '../utils';
-import { Deck } from './deckEditor';
+import { Counter } from './deckEditor';
+import { getDeckStore } from '../deckStore';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
-export const [counters, setCounters] = createSignal([]);
+export const [counters, setCounters] = createSignal<Counter[]>([]);
 
-function createCounter(counter) {
+function createCounter(counter: Counter) {
   setCounters(counters => [...counters, counter]);
   sendEvent({ type: 'createCounter', counter });
 
-  let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
-  const deck = decks.decks.find((deck: Deck) => deck.id === selectedDeckId());
+  const deckId = selectedDeckId();
+  if (!deckId) throw new Error(`selectedDeckId is undefiend`);
+
+  const deckStore = getDeckStore();
+  const deck = deckStore.decks[deckId];
   deck.counters ??= [];
   deck.counters.push(counter);
-  localStorage.setItem('decks', JSON.stringify(decks));
+  localStorage.setItem('decks', JSON.stringify(deckStore));
 }
 
-const CounterDialog: Component = props => {
+export default function CounterDialog() {
   <Dialog open={isCounterDialogOpen()} onOpenChange={setIsCounterDialogOpen}>
     <DialogContent>
       <DialogHeader>
@@ -59,6 +63,4 @@ const CounterDialog: Component = props => {
       </form>
     </DialogContent>
   </Dialog>;
-};
-
-export default CounterDialog;
+}

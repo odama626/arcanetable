@@ -50,6 +50,7 @@ import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
 import { getGlobalRotation, restackItems } from './lib/utils';
 import { processEvents } from './remoteEvents';
+import { getDeckStore } from './lib/deckStore';
 
 var container;
 
@@ -126,9 +127,9 @@ export async function localInit(gameOptions: GameOptions) {
 }
 
 export async function loadDeckAndJoin(settings: LoadSettings) {
-  let deckStore = JSON.parse(localStorage.getItem('decks') || `{}`);
+  const deckStore = getDeckStore();
 
-  let deck = deckStore?.decks.find(deck => deck.id === settings.deckId);
+  let deck = deckStore.decks[settings.deckId];
   let counters = deck?.counters ?? [];
 
   playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);

@@ -41,14 +41,14 @@ export default function DeckPicker(props: Props) {
   const [startingLife, setStartingLife] = createSignal(40);
 
   onMount(() => {
-    setSelectedDeckId(deckStore.decks[0]?.id);
+    setSelectedDeckId(Object.values(deckStore.decks)[0]?.id)
     getCardSystem().then(system => {
       setCardSystemStore('systems', system.name, system.uri);
     });
   });
 
   createEffect(() => {
-    const deck = deckStore.decks.find(deck => deck.id === selectedDeckId());
+    const deck = deckStore.decks[selectedDeckId()];
     let startingLife = deck?.startingLife;
     if (startingLife) {
       setStartingLife(parseInt(startingLife));
@@ -72,13 +72,11 @@ export default function DeckPicker(props: Props) {
             onClose={() => setEditingDeck()}
             deck={deck()}
             onChange={deck => {
-              setDeckStore('decks', (decks: Deck[]) => [
-                deck,
-                ...decks.filter(d => d.id !== deck.id),
-              ]);
+              setDeckStore('decks', deck.id, deck);
             }}
             onDelete={() => {
-              setDeckStore('decks', (decks: Deck[]) => decks.filter(d => d.id !== deck().id));
+              console.log({ deck });
+              setDeckStore('decks', deck.id, undefined);
             }}
           />
         )}
@@ -107,7 +105,7 @@ export default function DeckPicker(props: Props) {
               <label class={cn(labelVariants())}>Select a deck</label>
               <input type='hidden' name='deckId' value={selectedDeckId()} />
               <div class='grid grid-cols-3 gap-4 my-2'>
-                <For each={deckStore.decks}>
+                <For each={Object.values(deckStore.decks)}>
                   {(deck, i) => (
                     <DeckOption
                       deck={deck}
@@ -127,7 +125,7 @@ export default function DeckPicker(props: Props) {
               <Button
                 variant='ghost'
                 onClick={() =>
-                  setEditingDeck(deckStore.decks.find(deck => deck.id === selectedDeckId()))
+                  setEditingDeck(deckStore.decks[selectedDeckId()])
                 }>
                 Edit Deck
               </Button>

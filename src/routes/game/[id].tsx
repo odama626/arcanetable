@@ -32,8 +32,6 @@ const GamePage: Component = props => {
     cleanup();
   });
 
-  console.log({ selectedDeckId: selectedDeckId() });
-
   return (
     <>
       <Show when={isInitialized()}>

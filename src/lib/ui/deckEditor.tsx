@@ -35,15 +35,22 @@ import CircleInfoIcon from 'lucide-solid/icons/info';
 import { cn } from '../utils';
 import styles from './deckEditor.module.css';
 
+export interface Counter {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface Deck {
   id: string;
   deck: CardEntry[];
   inPlay: CardEntry[];
-  tags?: string[];
+  tags?: {name: string}[];
   startingLife: string;
   name: string;
   cardList: string;
   coverImage?: string;
+  counters?: Counter[];
 }
 
 function sortByPopularity(a: { detail: CardEntryDetail }, b: { detail: CardEntryDetail }) {
