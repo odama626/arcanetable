@@ -43,6 +43,7 @@ export interface Counter {
 
 export interface Deck {
   id: string;
+  system: string;
   deck: CardEntry[];
   inPlay: CardEntry[];
   tags?: {name: string}[];
