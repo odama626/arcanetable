@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { Component, createSignal, For, onMount, Show, splitProps } from 'solid-js';
+import { Component, createSignal, For, onCleanup, onMount, Show, splitProps } from 'solid-js';
 import { Button } from '~/components/ui/button';
 import {
   Combobox,
@@ -32,8 +32,10 @@ import { CardEntry, CardEntryDetail, DetailedCardEntry, FORMATS } from '../const
 import { fetchCardInfo, loadCardList } from '../deck';
 import { colorHashDark } from '../globals';
 import CircleInfoIcon from 'lucide-solid/icons/info';
+import CloseIcon from 'lucide-solid/icons/x';
 import { cn } from '../utils';
 import styles from './deckEditor.module.css';
+import CardList from './deckEditor/cardList';
 
 export interface Counter {
   id: string;
@@ -46,7 +48,7 @@ export interface Deck {
   system: string;
   deck: CardEntry[];
   inPlay: CardEntry[];
-  tags?: {name: string}[];
+  tags?: { name: string }[];
   startingLife: string;
   name: string;
   cardList: string;
@@ -147,9 +149,20 @@ export const DeckEditor: Component<Props> = props => {
     }
   }
 
+  onMount(() => {
+    window.addEventListener('drop', handleDrop, { passive: false})
+  })
+
+  onCleanup(() => {
+    window.removeEventListener('drop', handleDrop)
+  })
+
+
+
   function handleDrop(event: DragEvent) {
+    console.log('drop', event)
     event.preventDefault();
-    if (!event.dataTransfer) return;
+    // if (!event.dataTransfer) return;
     let { files } = event.dataTransfer;
     if (files.length > 0) {
       let file = files[0];
@@ -162,206 +175,166 @@ export const DeckEditor: Component<Props> = props => {
   }
 
   return (
-    <div class={styles.container}>
-      <div class={styles.innerContainer}>
-        <div class={styles.formContainer}>
-          <form class='gap-5' onSubmit={onSaveDeck} onDrop={handleDrop}>
-            <input type='hidden' value={props?.deck?.id ?? nanoid()} name='id' />
-
-            <TextField value={name()} onChange={name => setName(name)}>
-              <TextFieldLabel for='name'>Name</TextFieldLabel>
-              <TextFieldInput required type='text' id='name' name='name' placeholder='deck name' />
-            </TextField>
-
-            <NumberField defaultValue={props?.deck?.startingLife || '40'}>
-              <NumberFieldLabel for='startingLife'>Starting Life Total</NumberFieldLabel>
-              <div class='relative'>
-                <NumberFieldInput required id='startingLife' name='startingLife' />
-                <NumberFieldIncrementTrigger />
-                <NumberFieldDecrementTrigger />
-              </div>
-            </NumberField>
-
-            <TextField
-              class='flex flex-col grow gap-1'
-              defaultValue={props?.deck?.cardList}
-              value={cardListText()}>
-              <div class='flex flex-row flex-start items-end gap-2'>
-                <div>
-                  <TextFieldLabel for='cardList'>Card List</TextFieldLabel>
-                  <TextFieldDescription>
-                    Supports text based decklist formats and drag and drop
-                  </TextFieldDescription>
-                </div>
-                <HoverCard openDelay={100}>
-                  <HoverCardTrigger>
-                    <CircleInfoIcon class='text-sky-500 hover:text-sky-400' />
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p>Supported cardlist formats:</p>
-                    <ul class='list-disc list-inside'>
-                      <li>Archidekt</li>
-                      <li>MTG Goldfish</li>
-                      <li>mtg.wtf</li>
-                      <li>MTGO</li>
-                      <li>Text</li>
-                    </ul>
-                  </HoverCardContent>
-                </HoverCard>
-              </div>
-              <TextFieldTextArea
-                style='white-space: pre;'
-                class='grow'
-                onInput={e => {
-                  updateCardList(e.currentTarget.value);
-                }}
-                required
-                id='cardList'
-                name='cardList'
-                placeholder='1x Sol Ring'
-              />
-            </TextField>
-            <div>
-              <label class={cn(labelVariants())}>Start in play</label>
-              <Combobox
-                multiple
-                options={cardList()}
-                value={cardsInPlay()}
-                optionValue={card => {
-                  return card.name;
-                }}
-                onChange={value => {
-                  setCardsInPlay(value);
-                  setIsCardsInPlayDirty(true);
-                }}
-                optionTextValue={(card: DetailedC)=> {
-                  return card.name;
-                }}
-                optionLabel={card => card.name}
-                placeholder='Card in play'
-                itemComponent={props => (
-                  <ComboboxItem item={props.item}>
-                    <ComboboxItemLabel>{props.item.rawValue.name}</ComboboxItemLabel>
-                  </ComboboxItem>
-                )}>
-                <ComboboxControl>
-                  {state => (
-                    <>
-                      <div class={styles.multiSelectControl}>
-                        <For each={state.selectedOptions()}>
-                          {option => (
-                            <span
-                              class={styles.multiSelectItem}
-                              onPointerDown={e => e.stopPropagation()}>
-                              <Button
-                                size='xs'
-                                variant='secondary'
-                                onClick={() => state.remove(option)}>
-                                {option.name}
-                              </Button>
-                            </span>
-                          )}
-                        </For>
-                        <div class={styles.multiSelectInput}>
-                          <ComboboxInput />
-                          <ComboboxTrigger />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </ComboboxControl>
-                <ComboboxContent style='max-height: 50lvh; overflow: auto;' />
-              </Combobox>
+    <form onSubmit={onSaveDeck}>
+      <div class={styles.container} onDragOver={e => e.preventDefault()}>
+        <div style='grid-area: header;' class='px-6 py-4 text-2xl flex flex-row gap-2 items-center'>
+          <span>{name()}</span>
+          <div class='ml-auto' />
+          <Button class='cursor-pointer' variant='outline' type='button' onClick={props.onClose}>
+            Close
+          </Button>
+        </div>
+        <div class={`gap-5 ${styles.formContainer}`}>
+          <input type='hidden' value={props?.deck?.id ?? nanoid()} name='id' />
+          <TextField value={name()} onChange={name => setName(name)}>
+            <TextFieldLabel for='name'>Deck Name</TextFieldLabel>
+            <TextFieldInput required type='text' id='name' name='name' placeholder='deck name' />
+          </TextField>
+          <NumberField defaultValue={props?.deck?.startingLife || '40'}>
+            <NumberFieldLabel for='startingLife'>Starting Life Total</NumberFieldLabel>
+            <div class='relative'>
+              <NumberFieldInput required id='startingLife' name='startingLife' />
+              <NumberFieldIncrementTrigger />
+              <NumberFieldDecrementTrigger />
             </div>
-            <div>
-              <label class={cn(labelVariants())}>Deck Tags</label>
-              <Combobox
-                multiple
-                triggerMode='focus'
-                options={FORMATS}
-                onChange={value => setTags(value)}
-                value={tags()}
-                optionValue='name'
-                optionTextValue='name'
-                placeholder='tags'
-                itemComponent={props => (
-                  <ComboboxItem item={props.item}>
-                    <ComboboxItemLabel>{props.item.rawValue.name}</ComboboxItemLabel>
-                  </ComboboxItem>
-                )}>
-                <ComboboxControl>
-                  {state => (
-                    <>
-                      <div class={styles.multiSelectControl}>
-                        <For each={state.selectedOptions()}>
-                          {option => (
-                            <span
-                              class={styles.multiSelectItem}
-                              onPointerDown={e => e.stopPropagation()}>
-                              <Button
-                                size='xs'
-                                variant='secondary'
-                                style={`background-color: ${colorHashDark.hex(option.name)}; color: white;`}
-                                onClick={() => state.remove(option)}>
-                                {option.name}
-                              </Button>
-                            </span>
-                          )}
-                        </For>
-                        <div class={styles.multiSelectInput}>
-                          <ComboboxInput />
-                          <ComboboxTrigger />
-                        </div>
+          </NumberField>
+          <div>
+            <label class={cn(labelVariants())}>Deck Tags</label>
+            <Combobox
+              multiple
+              triggerMode='focus'
+              options={FORMATS}
+              onChange={value => setTags(value)}
+              value={tags()}
+              optionValue='name'
+              optionTextValue='name'
+              placeholder='tags'
+              itemComponent={props => (
+                <ComboboxItem item={props.item}>
+                  <ComboboxItemLabel>{props.item.rawValue.name}</ComboboxItemLabel>
+                </ComboboxItem>
+              )}>
+              <ComboboxControl>
+                {state => (
+                  <>
+                    <div class={styles.multiSelectControl}>
+                      <For each={state.selectedOptions()}>
+                        {option => (
+                          <span
+                            class={styles.multiSelectItem}
+                            onPointerDown={e => e.stopPropagation()}>
+                            <Button
+                              size='xs'
+                              variant='secondary'
+                              style={`background-color: ${colorHashDark.hex(option.name)}; color: white;`}
+                              onClick={() => state.remove(option)}>
+                              {option.name}
+                            </Button>
+                          </span>
+                        )}
+                      </For>
+                      <div class={styles.multiSelectInput}>
+                        <ComboboxInput />
+                        <ComboboxTrigger />
                       </div>
-                    </>
-                  )}
-                </ComboboxControl>
-                <ComboboxContent style='max-height: 50lvh; overflow: auto;' />
-              </Combobox>
-            </div>
-            <DialogFooter>
-              <Show when={isEditing()}>
-                <Button
-                  variant='secondary'
-                  onClick={() => {
-                    props.onDelete(props?.deck?.id);
-                    props.onClose();
-                  }}>
-                  Delete Deck
-                </Button>
-              </Show>
-              <Button variant='secondary' type='button' onClick={props.onClose}>
-                Cancel
+                    </div>
+                  </>
+                )}
+              </ComboboxControl>
+              <ComboboxContent style='max-height: 50lvh; overflow: auto;' />
+            </Combobox>
+          </div>
+          <CardList entries={cardList()} />
+          <div>
+            <label class={cn(labelVariants())}>Start in play</label>
+            <Combobox
+              multiple
+              options={cardList()}
+              value={cardsInPlay()}
+              optionValue={card => {
+                return card.name;
+              }}
+              onChange={value => {
+                setCardsInPlay(value);
+                setIsCardsInPlayDirty(true);
+              }}
+              optionTextValue={(card: DetailedC) => {
+                return card.name;
+              }}
+              optionLabel={card => card.name}
+              placeholder='Card in play'
+              itemComponent={props => (
+                <ComboboxItem item={props.item}>
+                  <ComboboxItemLabel>{props.item.rawValue.name}</ComboboxItemLabel>
+                </ComboboxItem>
+              )}>
+              <ComboboxControl>
+                {state => (
+                  <>
+                    <div class={styles.multiSelectControl}>
+                      <For each={state.selectedOptions()}>
+                        {option => (
+                          <span
+                            class={styles.multiSelectItem}
+                            onPointerDown={e => e.stopPropagation()}>
+                            <Button
+                              size='xs'
+                              variant='secondary'
+                              onClick={() => state.remove(option)}>
+                              {option.name}
+                            </Button>
+                          </span>
+                        )}
+                      </For>
+                      <div class={styles.multiSelectInput}>
+                        <ComboboxInput />
+                        <ComboboxTrigger />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </ComboboxControl>
+              <ComboboxContent style='max-height: 50lvh; overflow: auto;' />
+            </Combobox>
+          </div>
+          <div class='flex gap-1 justify-end'>
+            <Show when={isEditing()}>
+              <Button
+                class='cursor-pointer'
+                variant='ghost'
+                onClick={() => {
+                  props.onDelete(props?.deck?.id);
+                  props.onClose();
+                }}>
+                Delete Deck
               </Button>
-              <Button type='submit'>{isEditing() ? 'Update Deck' : 'Create Deck'}</Button>
-            </DialogFooter>
-          </form>
+            </Show>
+            <Button type='submit'>{isEditing() ? 'Update Deck' : 'Create Deck'}</Button>
+          </div>
         </div>
         <div class={styles.cardListScrollContainer} aria-hidden='false'>
-          <div style='position: relative'>
-            <div class={styles.cardList}>
-              <For each={cardList()}>
-                {card => (
-                  <div style='position: relative;'>
-                    <img crossOrigin='' src={getCardImage(card)} />
-                    <div
-                      class='text-xl font-bold rounded-md px-4 py-1'
-                      style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        'background-color': 'black',
-                        color: 'white',
-                      }}>
-                      {card.qty ?? 1}
-                    </div>
+          <div class={styles.cardList}>
+            <For each={cardList()}>
+              {card => (
+                <div style='position: relative;'>
+                  <img crossOrigin='' src={getCardImage(card)} />
+                  <div
+                    class='text-xl font-bold rounded-md px-4 py-1'
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      'background-color': 'black',
+                      color: 'white',
+                    }}>
+                    {card.qty ?? 1}
                   </div>
-                )}
-              </For>
-            </div>
+                </div>
+              )}
+            </For>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 };

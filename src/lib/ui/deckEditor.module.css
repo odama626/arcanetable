@@ -4,39 +4,43 @@
   z-index: 40;
   background-color: hsla(var(--background) / 0.8);
   pointer-events: auto;
+
+  display: grid;
+  grid-template-areas: "header header"  "list form";
+  grid-template-rows: auto 1fr;
+  grid-template-columns: auto 1fr;
 }
 
 .innerContainer {
   display: grid;
-  grid-template-columns: 60ch 1fr;
+  grid-template-columns: 50ch 1fr;
   align-items: center;
   position: relative;
   gap: 1rem;
-  padding: 1rem;
+  padding-inline: 1rem;
 }
 
 .formContainer {
-  padding: 2rem;
+  padding: 1rem;
   background-color: hsl(var(--background));
   border-radius: 0.5rem;
   height: 100%;
-}
-
-.formContainer > form {
   display: flex;
   flex-direction: column;
-  height: 100%;
   justify-content: stretch;
+  overflow: auto;
 }
 
 .cardList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
+  margin-bottom: 5rem;
 }
 
 .cardListScrollContainer {
-  height: calc(100vh - 2rem);
+  /*height: calc(100vh - 2rem);*/
+  height: 100%;
   box-sizing: border-box;
   overflow: auto;
 }
