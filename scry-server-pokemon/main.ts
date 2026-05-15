@@ -2,7 +2,7 @@
 import app, { CACHE_TTL } from "./server.ts";
 import { parseArgs } from "jsr:@std/cli/parse-args";
 
-const args = parseArgs(Deno.args, { default: { port: 8788 } });
+const args = parseArgs(Deno.args, { default: { port: 8790 } });
 const PORT = Number(args.port);
 
 const kv = await Deno.openKv();
@@ -28,7 +28,7 @@ async function decompress(data: Uint8Array): Promise<string> {
 // Wrap app.fetch with KV caching
 async function cachedFetch(req: Request): Promise<Response> {
   const url = new URL(req.url);
-  const key = ["mtg-system-v12", url.pathname + url.search];
+  const key = ["pokemon-v5", url.pathname + url.search];
 
   const hit = await kv.get<CachedEntry>(key);
   if (hit.value) {

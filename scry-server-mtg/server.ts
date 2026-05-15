@@ -121,6 +121,7 @@ function imageUris(
 function mapCard(card: ScryfallCard, baseUrl: string): Record<string, unknown> {
   const { image_uris: _iu, card_faces: _cf, ...rest } = card;
   return {
+    id: card.id,
     ...rest,
     card_faces: (card.card_faces ?? []).map(face => ({
       ...face,
@@ -182,12 +183,25 @@ app.get('/', c => {
 });
 
 app.get('/cards/named', async c => {
+  const id = c.req.query('id');
   const exact = c.req.query('exact');
   const set = c.req.query('set');
-
-  if (!exact) return errorResponse('bad_request', "Missing 'exact' parameter", 400);
-
   const baseUrl = getBaseUrl(c.req.raw);
+
+  if (id) {
+    const res = await scryfallFetch(`/cards/${encodeURIComponent(id)}`);
+    if (res.status === 404) return errorResponse('not_found', `No card with id "${id}"`, 404);
+    if (res.status === 429) return errorResponse('rate_limited', 'Scryfall rate limit hit', 503);
+    if (!res.ok) return errorResponse('upstream_error', `Scryfall returned ${res.status}`, 502);
+    const card = (await res.json()) as ScryfallCard;
+    return new Response(JSON.stringify(mapCard(card, baseUrl)), {
+      status: 200,
+      headers: cacheHeaders(),
+    });
+  }
+
+  if (!exact) return errorResponse('bad_request', "Missing 'exact' or 'id' parameter", 400);
+
   const params = new URLSearchParams({ exact });
   if (set) params.set('set', set);
 
@@ -202,7 +216,6 @@ app.get('/cards/named', async c => {
     headers: cacheHeaders(),
   });
 });
-
 app.get('/cards/search', async c => {
   const q = c.req.query('q') ?? '';
   const type = c.req.query('type');
@@ -257,6 +270,7 @@ app.get('/cards/search', async c => {
 function minimalCard(card: Record<string, unknown>) {
   const faces = card.card_faces as any[];
   return {
+    id: card.id,
     name: card.name,
     type: card.type,
     type_line: card.type_line,

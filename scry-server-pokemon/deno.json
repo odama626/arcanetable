@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "hono": "jsr:@hono/hono@^4",
+    "jsr:@std/cli/parse-args": "jsr:@std/cli@^1/parse-args",
+    "jsr:@std/path": "jsr:@std/path@^1"
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-read --allow-env --unstable-kv main.ts",
+    "dev": "deno run --allow-net --allow-read --allow-env --unstable-kv --watch main.ts"
+  }
+}
