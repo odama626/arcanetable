@@ -166,7 +166,7 @@ app.get('/', c => {
       uri: baseUrl,
       cardDetailEndpoint: `${baseUrl}/cards/named`,
       cardSearchEndpoint: `${baseUrl}/cards/search`,
-      cardBack: `${baseUrl}/res/card-back.webp`,
+      // cardBack: `${baseUrl}/res/card-back.webp`,
       imageUriFormat: 'standard',
       types: [
         'Effect Monster',
