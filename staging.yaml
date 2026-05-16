@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-staging
+  namespace: arcanetable
+  labels:
+    app: webapp-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp-staging
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: webapp-staging
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable:staging
+          name: webapp-staging
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_URL
+              value: 'signaling'
+            - name: VITE_GOOGLE_TAG_MANAGER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-tag-manager-secret # The name of the secret
+                  key: VITE_GOOGLE_TAG_MANAGER_ID # The key in the secret containing the value
+
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-staging
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+  selector:
+    app: webapp-staging
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-staging
+  namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - staging.arcanetable.app
+      secretName: staging.arcanetable-cert
+  rules:
+    - host: 'staging.arcanetable.app'
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webapp-staging
+                port:
+                  number: 80
+---
