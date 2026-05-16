@@ -89,7 +89,7 @@ export const DeckEditor: Component<Props> = props => {
   const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
   const [isDirty, setIsDirty] = createSignal(false);
   const [deck, setDeck] = createStore<Deck>(
-    props.deck?.cards ? props.deck : { cards: {}, inPlay: {} },
+    props.deck?.name ? props.deck : { cards: {}, inPlay: {} },
   );
 
   const getDeckList = createMemo(() => {
@@ -478,7 +478,7 @@ export const DeckEditor: Component<Props> = props => {
                 </For>
               </ToggleGroup>
             </div>
-            <div class={styles.cardList}>
+            <div class={`p-4 ${styles.cardList}`}>
               <For each={searchResults() || getDeckList()} fallback={EmptyGridContainer}>
                 {(card, i) => {
                   const deckCard = () => deck.cards?.[getCardKey(card)];
@@ -547,7 +547,7 @@ export const DeckEditor: Component<Props> = props => {
                                 variant='ghost'
                                 type='button'
                                 onClick={() => {
-                                  let id = unwrap(card.id);
+                                  let id = getCardKey(unwrap(card));
                                   if (deck.cards[id]) {
                                     return updateDeck('cards', id, 'qty', (qty = 1) =>
                                       Math.max(qty - 1, 0),
@@ -567,7 +567,7 @@ export const DeckEditor: Component<Props> = props => {
                                 class='text-white'
                                 style='filter: drop-shadow(2px 4px 6px black);'
                                 onClick={() => {
-                                  let id = unwrap(card.id);
+                                  let id = getCardKey(unwrap(card));
                                   if (deck.cards[id]) {
                                     return updateDeck('cards', id, 'qty', (qty = 1) => qty + 1);
                                   }
