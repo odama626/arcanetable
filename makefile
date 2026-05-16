@@ -38,7 +38,7 @@ push: build
 	# make -C scry-server-mtg
 
 deploy:	build push
-	kubectl apply -f secrets.yml -f deployment.yml
+	kubectl apply -f secrets.yml -f deployment.yml -f staging.yaml
 	kubectl rollout restart -f deployment.yml
 
 promote_staging:
@@ -46,5 +46,9 @@ promote_staging:
 	docker tag $(docker_container):staging $(docker_container):production
 	docker tag $(docker_container):staging $(docker_container):stable
 	docker push --all-tags $(docker_container)
+
+	
+	kubectl apply -f secrets.yml -f deployment.yml
+	kubectl rollout restart -f deployment.yml
 
 
