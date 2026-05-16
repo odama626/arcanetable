@@ -29,19 +29,23 @@ build:
 
 	make -C yjs-signaling-server build
 	make -C websocket-server build
-	make -C scry-server-mtg
-  make -C scry-server-yugioh
-  make -C scry-server-pokemon
+	make -C scry-server-mtg build
+  	make -C scry-server-yugioh build
+	make -C scry-server-pokemon build
 
 push: build
 	docker push --all-tags $(docker_container)
 	make -C yjs-signaling-server push
 	make -C websocket-server push
-	make -C scry-server-mtg
-  make -C scry-server-yugioh
-  make -C scry-server-pokemon
+	make -C scry-server-mtg push
+	make -C scry-server-yugioh push
+	make -C scry-server-pokemon push
 
 deploy:	build push
+	make -C scry-server-mtg deploy
+	make -C scry-server-yugioh deploy
+	make -C scry-server-pokemon deploy
+
 	kubectl apply -f secrets.yml -f deployment.yml -f staging.yaml
 	kubectl rollout restart -f deployment.yml
 
