@@ -88,7 +88,9 @@ export const DeckEditor: Component<Props> = props => {
   const [searchResults, setSearchResults] = createSignal();
   const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
   const [isDirty, setIsDirty] = createSignal(false);
-  const [deck, setDeck] = createStore<Deck>(props.deck || { cards: {}, inPlay: {} });
+  const [deck, setDeck] = createStore<Deck>(
+    props.deck?.cards ? props.deck : { cards: {}, inPlay: {} },
+  );
 
   const getDeckList = createMemo(() => {
     trackDeep(deck.cards);
@@ -631,7 +633,6 @@ export const DeckEditor: Component<Props> = props => {
           />
         </Show>
         <Show when={searchParams.dialog === 'card-preview'}>
-          {console.log('card-preview')}
           <AlertDialog
             open
             onOpenChange={isOpen =>

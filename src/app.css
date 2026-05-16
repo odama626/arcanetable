@@ -151,6 +151,12 @@
   }
 }
 
+@keyframes fromZeroScaleX {
+  from {
+    scale: 0 1;
+  }
+}
+
 .fade-in-from-below {
   @media (prefers-reduced-motion: no-preference) {
     opacity: 0;
@@ -164,5 +170,12 @@
   @media (prefers-reduced-motion: no-preference) {
     opacity: 0;
     animation: fadeIn var(--timing, 500ms) var(--delay, 0ms) forwards;
+  }
+}
+
+.from-zero-width {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: fromZeroScaleX var(--timing, 500ms) var(--delay, 0ms) forwards;
+    overflow: hidden;
   }
 }
