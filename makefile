@@ -42,12 +42,12 @@ push: build
 	make -C scry-server-pokemon push
 
 deploy:	build push
-	make -C scry-server-mtg deploy
-	make -C scry-server-yugioh deploy
-	make -C scry-server-pokemon deploy
+	make -C scry-server-mtg apply
+	make -C scry-server-yugioh apply
+	make -C scry-server-pokemon apply
 
 	kubectl apply -f secrets.yml -f deployment.yml -f staging.yaml
-	kubectl rollout restart -f deployment.yml
+	kubectl rollout restart deployment -n arcanetable
 
 promote_staging:
 	docker pull $(docker_container):staging
@@ -57,6 +57,6 @@ promote_staging:
 
 	
 	kubectl apply -f secrets.yml -f deployment.yml
-	kubectl rollout restart -f deployment.yml
+	kubectl rollout restart deployment -n arcanetable
 
 

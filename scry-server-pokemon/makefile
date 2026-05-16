@@ -19,6 +19,5 @@ build:
 push:
 	docker push --all-tags $(docker_container)
 
-deploy:
+apply:
 	kubectl apply -f manifest.yaml
-	kubectl rollout restart -f manifest.yaml
