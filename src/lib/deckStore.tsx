@@ -139,9 +139,15 @@ export function serializeDeck(deck: Deck) {
 }
 
 function getCardSystemStore() {
-  let state = localStorage.getItem(`card-systems`);
-  if (!state) return { systems: {}, system: '' };
-  return JSON.parse(state);
+  let stateString = localStorage.getItem(`card-systems`);
+  if (!stateString) return { systems: {}, system: '' };
+  let state = JSON.parse(stateString);
+  for (const [name, system] of Object.entries(state.systems)) {
+    if (!system) {
+      delete state.systems[name] 
+    }
+  }
+  return state;
 }
 
 export function CardSystemProvider(props: ParentProps) {
