@@ -20,8 +20,8 @@ import {
   TextFieldInput,
   TextFieldLabel,
 } from '~/components/ui/text-field';
-import { createCardSystemStore, createDeckStore } from '../deckStore';
-import { colorHashDark, getCardSystem, startSpectating } from '../globals';
+import { createDeckStore, useCardSystemContext } from '../deckStore';
+import { cardSystem, colorHashDark, getCardSystem, startSpectating } from '../globals';
 import PencilIcon from 'lucide-solid/icons/pencil';
 import { cn } from '../utils';
 import { Deck, DeckEditor } from './deckEditor';
@@ -29,6 +29,7 @@ import styles from './deckPicker.module.css';
 import CopyLinkButton from '~/components/ui/copy-link-button';
 import { LoadSettings } from '../constants';
 import { useSearchParams } from '@solidjs/router';
+import { unwrap } from 'solid-js/store';
 
 interface Props {
   onStart(settings: LoadSettings): void;
@@ -37,20 +38,13 @@ interface Props {
 export default function DeckPicker(props: Props) {
   const [deckStore, setDeckStore] = createDeckStore();
   const [searchParams] = useSearchParams();
-  const [cardSystemStore, setCardSystemStore] = createCardSystemStore();
+  const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
   const [selectedDeckId, setSelectedDeckId] = createSignal<string>();
   const [editingDeck, setEditingDeck] = createSignal<Deck>();
   const [startingLife, setStartingLife] = createSignal(40);
-  const [selectedSystem, setSelectedSystem] = createSignal('unsorted');
 
   onMount(() => {
     setSelectedDeckId(Object.values(deckStore.decks)[0]?.id);
-    getCardSystem().then(system => {
-      if (searchParams.system) {
-        setSelectedSystem(system.name);
-      }
-      setCardSystemStore('systems', system.name, system.uri);
-    });
   });
 
   createEffect(() => {
@@ -61,47 +55,52 @@ export default function DeckPicker(props: Props) {
     }
   });
 
-  function onSubmit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+  async function onSubmit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
     e.currentTarget.reset();
 
+    // todo: fix picking a deck that is not default system here
+    const deck = deckStore.decks[data.deckId];
+
+    console.log({ deck });
+
+    await setCardSystem(deck.system);
+
     props.onStart(data);
   }
 
   function shouldShowSystem(system: string) {
-    if (selectedSystem() === 'unsorted' && system === 'unsorted') return false;
-    return system !== selectedSystem();
+    if (cardSystemStore.system === 'unsorted' && system === 'unsorted') return false;
+    return system !== cardSystemStore.system;
   }
 
   return (
     <>
-      <Show when={editingDeck()}>
+      <Show when={editingDeck()} keyed>
         {deck => (
           <DeckEditor
             onClose={() => setEditingDeck()}
-            deck={deck()}
+            deck={deck}
             onChange={updatedDeck => {
-              setDeckStore('decks', updatedDeck.id, updatedDeck);
-              let fromSystem = deck().system || 'unsorted';
+              let fromSystem = unwrap(editingDeck()?.system) || 'unsorted';
               let toSystem = updatedDeck.system || 'unsorted';
 
-              setDeckStore('systems', fromSystem, entries =>
-                entries.filter(id => id !== deck().id),
+              setDeckStore('systems', fromSystem, (entries = []) =>
+                entries.filter(id => id !== deck.id),
               );
-              setDeckStore('systems', toSystem, entries => [
+              setDeckStore('systems', toSystem, (entries = []) => [
                 updatedDeck.id,
                 ...entries.filter(id => id !== updatedDeck.id),
               ]);
+              setDeckStore('decks', updatedDeck.id, updatedDeck);
             }}
             onDelete={() => {
               console.log({ deck });
-              setDeckStore('decks', deck().id, undefined);
-              let fromSystem = deck().system || 'unsorted';
-              setDeckStore('systems', fromSystem, entries =>
-                entries.filter(id => id !== deck().id),
-              );
+              setDeckStore('decks', deck.id, undefined);
+              let fromSystem = deck.system || 'unsorted';
+              setDeckStore('systems', fromSystem, entries => entries.filter(id => id !== deck.id));
             }}
           />
         )}
@@ -129,18 +128,20 @@ export default function DeckPicker(props: Props) {
             <div>
               <label class={cn(labelVariants())}>Select a deck</label>
               <input type='hidden' name='deckId' value={selectedDeckId()} />
-              <h2>{selectedSystem()}</h2>
+              <h2>{cardSystemStore.systems[cardSystemStore.system]?.name}</h2>
               <div class='grid grid-cols-3 gap-4 my-2'>
-                <For each={deckStore.systems[selectedSystem()]}>
+                <For each={deckStore.systems[cardSystemStore.system]}>
                   {(deckId, i) => {
                     let deck = deckStore.decks[deckId];
                     return (
-                      <DeckOption
-                        deck={deck}
-                        isSelected={deck.id === selectedDeckId()}
-                        onSelect={() => setSelectedDeckId(deck.id)}
-                        onEdit={() => setEditingDeck(deck)}
-                      />
+                      <Show when={deck}>
+                        <DeckOption
+                          deck={deck}
+                          isSelected={deck.id === selectedDeckId()}
+                          onSelect={() => setSelectedDeckId(deck.id)}
+                          onEdit={() => setEditingDeck(deck)}
+                        />
+                      </Show>
                     );
                   }}
                 </For>
@@ -148,19 +149,21 @@ export default function DeckPicker(props: Props) {
 
               <For each={Object.entries(deckStore.systems)}>
                 {([system, deckIds]) => (
-                  <Show when={shouldShowSystem(system)}>
-                    <h2>{system}</h2>
+                  <Show when={shouldShowSystem(system) && deckIds.length > 0}>
+                    <h2>{cardSystemStore.systems[system]?.name ?? system}</h2>
                     <div class='grid grid-cols-3 gap-4 my-2'>
                       <For each={deckIds}>
                         {(deckId, i) => {
                           let deck = deckStore.decks[deckId];
                           return (
-                            <DeckOption
-                              deck={deck}
-                              isSelected={deck.id === selectedDeckId()}
-                              onSelect={() => setSelectedDeckId(deck.id)}
-                              onEdit={() => setEditingDeck(deck)}
-                            />
+                            <Show when={deck}>
+                              <DeckOption
+                                deck={deck}
+                                isSelected={deck.id === selectedDeckId()}
+                                onSelect={() => setSelectedDeckId(deck.id)}
+                                onEdit={() => setEditingDeck(deck)}
+                              />
+                            </Show>
                           );
                         }}
                       </For>
@@ -211,7 +214,7 @@ function DeckOption(props: DeckOptionProps) {
             props.deck.coverImage ?? '/arcane-table-back.webp'
           }); height: 100%;`}></div>
         <div class='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent py-4 px-2 text-left'>
-          <h3 class='text-white text-xl font-semibold'>{props.deck.name}</h3>
+          <h3 class='text-white text-xl font-semibold'>{props.deck?.name}</h3>
           <div class='flex flex-row gap-2 pt-2 flex-wrap'>
             <For each={props.deck.tags}>
               {tag => (

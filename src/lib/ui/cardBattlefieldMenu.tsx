@@ -148,17 +148,15 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
             </MenubarSub>
           </MenubarContent>
         </MenubarMenu>
-        <MenubarMenu>
-          <MoveMenu
-            text='Move To'
-            onComplete={() => {
-              selection.clearSelection();
-            }}
-            cards={meshes().map(mesh => cardsById.get(mesh?.userData.id))}
-            fromZone={props.playArea.battlefieldZone}
-            playArea={props.playArea}
-          />
-        </MenubarMenu>
+        <MoveMenu
+          text='Move To'
+          onComplete={() => {
+            selection.clearSelection();
+          }}
+          cards={meshes().map(mesh => cardsById.get(mesh?.userData.id))}
+          fromZone={props.playArea.battlefieldZone}
+          playArea={props.playArea}
+        />
       </Menubar>
     </div>
   );

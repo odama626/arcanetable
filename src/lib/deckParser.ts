@@ -39,12 +39,16 @@ const comment = a
   .sequenceOf([a.str('//'), a.everyCharUntil(a.choice([a.char('\n'), a.endOfInput]))])
   .map(r => null);
 
+const barComment = a
+  .sequenceOf([a.str('=='), a.everyCharUntil(a.choice([a.char('\n'), a.endOfInput]))])
+  .map(r => null);
+
 export const deck = a
   .many(
     a
       .sequenceOf([
         a.optionalWhitespace,
-        a.choice([comment, card]),
+        a.choice([comment, barComment, card]),
         a.everyCharUntil(a.choice([a.char('\n'), a.endOfInput])),
         a.optionalWhitespace,
       ])

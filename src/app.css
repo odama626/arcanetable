@@ -76,8 +76,8 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --info: 204 94% 94%;
-    --info-foreground: 199 89% 48%;
+    --info: 204 94% 48%;
+    --info-foreground: 199 89% 94%;
 
     --success: 149 80% 90%;
     --success-foreground: 160 84% 39%;
@@ -137,4 +137,32 @@
 
 ::-webkit-scrollbar-corner {
   display: none;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fromBelow {
+  from {
+    translate: 0 var(--distance, 500px);
+  }
+}
+
+.fade-in-from-below {
+  @media (prefers-reduced-motion: no-preference) {
+    opacity: 0;
+    animation:
+      fadeIn var(--timing, 500ms) var(--delay, 0ms) forwards,
+      fromBelow var(--timing, 500ms) var(--delay, 0ms) forwards;
+  }
+}
+
+.fade-in {
+  @media (prefers-reduced-motion: no-preference) {
+    opacity: 0;
+    animation: fadeIn var(--timing, 500ms) var(--delay, 0ms) forwards;
+  }
 }

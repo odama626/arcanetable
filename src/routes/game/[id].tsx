@@ -1,8 +1,11 @@
-import { useBeforeLeave } from '@solidjs/router';
-import { Component, createSignal, onCleanup, onMount, Show } from 'solid-js';
+import { useBeforeLeave, useSearchParams } from '@solidjs/router';
+import { Component, createEffect, createSignal, onCleanup, onMount, Show } from 'solid-js';
+import { unwrap } from 'solid-js/store';
+import { hydrate } from 'solid-js/web';
 import { Button } from '~/components/ui/button';
 import CopyLinkButton from '~/components/ui/copy-link-button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '~/components/ui/dialog';
+import { getDeckStore, useCardSystemContext } from '~/lib/deckStore';
 import {
   cleanup,
   isInitialized,
@@ -19,13 +22,11 @@ import { loadDeckAndJoin, localInit } from '~/main3d';
 
 const GamePage: Component = props => {
   const [inviteDismissed, setInviteDismissed] = createSignal(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
 
   onMount(() => {
-    localInit({ gameId: props.params.gameId, deckId: selectedDeckId() });
-  });
-
-  useBeforeLeave(() => {
-    cleanup();
+    localInit({ gameId: props.params.gameId });
   });
 
   onCleanup(() => {
@@ -40,8 +41,15 @@ const GamePage: Component = props => {
       </Show>
       <Show when={!selectedDeckId() && !isSpectating()}>
         <DeckPicker
-          onStart={settings => {
+          onStart={async settings => {
             setSelectedDeckId(settings.deckId);
+            const deckStore = getDeckStore();
+            let deck = structuredClone(unwrap(deckStore.decks[settings.deckId]));
+            const cardSystem = await setCardSystem(deck.system);
+            setSearchParams({ system: cardSystem.uri }, { replace: true });
+
+            settings.deck = deck;
+            settings.cardSystem = cardSystem;
             loadDeckAndJoin(settings);
           }}
         />

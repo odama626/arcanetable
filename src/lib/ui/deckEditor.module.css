@@ -6,9 +6,9 @@
   pointer-events: auto;
 
   display: grid;
-  grid-template-areas: "header header"  "list form";
+  grid-template-areas: 'list header' 'list form';
   grid-template-rows: auto 1fr;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 40ch 1fr;
 }
 
 .innerContainer {
@@ -21,9 +21,9 @@
 }
 
 .formContainer {
-  padding: 1rem;
+  grid-area: list;
   background-color: hsl(var(--background));
-  border-radius: 0.5rem;
+  /* border-radius: 0.5rem; */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -56,9 +56,6 @@
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   } */
-}
-
-.multiSelectControl > * {
 }
 
 .multiSelectItem {

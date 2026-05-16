@@ -23,9 +23,10 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { Card, CARD_WIDTH, CardEntry, CardZone, DetailedCardEntry } from './constants';
+import { Card, CARD_WIDTH, CardZone, HoverSignal } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
+import { type TextureLoaderWorkerType } from './textureLoaderWorker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
 import { Selection } from './selection';
 import { captureConsole } from './console-capture';
@@ -45,7 +46,7 @@ export let scene: Scene;
 export let camera: PerspectiveCamera;
 export let focusRenderer: WebGLRenderer;
 export let focusCamera: PerspectiveCamera;
-export let [hoverSignal, setHoverSignal] = createSignal();
+export let [hoverSignal, setHoverSignal] = createSignal<HoverSignal>();
 export let cardsById = new Map<string, Card>();
 export let zonesById = new Map<string, CardZone<unknown>>();
 export let [playAreas, setPlayAreas] = createStore<Record<number, PlayArea>>({});
@@ -69,43 +70,31 @@ export const PLAY_AREA_ROTATIONS = [0, Math.PI, Math.PI / 2, Math.PI / 2 + Math.
 export const colorHashLight = new ColorHash({ lightness: 0.7 });
 export const colorHashDark = new ColorHash({ lightness: 0.2 });
 export const [selectedDeckId, setSelectedDeckId] = createSignal<string | undefined>();
-export let textureLoaderWorker;
+export let textureLoaderWorker: Comlink.Remote<TextureLoaderWorkerType>;
+
 export let selection: Selection;
 export let [capturedErrors, setCapturedErrors] = createSignal([]);
 
 export let cardLoadingTexture: THREE.Texture;
 export let cardBackTexture: THREE.Texture;
 
-export let CardSystem: {
+export interface CardSystem {
+  id: string;
   cardDetailEndpoint: string;
+  cardSearchEndpoint: string;
+  fallbackImage?: string;
   uri?: string;
   name: string;
   cardBack: string;
   searchField: unknown;
   popularity: string;
   imageUriFormat: 'standard' | 'scryfall';
-} = {};
+  types: string[];
+}
 
-const MTG_CARD_SYSTEM = {
-  name: 'mtg',
-  uri: null,
-  cardDetailEndpoint: 'https://api.scryfall.com/cards/named',
-  cardBack: '/arcane-table-back.webp',
-  popularity: 'edhrec_rank',
-  imageUriFormat: 'scryfall',
-  searchField: {
-    filterEmpty: false,
-    searchFields: [
-      { field: 'name' },
-      { field: 'type_line' },
-      { field: 'cmc' },
-      { field: 'mana_cost' },
-      { field: 'oracle_text' },
-      { field: 'mana_cost', transform: 'stripBracces' },
-      { field: 'card_faces', recurse: true },
-    ],
-  },
-};
+export let [cardSystem, setCardSystem] = createStore<CardSystem>({} as CardSystem);
+
+export const DEFAULT_CARD_BACK = '/arcane-table-back.webp';
 
 [('warn', 'error')].forEach(captureConsole);
 
@@ -140,27 +129,19 @@ export function headlessInit(opts = {}) {
   provider = opts?.provider;
 }
 
+export function setCardBackTexture(img: string) {
+  return new Promise(resolve => {
+    console.log('setting texture', img);
+    cardBackTexture = textureLoader.load(img, resolve);
+    cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+  });
+}
+
 export function initClock() {
   clock = new Clock();
 }
 
-export async function getCardSystem() {
-  let searchParams = new URLSearchParams(window.location.search);
-  let uri = searchParams.get('system');
-  if (!uri?.length) {
-    return MTG_CARD_SYSTEM;
-  }
-
-  const cardSystem = await fetch(uri).then(r => r.json());
-  cardSystem.uri = uri;
-  return cardSystem;
-}
-
-async function initCardSystem() {
-  const cardSystem = await getCardSystem();
-  Object.assign(CardSystem, cardSystem);
-  console.log({ CardSystem });
-}
+export const DEFAULT_CARD_SYSTEM_URI = 'https://scry-server-mtg.arcanetable.app';
 
 export async function init({ gameId }) {
   headlessInit();
@@ -174,10 +155,8 @@ export async function init({ gameId }) {
     console.log(item, loaded, total);
   };
 
-  await initCardSystem();
-
-  cardBackTexture = textureLoader.load(CardSystem.cardBack);
-  cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+  // cardBackTexture = textureLoader.load(cardSystem.cardBack ?? DEFAULT_CARD_SYSTEM.cardBack);
+  // cardBackTexture.colorSpace = THREE.SRGBColorSpace;
 
   cardLoadingTexture = textureLoader.load(`/loading-texture.png`);
   cardLoadingTexture.repeat.setX(1 / 3);
@@ -197,6 +176,7 @@ export async function init({ gameId }) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.domElement.draggable = true;
   renderer.setClearColor(0x05050e);
+  renderer.domElement.style.width = '100vw';
 
   let focusHeight = window.innerHeight * 0.5;
   let focusWidth = (focusHeight / 700) * 750;
@@ -320,4 +300,13 @@ export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WI
 
   focusCamera.lookAt(target.getWorldPosition(new Vector3()));
   focusCamera.rotation.copy(rotation);
+}
+
+export function mouseToScreen(mouse: THREE.Vector2): THREE.Vector2 {
+  const result = new THREE.Vector2(
+    ((mouse.x + 1) / 2) * window.innerWidth,
+    ((1 - mouse.y) / 2) * window.innerHeight,
+  );
+  console.log({ result });
+  return result;
 }

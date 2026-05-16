@@ -4,20 +4,15 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { animateObject, cancelAnimation, renderAnimations } from './lib/animations';
+import { cancelAnimation, renderAnimations } from './lib/animations';
 import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
-import {
-  CARD_STACK_OFFSET,
-  CARD_THICKNESS,
-  CardZone,
-  GameOptions,
-  LoadSettings,
-} from './lib/constants';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, GameOptions, LoadSettings } from './lib/constants';
 import {
   animating,
   camera,
   cardsById,
   clock,
+  DEFAULT_CARD_BACK,
   expect,
   focusCamera,
   focusRayCaster,
@@ -36,6 +31,7 @@ import {
   sendEvent,
   setAnimating,
   setCapturedErrors,
+  setCardBackTexture,
   setHoverSignal,
   setIsIntitialized,
   setPlayAreas,
@@ -48,9 +44,10 @@ import { Hand } from './lib/hand';
 import { PlayArea } from './lib/playArea';
 import { transferCard } from './lib/transferCard';
 import { setCounters } from './lib/ui/counterDialog';
-import { getGlobalRotation, restackItems } from './lib/utils';
+import { restackItems } from './lib/utils';
 import { processEvents } from './remoteEvents';
 import { getDeckStore } from './lib/deckStore';
+import { unwrap } from 'solid-js/store';
 
 var container;
 
@@ -120,17 +117,18 @@ export async function localInit(gameOptions: GameOptions) {
   document.addEventListener('wheel', onDocumentScroll, false);
   window.addEventListener('resize', onWindowResize, false);
 
-  if (gameOptions.deckId) {
+  if (gameOptions.deck) {
     loadDeckAndJoin(gameOptions);
   }
   startAnimating();
 }
 
 export async function loadDeckAndJoin(settings: LoadSettings) {
-  const deckStore = getDeckStore();
+  let deck = settings.deck;
 
-  let deck = deckStore.decks[settings.deckId];
   let counters = deck?.counters ?? [];
+
+  await setCardBackTexture(unwrap(settings.cardSystem.cardBack) ?? DEFAULT_CARD_BACK);
 
   playArea = await PlayArea.FromDeck(provider.awareness.clientID, deck);
   setPlayAreas(provider.awareness.clientID, playArea);
@@ -335,8 +333,6 @@ async function onDocumentDrop(event) {
     let card = cardsById.get(target.userData.id);
     let position = toZone.mesh.worldToLocal(intersection.point);
     expect(!!card, `card not found`, { card });
-
-    console.log({ card, target });
 
     await transferCard(card, fromZone, toZone, {
       addOptions: {

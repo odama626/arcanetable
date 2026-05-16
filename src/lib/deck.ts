@@ -2,12 +2,7 @@ import { nanoid } from 'nanoid';
 import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
-import {
-  cleanupCard,
-  getSearchLine,
-  getSerializableCard,
-  setCardData,
-} from './card';
+import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
 import {
   Card,
   CARD_THICKNESS,
@@ -18,7 +13,7 @@ import {
   DetailedCardEntry,
 } from './constants';
 import { deck as deckParser } from './deckParser';
-import { cardsById, CardSystem, setHoverSignal, zonesById } from './globals';
+import { cardsById, cardSystem, setHoverSignal, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation, shuffleItems } from './utils';
 import { createRoot } from 'solid-js';
 
@@ -303,8 +298,12 @@ export async function fetchCardInfo(
   entry: CardEntry,
   cache?: Map<string, DetailedCardEntry>,
 ): Promise<DetailedCardEntry> {
-  const url = new URL(CardSystem.cardDetailEndpoint);
+  const url = new URL(cardSystem.cardDetailEndpoint);
   url.searchParams.set('exact', entry.name);
+
+  if (entry.id) {
+    url.searchParams.set('id', entry.id);
+  }
   if (entry.set) {
     url.searchParams.set('set', entry.set);
   }
@@ -323,13 +322,9 @@ export async function fetchCardInfo(
       return fetch(url.toString(), { cache: 'force-cache' }).then(r => r.json());
     })
     .then(async payload => {
-      payload.search = getSearchLine(payload);
-      if (!payload.popularity) {
-        payload.popularity = payload[CardSystem.popularity];
-      }
       return {
         ...entry,
-        detail: payload,
+        ...populateCardInfo(payload, entry),
       };
     });
 
@@ -340,12 +335,21 @@ export async function fetchCardInfo(
   return result;
 }
 
-export async function loadDeckList(cardEntries: CardEntry[], cache?: Map<string, any>) {
-  const uniqueCards = await Promise.all(cardEntries.map(entry => fetchCardInfo(entry, cache)));
+export function populateCardInfo(detail: CardEntryDetail, entry?: Card) {
+  return {
+    id: entry?.id || detail?.id,
+    set: entry?.set || detail?.set,
+    name: entry?.name || detail.name,
+    search: getSearchLine(detail),
+    popularity: detail?.popularity ?? detail[cardSystem.popularity],
+    detail,
+  };
+}
 
+export function expandCardEntries(cardEntries: DetailedCardEntry[]) {
   let cards: Card[] = [];
 
-  uniqueCards.forEach(card => {
+  cardEntries.forEach(card => {
     for (let i = 0; i < card.qty; i++) {
       cards.push({
         detail: card.detail,

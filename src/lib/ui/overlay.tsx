@@ -5,6 +5,8 @@ import {
   createSignal,
   For,
   Match,
+  onCleanup,
+  onMount,
   Show,
   Switch,
   type Component,
@@ -24,6 +26,7 @@ import {
   focusRenderer,
   hoverSignal,
   isSpectating,
+  mouseToScreen,
   onConcede,
   playAreas,
   players,
@@ -33,9 +36,7 @@ import {
 import CommandPalette from '../shortcuts/command-palette';
 import { untapAll } from '../shortcuts/commands/field';
 import HotkeysTable from '../shortcuts/hotkeys-table';
-import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
-import DeckMenu from './deckMenu';
 import Log from './log';
 import MoveMenu from './moveMenu';
 import styles from './overlay.module.css';
@@ -43,6 +44,8 @@ import PeekMenu from './peekMenu';
 import { LocalPlayer, NetworkPlayer } from './playerMenu';
 import RevealMenu from './revealMenu';
 import TokenSearchMenu from './tokenMenu';
+import CardOverlay from './cardOverlay';
+import { Mesh } from 'three';
 
 const Overlay: Component = () => {
   let userData = () => hoverSignal()?.mesh?.userData;
@@ -61,6 +64,8 @@ const Overlay: Component = () => {
     }
     return { right: `0px`, top: `0` };
   };
+  const isCardOwnedByPlayer = (cardMesh: Mesh) =>
+    cardMesh?.userData?.clientId === provider.awareness.clientID;
 
   const cards = () => {
     let items = selection.selectedItems;
@@ -114,53 +119,14 @@ const Overlay: Component = () => {
           <div ref={setContainer} class={styles.focusCameraContainer} />
         </Show>
       </div>
-      <Show when={tether() && cardMesh()?.userData?.clientId === provider.awareness.clientID}>
+      <Show when={tether() && isCardOwnedByPlayer(cardMesh())}>
         <div
           class={styles.cardActions}
           style={`--x: ${tether().x}px; --y: ${tether().y}px`}
           onClick={e => {
             e.stopImmediatePropagation();
           }}>
-          <Switch>
-            <Match when={cardMesh()?.userData.location === 'deck'}>
-              <DeckMenu playArea={playArea} />
-            </Match>
-            <Match when={cardMesh()?.userData.location === 'battlefield'}>
-              <CardBattlefieldMenu playArea={playArea} cardMesh={cardMesh()} />
-            </Match>
-            <Match when={cardMesh()?.userData.location === 'hand'}>
-              <Menubar class='flex-col' style='height: auto; margin-left: -10px;'>
-                <MenubarMenu>
-                  <MenubarItem
-                    onClick={() => {
-                      playArea.reveal(cardsById.get(cardMesh().userData.id));
-                    }}>
-                    Reveal
-                  </MenubarItem>
-                </MenubarMenu>
-                <MoveMenu
-                  text='Move To'
-                  cards={[cardsById.get(cardMesh().userData.id)]}
-                  playArea={playArea}
-                  fromZone={playArea.hand}
-                />
-              </Menubar>
-            </Match>
-            <Match when={cardMesh()?.userData.location === 'graveyard'}>
-              <div
-                class='flex-col bg-card px-3 py-2 rounded-sm'
-                style='height: auto; margin-left: -10px;'>
-                graveyard | {playArea.graveyardZone.observable.cardCount} cards
-              </div>
-            </Match>
-            <Match when={cardMesh()?.userData.location === 'exile'}>
-              <div
-                class='flex-col bg-card px-3 py-2 rounded-sm'
-                style='height: auto; margin-left: -10px;'>
-                exile | {playArea.exileZone.observable.cardCount} cards
-              </div>
-            </Match>
-          </Switch>
+          <CardOverlay cardMesh={cardMesh()} playArea={playArea} />
         </div>
       </Show>
       <div class={styles.mainMenu}>

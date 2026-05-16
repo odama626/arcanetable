@@ -1,58 +1,150 @@
-import { createEffect, For, Show } from 'solid-js';
+import { createEffect, createMemo, For, Show } from 'solid-js';
 import { DetailedCardEntry } from '~/lib/constants';
 import AddIcon from 'lucide-solid/icons/plus';
 import SubIcon from 'lucide-solid/icons/minus';
 import { capitalize } from 'lodash-es';
+import { Button } from '~/components/ui/button';
+import { cardSystem } from '~/lib/globals';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '~/components/ui/hover-card';
+import { getCardImage } from '~/lib/card';
 
 interface Props {
   entries: DetailedCardEntry[];
+  addCard(entry: DetailedCardEntry): void;
+  removeCard(entry: DetailedCardEntry): void;
+}
+
+interface GroupedEntry {
+  name: string;
+  items: DetailedCardEntry[];
+  count: number;
+}
+
+interface Grouped {
+  types: Record<string, GroupedEntry>;
+  unsorted: GroupedEntry;
+  totalCount: number;
 }
 
 export default function CardList(props: Props) {
-  const CARD_TYPES = ['structure', 'policy', 'trade lane', 'land'];
+  const lowerTypes = createMemo(() => cardSystem.types.map(type => type.toLowerCase()));
 
-  console.log(props.entries);
+  const grouped = createMemo(() => {
+    const types = lowerTypes().map(t => [t, { items: [], name: capitalize(t), count: 0 }]);
+    const result = {
+      types: Object.fromEntries(types),
+      unsorted: {
+        name: 'Unsorted',
+        items: [],
+        count: 0,
+      },
+      totalCount: 0,
+    } as Grouped;
 
-  createEffect(() => {
-    console.log(props.entries);
+    for (const entry of props.entries) {
+      const simpleType = getSimpleType(entry);
+      const type = lowerTypes().find(type => simpleType?.endsWith(type));
+      if (type) {
+        result.types[type].items.push(entry);
+        result.types[type].count += entry.qty;
+      } else {
+        result.unsorted.items.push(entry);
+        result.unsorted.count += entry.qty;
+      }
+      result.totalCount += entry.qty;
+    }
+
+    return result;
   });
 
   return (
-    <div class='flex flex-col gap-1 overflow-y-auto'>
-      <For each={CARD_TYPES}>
-        {cardType => {
-          let cardList = () => props.entries.filter(entry => filterByType(entry, cardType));
-          console.log({ cardList: cardList(), cardType });
-          return (
-            <Show when={cardList().length > 0}>
-              <h2 class='text-gray-400 flex gap-1 justify-between mt-2 pr-2'>
-                <span>{capitalize(cardType)}</span>
-                <span>{cardList().reduce((a, b) => a + b.qty, 0)}</span>
-              </h2>
-              <hr />
+    <>
+      <div class='flex flex-col gap-1 overflow-y-auto slim-scroll'>
+        <For each={lowerTypes()}>
+          {cardType => {
+            let group = () => grouped().types[cardType];
+            return (
+              <Show when={group().count > 0}>
+                <h2 class='text-muted-foreground flex gap-1 justify-between mt-4 px-4'>
+                  <span>{capitalize(cardType)}</span>
+                  <span class='pr-4'>{group().count}</span>
+                </h2>
+                <hr class='mx-4' />
 
-              <For each={cardList()}>
-                {entry => (
-                  <div class='flex gap-2'>
-                    <span class='text-indigo-300 font-bold text-xl items-center'>{entry.qty}</span>
-                    <span class='flex-grow'>{entry.name}</span>
-                    <button class='cursor: pointer; p-1' type='button'>
-                      <AddIcon class='text-gray-400' />
-                    </button>
-                    <button class='cursor: pointer; p-1' type='button'>
-                      <SubIcon class='text-gray-400' />
-                    </button>
-                  </div>
-                )}
-              </For>
+                <For each={group().items}>
+                  {entry => (
+                    <CardEntry
+                      entry={entry}
+                      addCard={() => props.addCard(entry)}
+                      removeCard={() => props.removeCard(entry)}
+                    />
+                  )}
+                </For>
+              </Show>
+            );
+          }}
+        </For>
+        <Show when={grouped().unsorted.count > 0}>
+          <h2 class='text-muted-foreground flex gap-1 justify-between mt-4 px-4'>
+            <span class='pr-4'>Unsorted</span>
+            <span>{grouped().unsorted.count}</span>
+          </h2>
+          <hr />
+
+          <For each={grouped().unsorted.items}>
+            {entry => (
+              <CardEntry
+                entry={entry}
+                addCard={() => props.addCard(entry)}
+                removeCard={() => props.removeCard(entry)}
+              />
+            )}
+          </For>
+        </Show>
+      </div>
+      <hr class='mx-4 mt-auto' />
+      <div class='flex flex-wrap gap-2 px-4 mt-4'>
+        <div class='flex gap-1 border-1 px-2 py-1 rounded'>
+          <span>Total</span>
+          <span>{grouped().totalCount}</span>
+        </div>
+        <For each={lowerTypes()}>
+          {cardType => (
+            <Show when={grouped().types[cardType].count > 0}>
+              <div class='flex gap-1 border-1 px-2 py-1 rounded'>
+                <span>{capitalize(cardType)}</span>
+                <span>{grouped().types[cardType].count}</span>
+              </div>
             </Show>
-          );
-        }}
-      </For>
-    </div>
+          )}
+        </For>
+      </div>
+    </>
   );
 }
 
-function filterByType(entry: DetailedCardEntry, type) {
-  return entry?.detail?.type?.toLowerCase() === type;
+function CardEntry(props: { entry: DetailedCardEntry; addCard(): void; removeCard(): void }) {
+  return (
+    <HoverCard placement='right'>
+      <HoverCardTrigger>
+        <div class='flex gap-2 items-center px-4 hover:bg-accent'>
+          <span class='text-primary font-bold text-xl items-center'>{props.entry.qty}</span>
+          <span class='truncate grow align-center'>{props.entry.name}</span>
+          <Button size='sm' variant='ghost' type='button' onClick={props.removeCard}>
+            <SubIcon class='text-muted-foreground' />
+          </Button>
+          <Button size='sm' variant='ghost' type='button' onClick={props.addCard}>
+            <AddIcon class='text-muted-foreground' />
+          </Button>
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent class='w-128 fade-in'>
+        <img src={getCardImage(props.entry)} />
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function getSimpleType(entry: DetailedCardEntry) {
+  return entry?.detail?.type?.toLowerCase()?.split('—')?.[0]?.trim();
 }

@@ -8,7 +8,7 @@ function getNearestPowerOfTwo(value: number) {
   return Math.pow(2, Math.round(Math.log2(value)));
 }
 
-const obj = {
+const TextureLoaderWorkerObj = {
   async loadTexture(url: string) {
     const image = await bitmapLoader.loadAsync(url);
 
@@ -26,4 +26,6 @@ const obj = {
   },
 };
 
-Comlink.expose(obj);
+export type TextureLoaderWorkerType = typeof TextureLoaderWorkerObj;
+
+Comlink.expose(TextureLoaderWorkerObj);

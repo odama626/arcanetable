@@ -1,4 +1,5 @@
-import { EulerTuple, Mesh, Object3D, Vector3Tuple } from 'three';
+import { EulerTuple, Mesh, Object3D, Vector2, Vector3, Vector3Tuple } from 'three';
+import { CardSystem } from './globals';
 
 export const CARD_WIDTH = 63 / 4;
 export const CARD_HEIGHT = 88 / 4;
@@ -24,7 +25,19 @@ export interface CardEntryDetail {
   card_faces?: CardEntryDetail[];
 }
 
+export type HoverSignal = HoverSignalBase | HoverSignalWithTarget | undefined;
+
+export interface HoverSignalBase {
+  mouse: Vector2;
+}
+
+export interface HoverSignalWithTarget extends HoverSignalBase {
+  mesh: Mesh;
+  tether: Vector3;
+}
+
 export interface CardEntry {
+  id: string;
   name: string;
   qty: number;
   categories: string[];
@@ -63,9 +76,31 @@ export interface CardZone<AddOptions = {} & { skipAnimation?: boolean; destroy?:
   cards: Card[];
 }
 
+export interface Counter {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface Deck {
+  id: string;
+  version: number;
+  system: string;
+  cards: Record<string, DetailedCardEntry>;
+  inPlay: Record<string, DetailedCardEntry>;
+  tags?: { name: string }[];
+  startingLife: number;
+  name: string;
+  cardList?: string;
+  coverImage?: string;
+  counters?: Counter[];
+}
+
 export interface LoadSettings {
   name: string;
-  deckId: string;
+  startingLife: number;
+  deck: Deck;
+  cardSystem: CardSystem;
 }
 
 export interface GameOptions extends LoadSettings {
