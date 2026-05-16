@@ -64,8 +64,6 @@ export default function DeckPicker(props: Props) {
     // todo: fix picking a deck that is not default system here
     const deck = deckStore.decks[data.deckId];
 
-    console.log({ deck });
-
     await setCardSystem(deck.system);
 
     props.onStart(data);
@@ -99,10 +97,9 @@ export default function DeckPicker(props: Props) {
                 updatedDeck.id,
                 ...entries.filter(id => id !== updatedDeck.id),
               ]);
-              setDeckStore('decks', updatedDeck.id, updatedDeck);
+              setDeckStore('decks', { [updatedDeck.id]: updatedDeck });
             }}
             onDelete={() => {
-              console.log({ deck });
               setDeckStore('decks', deck.id, undefined);
               let fromSystem = deck.system || 'unsorted';
               setDeckStore('systems', fromSystem, entries => entries.filter(id => id !== deck.id));
@@ -137,14 +134,14 @@ export default function DeckPicker(props: Props) {
               <div class='grid grid-cols-3 gap-4 my-2'>
                 <For each={deckStore.systems[cardSystemStore.system]}>
                   {(deckId, i) => {
-                    let deck = deckStore.decks[deckId];
+                    let deck = () => deckStore.decks[deckId];
                     return (
-                      <Show when={deck}>
+                      <Show when={deck()}>
                         <DeckOption
-                          deck={deck}
-                          isSelected={deck.id === selectedDeckId()}
-                          onSelect={() => setSelectedDeckId(deck.id)}
-                          onEdit={() => setEditingDeck(deck)}
+                          deck={deck()}
+                          isSelected={deck().id === selectedDeckId()}
+                          onSelect={() => setSelectedDeckId(deck().id)}
+                          onEdit={() => setEditingDeck(deck())}
                         />
                       </Show>
                     );

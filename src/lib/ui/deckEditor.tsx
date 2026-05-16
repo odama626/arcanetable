@@ -89,11 +89,12 @@ export const DeckEditor: Component<Props> = props => {
   const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
   const [isDirty, setIsDirty] = createSignal(false);
   const [deck, setDeck] = createStore<Deck>(
-    props.deck?.name ? props.deck : { cards: {}, inPlay: {} },
+    props.deck?.name ? unwrap(props.deck) : { cards: {}, inPlay: {} },
   );
 
   const getDeckList = createMemo(() => {
     trackDeep(deck.cards);
+
     return Object.values(deck?.cards || {});
   });
 
@@ -113,7 +114,7 @@ export const DeckEditor: Component<Props> = props => {
     on(
       () => deck.system,
       () => {
-        rehydrateDeck(deck);
+        rehydrateDeck(unwrap(deck));
         setSearchParams({ q: undefined, type: undefined }, { replace: true });
       },
     ),
