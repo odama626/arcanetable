@@ -124,7 +124,7 @@ const ComboboxTrigger = <T extends ValidComponent = 'button'>(
 ) => {
   const [local, others] = splitProps(props as ComboboxTriggerProps, ['class', 'children']);
   return (
-    <ComboboxPrimitive.Trigger class={cn('size-4 opacity-50', local.class)} {...others}>
+    <ComboboxPrimitive.Trigger class={cn('size-4 opacity-50 mb-2 mr-1', local.class)} {...others}>
       <ComboboxPrimitive.Icon>{local.children ?? <ChevronDownIcon />}</ComboboxPrimitive.Icon>
     </ComboboxPrimitive.Trigger>
   );

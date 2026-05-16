@@ -22,12 +22,13 @@ import {
   CARD_THICKNESS,
   CARD_WIDTH,
   CardEntryDetail,
+  DetailedCardEntry,
 } from './constants';
 import {
   cardBackTexture,
   cardLoadingTexture,
   cardsById,
-  CardSystem,
+  cardSystem,
   getProjectionVec,
   scene,
   textureLoader,
@@ -70,12 +71,11 @@ export function createCardGeometry(card: Card, cache?: Map<string, ImageBitmap>)
   let cardBackMat = new MeshStandardMaterial({ map: cardBackTexture });
   cardBackMat.transparent = true;
 
+  alphaMap = alphaMap ?? textureLoader.load(`/alphaMap.webp`);
   let loadingMat = new MeshStandardMaterial({ map: cardLoadingTexture, alphaMap });
   loadingMat.transparent = true;
 
   let { mesh: _, modifiers, ...shared } = card;
-
-  alphaMap = alphaMap || textureLoader.load(`/alphaMap.webp`);
 
   const mesh = new Mesh(geometry, [
     blackMat.clone(),
@@ -192,7 +192,7 @@ function buildSearchLine(cardDetail: CardEntryDetail, config) {
 }
 
 export function getSearchLine(cardDetail: CardEntryDetail) {
-  return buildSearchLine(cardDetail, CardSystem.searchField);
+  return buildSearchLine(cardDetail, cardSystem.searchField);
 }
 
 export function cloneCard(card: Card, newId: string): Card {
@@ -236,26 +236,27 @@ export function shuffle(cards: Card[]) {
   }
 }
 
-function getImageUris(card: { detail: CardEntryDetail}, face = 0) {
-  return card?.detail?.card_faces?.[face].image_uris ?? card?.detail?.image_uris;
+function getImageUris(card: { detail: CardEntryDetail }, face = 0) {
+  return card?.detail?.card_faces?.[face]?.image_uris ?? card?.detail?.image_uris;
 }
 
-export function getCardImage(card: Card, face = 0) {
+export function getCardImage(card: DetailedCardEntry, face = 0) {
   const uris = getImageUris(card, face);
-  if (CardSystem.imageUriFormat === 'scryfall') {
+  if (cardSystem.imageUriFormat === 'scryfall') {
     return uris?.large;
   }
   let options = Object.values(uris?.full ?? {});
-  return options[(Math.random() * options.length) | 0];
+  const selection = (Math.random() * options.length) | 0;
+  return options[selection];
 }
 
-export function getCardArtImage(card: { detail: CardEntryDetail}) {
+export function getCardArtImage(card: { detail: CardEntryDetail }) {
   const uris = getImageUris(card);
-  if (CardSystem.imageUriFormat === 'scryfall') {
+  if (cardSystem.imageUriFormat === 'scryfall') {
     return uris?.art_crop;
   }
-  let options = Object.values(uris.art ?? {});
-  return options[(Math.random() * options.length) | 0];
+  let options = Object.values(uris?.art ?? {});
+  return options?.[(Math.random() * options.length) | 0];
 }
 
 export function initializeCardMesh(card: Card, clientId: string): Card {
@@ -270,8 +271,6 @@ export function initializeCardMesh(card: Card, clientId: string): Card {
   cardsById.set(result.id, result);
   return result;
 }
-
-
 
 export function getCardMeshTetherPoint(cardMesh: Mesh) {
   let targetVertex = 6;

@@ -10,8 +10,7 @@ import {
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
 import { colorHashLight, selectedDeckId, sendEvent } from '../globals';
 import { sha1 } from '../utils';
-import { Counter } from './deckEditor';
-import { getDeckStore } from '../deckStore';
+import { getDeckStore, Counter } from '../deckStore';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
 export const [counters, setCounters] = createSignal<Counter[]>([]);

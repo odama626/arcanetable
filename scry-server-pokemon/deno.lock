@@ -1,0 +1,22 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@hono/hono@4": "4.12.18",
+    "jsr:@std/cli@1": "1.0.29"
+  },
+  "jsr": {
+    "@hono/hono@4.12.18": {
+      "integrity": "854fd0628abd7703a1583807f1ae8f99399604b9452b6a2a777fd3e097977b8c"
+    },
+    "@std/cli@1.0.29": {
+      "integrity": "fa4ef29130baa834d8a13b7d138240c3a2fcfba740bfb7afa646a360a15ec84f"
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@hono/hono@4",
+      "jsr:@std/cli@1",
+      "jsr:@std/path@1"
+    ]
+  }
+}

@@ -13,11 +13,13 @@ import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
 import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
-import { Deck, loadCardList, loadDeckList } from './deck';
+import { Deck, loadCardList, expandCardEntries } from './deck';
 import { cardsById, doXTimes, focusCamera, provider, zonesById } from './globals';
 import { Hand } from './hand';
 import { transferCard } from './transferCard';
 import { getFocusCameraPositionRelativeTo } from './utils';
+import { getCardKey, hydrateDeck } from './deckStore';
+import { Deck as DeckData } from './constants';
 
 interface RemoteZoneState {
   id: string;
@@ -436,10 +438,12 @@ export class PlayArea {
     });
   }
 
-  static async FromDeck(clientId: number, deck) {
-    let deckList = deck?.deck ?? loadCardList(deck.cardList);
-    let cardsInDeck = await loadDeckList(deckList);
-    let cardsInPlay = deck?.inPlay ? await loadDeckList(deck?.inPlay) : [];
+  static async FromDeck(clientId: number, deck: DeckData) {
+    const hydratedDeck = await hydrateDeck(deck);
+    let cardsInDeck = expandCardEntries(
+      Object.values(hydratedDeck.cards).filter(card => !hydratedDeck.inPlay[getCardKey(card)]),
+    );
+    let cardsInPlay = expandCardEntries(Object.values(deck.inPlay));
 
     let cards = cardsInDeck.concat(cardsInPlay);
 

@@ -77,7 +77,7 @@ const NumberFieldIncrementTrigger = <T extends ValidComponent = 'button'>(
   return (
     <NumberFieldPrimitive.IncrementTrigger
       class={cn(
-        'absolute right-1 top-1 inline-flex size-4 items-center justify-center',
+        'absolute right-3 top-1.5 inline-flex size-4 items-center justify-center cursor-pointer',
         local.class,
       )}
       {...others}>
@@ -114,7 +114,7 @@ const NumberFieldDecrementTrigger = <T extends ValidComponent = 'button'>(
   return (
     <NumberFieldPrimitive.DecrementTrigger
       class={cn(
-        'absolute bottom-1 right-1 inline-flex size-4 items-center justify-center',
+        'absolute bottom-1.5 right-3 inline-flex size-4 items-center justify-center cursor-pointer',
         local.class,
       )}
       {...others}>

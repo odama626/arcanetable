@@ -1,0 +1,11 @@
+FROM denoland/deno:2.7.14
+
+WORKDIR /app
+COPY . .
+
+RUN deno cache main.ts
+
+VOLUME /app/data
+EXPOSE 8789
+
+CMD ["deno", "run", "--allow-net", "--allow-env", "--unstable-kv", "main.ts"]

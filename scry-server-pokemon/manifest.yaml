@@ -1,0 +1,69 @@
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scry-server-pokemon
+  namespace: arcanetable
+  labels:
+    app: scry-server-pokemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scry-server-pokemon
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: scry-server-pokemon
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable/scry-server-pokemon:latest
+          name: scry-server-pokemon
+          ports:
+            - containerPort: 8790
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scry-server-pokemon
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8790
+  type: ClusterIP
+  selector:
+    app: scry-server-pokemon
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scry-server-pokemon # Name of the ingress object
+  namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - scry-server-pokemon.arcanetable.app
+      secretName: scry-server-pokemon-arcanetable-cert
+  rules:
+    - host: 'scry-server-pokemon.arcanetable.app' # Your hostname
+      http:
+        paths:
+          # Path-based routing settings:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: scry-server-pokemon # The name of the service
+                port:
+                  number: 80 # Service Portnumber

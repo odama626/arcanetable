@@ -1,0 +1,68 @@
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scry-server-yugioh
+  namespace: arcanetable
+  labels:
+    app: scry-server-yugioh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scry-server-yugioh
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: scry-server-yugioh
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable/scry-server-yugioh:latest
+          name: scry-server-yugioh
+          ports:
+            - containerPort: 8789
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scry-server-yugioh
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8789
+  type: ClusterIP
+  selector:
+    app: scry-server-yugioh
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scry-server-yugioh # Name of the ingress object
+  namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - scry-server-yugioh.arcanetable.app
+      secretName: scry-server-yugioh-arcanetable-cert
+  rules:
+    - host: 'scry-server-yugioh.arcanetable.app' # Your hostname
+      http:
+        paths:
+          # Path-based routing settings:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: scry-server-yugioh # The name of the service
+                port:
+                  number: 80 # Service Portnumber

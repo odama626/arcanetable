@@ -39,11 +39,11 @@ const CommandDialog: Component<
   );
 };
 
-const CommandInput: Component<VoidProps<CommandPrimitive.CommandInputProps>> = props => {
-  const [local, others] = splitProps(props, ['class']);
+const CommandInput: Component<VoidProps<CommandPrimitive.CommandInputProps> & { wrapperStyle?: string}> = props => {
+  const [local,  others] = splitProps(props, ['class','wrapperStyle']);
 
   return (
-    <div class='flex items-center border-b px-3' cmdk-input-wrapper=''>
+    <div class='flex items-center border-b px-3' style={local.wrapperStyle} cmdk-input-wrapper=''>
       <svg
         xmlns='http://www.w3.org/2000/svg'
         viewBox='0 0 24 24'
