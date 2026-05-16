@@ -25,6 +25,13 @@ interface ScryfallCard {
   flavor_text?: string;
   image_uris: Record<string, string>;
   card_faces?: Array<{ image_uris?: Record<string, string>; name: string }>;
+  all_parts?: Array<{
+    id: string;
+    name: string;
+    uri: string;
+    component: string;
+    type_line: string;
+  }>;
   [key: string]: unknown;
 }
 
@@ -128,6 +135,10 @@ function mapCard(card: ScryfallCard, baseUrl: string): Record<string, unknown> {
       image_uris: imageUris(face, baseUrl),
     })),
     name: card.name,
+    all_parts: (card.all_parts ?? []).map(part => ({
+      ...part,
+      uri: `${baseUrl}/cards/named?id=${part.id}`,
+    })),
     type: (card.type_line ?? '').replace(/^Summon\b/i, 'Creature —'),
     effect: card.oracle_text ?? '',
     flavor: card.flavor_text ?? '',

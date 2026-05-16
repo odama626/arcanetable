@@ -28,7 +28,7 @@ async function decompress(data: Uint8Array): Promise<string> {
 // Wrap app.fetch with KV caching
 async function cachedFetch(req: Request): Promise<Response> {
   const url = new URL(req.url);
-  const key = ["mtg-system-v12", url.pathname + url.search];
+  const key = ["mtg-system-v13", url.pathname + url.search];
 
   const hit = await kv.get<CachedEntry>(key);
   if (hit.value) {
