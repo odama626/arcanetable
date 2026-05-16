@@ -7,6 +7,7 @@ import { AnalyticsContext } from './lib/analytics';
 import { cardSystem } from './lib/globals';
 import { CardSystemProvider } from './lib/deckStore';
 import { Toaster } from './components/ui/sonner';
+import { getBuildData } from './lib/console-capture';
 
 const App: Component = () => {
   const storageManager = createLocalStorageManager('vite-ui-theme');
@@ -15,6 +16,11 @@ const App: Component = () => {
       root={props => (
         <CardSystemProvider>
           <AnalyticsContext>
+            <script>
+              {`
+                window.env = ${getBuildData()}
+              `}
+            </script>
             <ColorModeScript storageType={storageManager.type} />
             <ColorModeProvider storageManager={storageManager}>
               {/* <Nav /> */}

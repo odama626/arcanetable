@@ -20,6 +20,7 @@ spec:
       containers:
         - image: ghcr.io/odama626/arcanetable:production
           name: caddy
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:
