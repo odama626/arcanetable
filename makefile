@@ -25,7 +25,7 @@ build:
 		-t $(docker_container):$(BUILD_ID) \
 		-t $(docker_container):$(BUILD_DATE) \
 		-t $(docker_container):beta \
-		- $(docker_container):staging
+		-t $(docker_container):staging
 
 	make -C yjs-signaling-server build
 	make -C websocket-server build
