@@ -72,6 +72,7 @@ import {
 } from '~/components/ui/dialog';
 import { toast } from 'solid-sonner';
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { AlertDialog, AlertDialogContent } from '~/components/ui/alert-dialog';
 
 interface Props {
   onClose(): void;
@@ -477,89 +478,107 @@ export const DeckEditor: Component<Props> = props => {
             </div>
             <div class={styles.cardList}>
               <For each={searchResults() || getDeckList()} fallback={EmptyGridContainer}>
-                {(card, i) => (
-                  <div
-                    style={`
+                {(card, i) => {
+                  const deckCard = () => deck.cards?.[getCardKey(card)];
+                  return (
+                    <div
+                      data-index={i()}
+                      id={card.id}
+                      style={`
                     position: relative;
                     --timing: ${random(400, 600)}ms;
                     --delay: ${random(250, 500)}ms;
                     --distance: ${random(20, 100)}px;
                     content-visibility: auto;
                   `}
-                    class='fade-in-from-below'>
-                    <img
-                      crossOrigin=''
-                      src={
-                        getCardImage(card) ?? cardSystem.fallbackImage ?? '/unknown-card-image.webp'
-                      }
-                      style={`anchor-name: --card-${i()}; height: 100%;`}
-                    />
-                    <div
-                      class='absolute inset-0 fade-in'
-                      style={`
+                      class='fade-in-from-below'>
+                      <img
+                        crossOrigin=''
+                        src={
+                          getCardImage(card) ??
+                          cardSystem.fallbackImage ??
+                          '/unknown-card-image.webp'
+                        }
+                        style={`anchor-name: --card-${i()}; height: 100%;`}
+                      />
+                      <div
+                        class='absolute inset-0 fade-in'
+                        style={`
                       position-anchor: --card-${i()};
                       right: anchor(right);
-                      width: anchor-size(width);
+                      // width: anchor-size(width);
                       height: anchor-size(height);
                       container-type: size;
                       --delay: ${random(1000, 1250)}ms;
                       --timing: ${random(500, 1250)}ms;
                     `}>
-                      <div
-                        class='grid place-items-center justify-end'
-                        style={`
+                        <div
+                          class='grid place-items-center justify-end'
+                          style={`
                         height: 100%;
-                        padding-right: 10cqw;
+                        padding-inline: 10cqw;
                         padding-bottom: 10cqh;
                       `}>
-                        <div
-                          class='dark gap-2 font-bold text-white flex items-center backdrop-blur-xl rounded'
-                          style={`background: hsla(var(--background) / .4);`}>
-                          {/*<Button size='xsicon' variant='ghost' type='button' onClick={() => {}}>
-                          <SearchIcon class='text-white' />
-                        </Button>*/}
-                          <Show when={!card.detail?.name}>{card.name}</Show>
-                          <Show when={deck.cards?.[card.id]?.qty > 0}>
-                            <Button
-                              size='xsicon'
-                              variant='ghost'
-                              type='button'
-                              onClick={() => {
-                                let id = unwrap(card.id);
-                                if (deck.cards[id]) {
-                                  return updateDeck('cards', id, 'qty', (qty = 1) =>
-                                    Math.max(qty - 1, 0),
-                                  );
-                                }
-                              }}>
-                              <SubIcon
+                          <div
+                            class='dark gap-2 font-bold text-white flex items-center backdrop-blur-xl rounded'
+                            style={`background: hsla(var(--background) / .4);`}>
+                            <Show
+                              when={!card.detail?.name}
+                              fallback={
+                                <Button
+                                  variant='ghost'
+                                  size='icon'
+                                  onClick={() =>
+                                    setSearchParams({
+                                      dialog: 'card-preview',
+                                      src: getCardImage(card),
+                                    })
+                                  }>
+                                  <SearchIcon />
+                                </Button>
+                              }>
+                              <div class='pl-2'>{card.name}</div>
+                            </Show>
+                            <Show when={deckCard()?.qty > 0}>
+                              <Button
+                                size='icon'
+                                variant='ghost'
+                                type='button'
+                                onClick={() => {
+                                  let id = unwrap(card.id);
+                                  if (deck.cards[id]) {
+                                    return updateDeck('cards', id, 'qty', (qty = 1) =>
+                                      Math.max(qty - 1, 0),
+                                    );
+                                  }
+                                }}>
+                                <SubIcon
+                                  class='text-white'
+                                  style='filter: drop-shadow(2px 4px 6px black);'
+                                />
+                              </Button>
+                            </Show>
+                            <Show when={deckCard()?.qty > 0}>{deckCard()?.qty}</Show>
+
+                            <Button size='icon' variant='ghost' type='button'>
+                              <AddIcon
                                 class='text-white'
                                 style='filter: drop-shadow(2px 4px 6px black);'
+                                onClick={() => {
+                                  let id = unwrap(card.id);
+                                  if (deck.cards[id]) {
+                                    return updateDeck('cards', id, 'qty', (qty = 1) => qty + 1);
+                                  }
+                                  updateDeck('cards', id, { ...unwrap(card), qty: 1 });
+                                }}
                               />
                             </Button>
-                          </Show>
-                          <Show when={deck.cards?.[card.id]?.qty > 0}>
-                            {deck.cards[card.id].qty}
-                          </Show>
-
-                          <Button size='xsicon' variant='ghost' type='button'>
-                            <AddIcon
-                              class='text-white'
-                              style='filter: drop-shadow(2px 4px 6px black);'
-                              onClick={() => {
-                                let id = unwrap(card.id);
-                                if (deck.cards[id]) {
-                                  return updateDeck('cards', id, 'qty', (qty = 1) => qty + 1);
-                                }
-                                updateDeck('cards', id, { ...unwrap(card), qty: 1 });
-                              }}
-                            />
-                          </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+                }}
               </For>
             </div>
           </div>
@@ -610,6 +629,19 @@ export const DeckEditor: Component<Props> = props => {
               props.onClose();
             }}
           />
+        </Show>
+        <Show when={searchParams.dialog === 'card-preview'}>
+          {console.log('card-preview')}
+          <AlertDialog
+            open
+            onOpenChange={isOpen =>
+              !isOpen && setSearchParams({ dialog: undefined, src: undefined }, { replace: true })
+            }>
+            <AlertDialogContent>
+              <AlertTitle />
+              <img src={searchParams.src} />
+            </AlertDialogContent>
+          </AlertDialog>
         </Show>
       </Portal>
     </>

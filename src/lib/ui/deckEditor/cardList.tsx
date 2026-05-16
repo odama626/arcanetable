@@ -127,7 +127,7 @@ function CardEntry(props: { entry: DetailedCardEntry; addCard(): void; removeCar
   return (
     <HoverCard placement='right'>
       <HoverCardTrigger>
-        <div class='flex gap-2 items-center px-4 hover:bg-accent'>
+        <div class='flex gap-2 items-center px-4 hover:bg-accent' id={props.entry.id}>
           <span class='text-primary font-bold text-xl items-center'>{props.entry.qty}</span>
           <span class='truncate grow align-center'>{props.entry.name}</span>
           <Button size='sm' variant='ghost' type='button' onClick={props.removeCard}>

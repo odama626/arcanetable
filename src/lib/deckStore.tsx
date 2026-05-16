@@ -58,11 +58,13 @@ const DEFAULT_DECK = {
 };
 
 export function getCardKey(entry: CardEntry) {
-  return entry.id;
+  return entry.id ?? [entry.name, entry.set].join(':');
 }
 
-export async function hydrateDeck(deck: Deck) {
+export async function hydrateDeck(originalDeck: Deck) {
   let cache = new Map();
+
+  let deck = structuredClone(originalDeck);
 
   // migrate to deck v2
   if (deck.cardList) {
@@ -70,24 +72,39 @@ export async function hydrateDeck(deck: Deck) {
     deck.cardList = undefined;
     deck.deck = undefined;
 
-    deck.cards = Object.fromEntries(cardList.map(card => [getCardKey(card), card]));
-    if (!deck.system) {
-      deck.system = 'mtg';
-    }
+    const cards = await Promise.all(
+      cardList.map(card => fetchCardInfo(card, cache).then(card => [getCardKey(card), card])),
+    );
+
+    deck.cards = Object.fromEntries(cards);
+
+    // if (!deck.system) {
+    //   deck.system = 'scry-server-mtg';
+    // }
     if (deck.inPlay && Array.isArray(deck.inPlay)) {
-      deck.inPlay = Object.fromEntries(deck.inPlay.map(card => [getCardKey(card), card]));
+      const cards = await Promise.all(
+        deck.inPlay.map(card => fetchCardInfo(card, cache).then(card => [getCardKey(card), card])),
+      );
+      deck.inPlay = Object.fromEntries(cards);
     }
     deck.version = 2;
   }
 
+  let deckCards = Object.values(deck.cards);
+  let inPlayCards = Object.values(deck.inPlay);
+  deck.cards = {};
+  deck.inPlay = {};
+
   // populate all card details
   await Promise.all(
     [
-      Object.values(deck.cards ?? {}).map(async card => {
-        deck.cards[getCardKey(card)] = await fetchCardInfo(card, cache).catch(() => card);
+      deckCards.map(async card => {
+        const updatedCard = await fetchCardInfo(card, cache).catch(() => card);
+        deck.cards[getCardKey(updatedCard)] = updatedCard;
       }),
-      Object.values(deck.inPlay ?? {}).map(async card => {
-        deck.inPlay[getCardKey(card)] = await fetchCardInfo(card, cache).catch(() => card);
+      inPlayCards.map(async card => {
+        const updatedCard = await fetchCardInfo(card, cache).catch(() => card);
+        deck.inPlay[getCardKey(updatedCard)] = updatedCard;
       }),
     ].flat(),
   );

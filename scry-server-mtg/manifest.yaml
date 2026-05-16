@@ -1,0 +1,67 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scry-server-mtg
+  namespace: arcanetable
+  labels:
+    app: scry-server-mtg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scry-server-mtg
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: scry-server-mtg
+    spec:
+      containers:
+        - image: ghcr.io/odama626/arcanetable/scry-server-mtg:latest
+          name: scry-server-mtg
+          ports:
+            - containerPort: 8788
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scry-server-mtg
+  namespace: arcanetable
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8788
+  type: ClusterIP
+  selector:
+    app: scry-server-mtg
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scry-server-mtg # Name of the ingress object
+  namespace: arcanetable
+  annotations:
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - scry-server-mtg.arcanetable.app
+      secretName: scry-server-mtg-arcanetable-cert
+  rules:
+    - host: 'scry-server-mtg.arcanetable.app' # Your hostname
+      http:
+        paths:
+          # Path-based routing settings:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: scry-server-mtg # The name of the service
+                port:
+                  number: 80 # Service Portnumber

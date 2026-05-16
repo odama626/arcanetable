@@ -5,3 +5,7 @@ build:
 
 push:
 	docker push ${docker_container}
+
+deploy:
+	kubectl apply -f manifest.yaml
+	kubectl rollout restart -f manifest.yaml
