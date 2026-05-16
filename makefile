@@ -30,7 +30,7 @@ build:
 	make -C yjs-signaling-server build
 	make -C websocket-server build
 	make -C scry-server-mtg build
-  	make -C scry-server-yugioh build
+	make -C scry-server-yugioh build
 	make -C scry-server-pokemon build
 
 push: build
