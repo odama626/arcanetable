@@ -73,6 +73,7 @@ import {
 import { toast } from 'solid-sonner';
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { AlertDialog, AlertDialogContent } from '~/components/ui/alert-dialog';
+import intersectionObserver from '../intersectionObserver';
 
 interface Props {
   onClose(): void;
@@ -131,7 +132,7 @@ export const DeckEditor: Component<Props> = props => {
   }
 
   function closeCurrentDialog() {
-    setSearchParams({ dialog: undefined }, { replace: true });
+    setSearchParams({ dialog: undefined, src: undefined }, { replace: true });
   }
 
   const updateDeck: SetStoreFunction<Deck> = (...params: any[]) => {
@@ -177,6 +178,17 @@ export const DeckEditor: Component<Props> = props => {
   onCleanup(() => {
     window.removeEventListener('drop', handleDrop);
     window.removeEventListener('paste', handlePaste);
+    setSearchParams(
+      {
+        page: undefined,
+        totalPages: undefined,
+        dialog: undefined,
+        src: undefined,
+        q: undefined,
+        type: undefined,
+      },
+      { replace: true },
+    );
   });
 
   function handlePaste(event) {
@@ -202,8 +214,21 @@ export const DeckEditor: Component<Props> = props => {
     return [systemId, params.get('q'), params.getAll('type').sort()].join(':');
   }
 
-  function onSearch(q, t) {
+  async function loadMoreResults(entry: IntersectionObserverEntry) {
+    const q = (unwrap(searchParams.q) ?? '') as string;
+    const t = unwrap(searchParams.type);
+    const page = unwrap(searchParams.page) as string;
+    if (!q?.length && !t?.length) return;
+    if (!page?.length) return;
+
+    debouncedOnSearch(q, t, parseInt(page) + 1);
+  }
+
+  let lastSearchString: string | undefined;
+
+  function onSearch(q?: string, t?: string | string[], page?: number) {
     const url = new URL(cardSystem.cardSearchEndpoint);
+
     if (q) {
       url.searchParams.set('q', q);
     }
@@ -212,6 +237,23 @@ export const DeckEditor: Component<Props> = props => {
       t.forEach(t => url.searchParams.append('type', t));
     } else if (t) {
       url.searchParams.append('type', t);
+    }
+    if (page) {
+      url.searchParams.set('page', page.toString());
+    }
+
+    let searchString = getSearchString(cardSystem.id, url.searchParams);
+
+    const isSearchSame = searchString === lastSearchString;
+    lastSearchString = searchString;
+
+    let outdatedSearch = page
+      ? page <= parseInt(searchParams.page ?? '')
+      : searchParams.page && !page;
+
+    if (isSearchSame && outdatedSearch) {
+      console.log('tried outdated search');
+      return;
     }
 
     function fetchPage(append?: true) {
@@ -233,18 +275,20 @@ export const DeckEditor: Component<Props> = props => {
           if (append && !isSearchSame) return;
 
           if (append) {
-            setSearchResults(results => [...results, ...newResults]);
+            setSearchResults((results = []) => [...results, ...newResults]);
           } else {
             setSearchResults(newResults);
           }
 
+          setSearchParams({ page: result.page, totalPages: result.total_pages }, { replace: true });
+
           if (isSearchSame && result.page < result.total_pages) {
             url.searchParams.set('page', result.page + 1);
-            fetchPage(true);
+            // fetchPage(true);
           }
         });
     }
-    fetchPage();
+    fetchPage(isSearchSame);
   }
   let debouncedOnSearch = debounce(onSearch, 750);
 
@@ -253,7 +297,6 @@ export const DeckEditor: Component<Props> = props => {
     const q = unwrap(searchParams.q) ?? '';
     const t = unwrap(searchParams.type);
     if (!q?.length && !t?.length) return setSearchResults();
-
     debouncedOnSearch(q, t);
   });
 
@@ -271,7 +314,6 @@ export const DeckEditor: Component<Props> = props => {
               type='button'
               onClick={() => {
                 if (isDirty()) return setSearchParams({ dialog: 'editor-confirm-close' });
-                setSearchParams({ q: undefined, type: undefined }, { replace: false });
                 props.onClose();
               }}>
               Close
@@ -583,6 +625,11 @@ export const DeckEditor: Component<Props> = props => {
                   );
                 }}
               </For>
+              <div use:intersectionObserver={{ onIntersect: loadMoreResults }}>
+                <Show when={searchParams.pages < searchParams.totalPages}>
+                  Loading more results
+                </Show>
+              </div>
             </div>
           </div>
         </div>
@@ -606,10 +653,6 @@ export const DeckEditor: Component<Props> = props => {
                 <Button
                   onClick={() => {
                     closeCurrentDialog();
-                    setSearchParams(
-                      { q: undefined, type: undefined, dialog: undefined },
-                      { replace: true },
-                    );
                     props.onClose();
                   }}>
                   Close Without Saving
@@ -624,21 +667,13 @@ export const DeckEditor: Component<Props> = props => {
             onClose={closeCurrentDialog}
             onDelete={() => {
               closeCurrentDialog();
-              setSearchParams(
-                { dialog: undefined, q: undefined, type: undefined },
-                { replace: true },
-              );
               props.onDelete();
               props.onClose();
             }}
           />
         </Show>
         <Show when={searchParams.dialog === 'card-preview'}>
-          <AlertDialog
-            open
-            onOpenChange={isOpen =>
-              !isOpen && setSearchParams({ dialog: undefined, src: undefined }, { replace: true })
-            }>
+          <AlertDialog open onOpenChange={isOpen => !isOpen && closeCurrentDialog()}>
             <AlertDialogContent>
               <AlertTitle />
               <img src={searchParams.src} />
