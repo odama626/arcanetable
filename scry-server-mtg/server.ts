@@ -82,7 +82,7 @@ function getBaseUrl(req: Request): string {
 const cache = typeof caches !== 'undefined' ? caches.default : null;
 
 async function scryfallFetch(path: string): Promise<Response> {
-  const url = `${SCRYFALL}${path}`;
+  const url = path.startsWith('http') ? path : `${SCRYFALL}${path}`;
   const cacheKey = new Request(url);
 
   if (cache) {
@@ -227,36 +227,32 @@ app.get('/cards/named', async c => {
     headers: cacheHeaders(),
   });
 });
+
 app.get('/cards/search', async c => {
   const q = c.req.query('q') ?? '';
-  const type = c.req.query('type');
+  const types = c.req.queries('type') ?? [];
   const page = c.req.query('page') ?? '1';
   const baseUrl = getBaseUrl(c.req.raw);
 
   let sfQuery = q;
-  if (type) {
-    const typeFilter = TYPE_ALIASES[type.toLowerCase()] ?? `t:${type}`;
-    sfQuery += ` ${typeFilter}`;
+  let typeQuery = types.map(t => TYPE_ALIASES[t.toLowerCase()] ?? `t:${t}`).join(' or ');
+
+  if (types.length >1) {
+    typeQuery = `(${typeQuery})`
   }
-
+  sfQuery += ` ${typeQuery}`
+  
   sfQuery = sfQuery.trim() || '*';
-
   const params = new URLSearchParams({ q: sfQuery, order: 'name', page });
   const res = await scryfallFetch(`/cards/search?${params}`);
 
+  const baseBody = { id: SCRY_SERVER_ID, object: 'list', page: Number(page), query: { q, types } };
+
   if (res.status === 404)
-    return new Response(
-      JSON.stringify({
-        id: SCRY_SERVER_ID,
-        object: 'list',
-        total_cards: 0,
-        total_pages: 0,
-        page: Number(page),
-        query: { q, type },
-        data: [],
-      }),
-      { status: 200, headers: cacheHeaders() },
-    );
+    return new Response(JSON.stringify({ ...baseBody, total_cards: 0, total_pages: 0, data: [] }), {
+      status: 200,
+      headers: cacheHeaders(),
+    });
 
   if (res.status === 429) return errorResponse('rate_limited', 'Scryfall rate limit hit', 503);
   if (!res.ok) return errorResponse('upstream_error', `Scryfall returned ${res.status}`, 502);
@@ -266,12 +262,9 @@ app.get('/cards/search', async c => {
 
   return new Response(
     JSON.stringify({
-      id: SCRY_SERVER_ID,
-      object: 'list',
+      ...baseBody,
       total_cards: totalCards,
       total_pages: Math.ceil(totalCards / 175),
-      page: Number(page),
-      query: { q, type },
       data: list.data.map(card => minimalCard(mapCard(card, baseUrl))),
     }),
     { status: 200, headers: cacheHeaders() },
@@ -337,7 +330,7 @@ async function handleImageRequest(c) {
     return errorResponse('bad_request', 'URI not allowed', 400);
   }
 
-  const res = await fetch(uri);
+  const res = await scryfallFetch(uri);
   if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
   return new Response(res.body, {
     status: 200,
