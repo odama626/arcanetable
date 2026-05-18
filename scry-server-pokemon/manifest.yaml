@@ -49,6 +49,9 @@ metadata:
   namespace: arcanetable
   annotations:
     cert-manager.io/cluster-issuer: 'letsencrypt-prod'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Host $host;
 spec:
   ingressClassName: nginx
   tls:

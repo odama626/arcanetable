@@ -21,3 +21,6 @@ push:
 
 apply:
 	kubectl apply -f manifest.yaml
+
+deploy: build push apply
+	kubectl rollout restart -f manifest.yaml

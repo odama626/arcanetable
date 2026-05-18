@@ -110,11 +110,13 @@ function errorResponse(code: string, details: string, status: number): Response 
 
 function getBaseUrl(req: Request): string {
   const url = new URL(req.url);
-  const proto = req.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const host = req.headers.get('x-forwarded-host') ?? url.host;
+  const proto =
+    req.headers.get('x-forwarded-scheme') ??
+    req.headers.get('x-forwarded-proto')?.split(',')[0].trim() ??
+    'http';
+  const host = req.headers.get('x-forwarded-host')?.split(',')[0].trim() ?? url.host;
   return `${proto}://${host}`;
 }
-
 // ── TCG API FETCH ─────────────────────────────────────────────────────────────
 
 async function tcgFetch(path: string): Promise<Response> {
@@ -204,6 +206,14 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
 // ── APP ───────────────────────────────────────────────────────────────────────
 
 const app = new Hono();
+
+app.get('/debug', c => {
+  const headers: Record<string, string> = {};
+  c.req.raw.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+  return c.json({ headers, url: c.req.url });
+});
 
 app.get('/', c => {
   const baseUrl = getBaseUrl(c.req.raw);
@@ -344,7 +354,6 @@ app.get('/cards/search', async c => {
     { status: 200, headers: cacheHeaders() },
   );
 });
-
 
 // GET /draft?count=10&seed=42&supertype=Pokémon
 app.get('/draft', async c => {
