@@ -73,8 +73,11 @@ function errorResponse(code: string, details: string, status: number): Response 
 
 function getBaseUrl(req: Request): string {
   const url = new URL(req.url);
-  const proto = req.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const host = req.headers.get('x-forwarded-host') ?? url.host;
+  const proto =
+    req.headers.get('x-forwarded-scheme') ??
+    req.headers.get('x-forwarded-proto')?.split(',')[0].trim() ??
+    'http';
+  const host = req.headers.get('x-forwarded-host')?.split(',')[0].trim() ?? url.host;
   return `${proto}://${host}`;
 }
 
