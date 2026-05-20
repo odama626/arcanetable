@@ -443,13 +443,13 @@ export class PlayArea {
     let cardsInDeck = expandCardEntries(
       Object.values(hydratedDeck.cards).filter(card => !hydratedDeck.inPlay[getCardKey(card)]),
     );
-    let cardsInPlay = expandCardEntries(Object.values(deck.inPlay));
+    let cardsInPlay = expandCardEntries(Object.values(hydratedDeck.inPlay));
 
     let cards = cardsInDeck.concat(cardsInPlay);
 
     const playArea = new PlayArea(clientId, cards, cardsInDeck, { isLocalPlayer: true });
 
-    if (deck?.inPlay) {
+    if (hydratedDeck?.inPlay) {
       cardsInPlay.forEach((card, i) => {
         card.id = card.id || nanoid();
         let initializedCard = initializeCardMesh(card, clientId);
