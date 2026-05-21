@@ -18,7 +18,7 @@ spec:
         app: caddy
     spec:
       containers:
-        - image: ghcr.io/odama626/arcanetable:latest
+        - image: ghcr.io/odama626/arcanetable:production
           name: caddy
           ports:
             - containerPort: 80
