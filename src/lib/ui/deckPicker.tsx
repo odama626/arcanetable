@@ -87,10 +87,10 @@ export default function DeckPicker(props: Props) {
               let fromSystem = deck().system || 'unsorted';
               let toSystem = updatedDeck.system || 'unsorted';
 
-              setDeckStore('systems', fromSystem, entries =>
+              setDeckStore('systems', fromSystem, (entries = []) =>
                 entries.filter(id => id !== deck().id),
               );
-              setDeckStore('systems', toSystem, entries => [
+              setDeckStore('systems', toSystem, (entries = []) => [
                 updatedDeck.id,
                 ...entries.filter(id => id !== updatedDeck.id),
               ]);

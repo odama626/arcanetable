@@ -21,21 +21,23 @@ build:
 	pnpm build
 	docker build . \
 		--label $(github_repo) \
-		-t $(docker_container):latest \
 		-t $(docker_container):$(BUILD_ID) \
 		-t $(docker_container):$(BUILD_DATE) \
-		-t $(docker_container):beta \
-		-t $(docker_container):staging
+		-t $(docker_container):stable \
+		-t $(docker_container):production \
+		-t $(docker_container):production-hotfix
 
-	make -C yjs-signaling-server build
-	make -C websocket-server build
+	# make -C yjs-signaling-server build
+	# make -C websocket-server build
 	# make -C scry-server-mtg
 
 push: build
 	docker push --all-tags $(docker_container)
-	make -C yjs-signaling-server push
-	make -C websocket-server push
+	# make -C yjs-signaling-server push
+	# make -C websocket-server push
 	# make -C scry-server-mtg
+	#
+
 
 deploy:	build push
 	kubectl apply -f secrets.yml -f deployment.yml
