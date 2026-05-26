@@ -129,12 +129,30 @@ export function headlessInit(opts = {}) {
   provider = opts?.provider;
 }
 
-export function setCardBackTexture(img: string) {
-  return new Promise(resolve => {
-    console.log('setting texture', img);
-    cardBackTexture = textureLoader.load(img, resolve);
-    cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+export async function setCardBackTexture(url: string) {
+  const old = cardBackTexture;
+  cardBackTexture = await new Promise(resolve => textureLoader.load(url, resolve));
+  cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+
+  scene.traverse(obj => {
+    const mesh = obj as THREE.Mesh;
+    if (mesh.isMesh) {
+      const mat = mesh.material as THREE.MeshStandardMaterial;
+      console.log({mat})
+      if (Array.isArray(mat)) {
+        mat.forEach((mat, i) => {
+          if (mat.map === old) {
+            mat.map = cardBackTexture;
+            mat.needsUpdate = true;
+          }
+        })
+      } else if (mat?.map?.userData?.isCardBack) {
+        mat.map = cardBackTexture;
+        mat.needsUpdate = true;
+      }
+    }
   });
+  old?.dispose();
 }
 
 export function initClock() {
@@ -155,8 +173,8 @@ export async function init({ gameId }) {
     console.log(item, loaded, total);
   };
 
-  // cardBackTexture = textureLoader.load(cardSystem.cardBack ?? DEFAULT_CARD_SYSTEM.cardBack);
-  // cardBackTexture.colorSpace = THREE.SRGBColorSpace;
+  cardBackTexture = textureLoader.load(cardSystem.cardBack ?? `/arcane-table-back.webp`);
+  cardBackTexture.colorSpace = THREE.SRGBColorSpace;
 
   cardLoadingTexture = textureLoader.load(`/loading-texture.png`);
   cardLoadingTexture.repeat.setX(1 / 3);

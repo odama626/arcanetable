@@ -226,52 +226,71 @@ app.get('/cards/named', async c => {
   const params = new URLSearchParams({ name: exact });
   if (set) params.set('cardset', set);
 
-  const res = await ygoFetch(`/cardinfo.php?${params}`);
-  if (res.status === 400) return errorResponse('not_found', `No card found for "${exact}"`, 404);
-  if (!res.ok) return errorResponse('upstream_error', `YGOProDeck returned ${res.status}`, 502);
+  try {
+    const res = await ygoFetch(`/cardinfo.php?${params}`);
+    if (res.status === 400) return errorResponse('not_found', `No card found for "${exact}"`, 404);
+    if (!res.ok) return errorResponse('upstream_error', `YGOProDeck returned ${res.status}`, 502);
 
-  const list = (await res.json()) as YgoList;
-  const card = list.data?.[0];
-  if (!card) return errorResponse('not_found', `No card found for "${exact}"`, 404);
+    const list = (await res.json()) as YgoList;
+    const card = list.data?.[0];
+    if (!card) return errorResponse('not_found', `No card found for "${exact}"`, 404);
 
-  return new Response(JSON.stringify(mapCard(card, baseUrl)), {
-    status: 200,
-    headers: cacheHeaders(),
-  });
+    return new Response(JSON.stringify(mapCard(card, baseUrl)), {
+      status: 200,
+      headers: cacheHeaders(),
+    });
+  } catch (e) {
+    console.error(`/cards/named error:`, e);
+    return new errorResponse('upstream_error', 'Upstream fetch failed', 500);
+  }
 });
 
 app.get('/cards/search', async c => {
   const q = c.req.query('q');
-  const type = c.req.query('type');
+  const types = c.req.queries('type');
   const page = Math.max(Number(c.req.query('page') ?? 1), 1);
   const limit = Math.min(Number(c.req.query('limit') ?? 50), 200);
   const offset = (page - 1) * limit;
   const baseUrl = getBaseUrl(c.req.raw);
 
-  const params = new URLSearchParams();
-  if (q) params.set('fname', q);
-  if (type) params.set('type', type);
-  params.set('num', String(limit));
-  params.set('offset', String(offset));
+  try {
+    const typeList = types && types.length > 0 ? types : [undefined];
 
-  const res = await ygoFetch(`/cardinfo.php?${params}`);
+    const results = await Promise.all(
+      typeList.map(async (type) => {
+        const params = new URLSearchParams();
+        if (q) params.set('fname', q);
+        if (type) params.set('type', type);
 
-  if (res.status === 400) {
-    return new Response(JSON.stringify(mapList([], baseUrl, { total: 0, page, query: { q, type } })), {
-      status: 200,
-      headers: cacheHeaders(),
+        const res = await ygoFetch(`/cardinfo.php?${params}`);
+        if (res.status === 400) return [];
+        if (!res.ok) throw new Error(`YGOProDeck returned ${res.status}`);
+
+        const list = (await res.json()) as YgoList;
+        if (!list.data) return [];
+        return list.data;
+      })
+    );
+
+    const seen = new Set<number>();
+    const merged = results.flat().filter(card => {
+      if (seen.has(card.id)) return false;
+      seen.add(card.id);
+      return true;
     });
+
+    const total = merged.length;
+    const page_data = merged.slice(offset, offset + limit);
+
+    return new Response(
+      JSON.stringify(mapList(page_data, baseUrl, { total, page, query: { q, types } })),
+      { status: 200, headers: cacheHeaders() }
+    );
+  } catch (e) {
+    console.error('/cards/search error:', e);
+    return errorResponse('upstream_error', `YGOProDeck error: ${e.message}`, 502);
   }
-  if (!res.ok) return errorResponse('upstream_error', `YGOProDeck returned ${res.status}`, 502);
-
-  const list = (await res.json()) as YgoList;
-  const total = list.meta?.total_rows ?? list.data.length;
-  return new Response(
-    JSON.stringify(mapList(list.data, baseUrl, { total, page, query: { q, type } })),
-    { status: 200, headers: cacheHeaders() },
-  );
 });
-
 app.get('/draft', async c => {
   const count = Math.min(Number(c.req.query('count') ?? 10), 100);
   const seed = Number(c.req.query('seed') ?? 1);
@@ -312,15 +331,28 @@ async function handleImageRequest(c) {
     return errorResponse('bad_request', 'URI not allowed', 400);
   }
 
-  const res = await fetch(uri);
-  if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
-  return new Response(res.body, {
-    status: 200,
-    headers: {
-      ...imageCacheHeaders(),
-      'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream,',
-    },
-  });
+  try {
+    const res = await fetch(uri);
+    if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
+    const buffer = await res.arrayBuffer();
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        ...imageCacheHeaders(),
+        'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream',
+      },
+    });
+  } catch (e) {
+    console.error('Image fetch failed:', uri, e);
+    return errorResponse('upstream_error', 'Failed to fetch image', 502);
+  }
 }
+
+
+
+app.onError((err, c) => {
+  console.error(`${c.req.url}:`, err);
+  return c.json({ object: 'error', code: 'server_error', details: err.message }, 500);
+});
 
 export default app;
