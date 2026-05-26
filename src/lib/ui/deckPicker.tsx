@@ -59,12 +59,11 @@ export default function DeckPicker(props: Props) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
+
     e.currentTarget.reset();
 
     // todo: fix picking a deck that is not default system here
     const deck = deckStore.decks[data.deckId];
-
-    await setCardSystem(deck.system);
 
     props.onStart(data);
   }

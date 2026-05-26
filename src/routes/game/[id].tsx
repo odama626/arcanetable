@@ -45,7 +45,7 @@ const GamePage: Component = props => {
             setSelectedDeckId(settings.deckId);
             const deckStore = getDeckStore();
             let deck = structuredClone(unwrap(deckStore.decks[settings.deckId]));
-            const cardSystem = await setCardSystem(deck.system);
+            const cardSystem = await setCardSystem(deck.system || cardSystemStore.system);
             setSearchParams({ system: cardSystem.uri }, { replace: true });
 
             settings.deck = deck;

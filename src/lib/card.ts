@@ -188,7 +188,11 @@ function buildSearchLine(cardDetail: CardEntryDetail, config) {
     return result ?? '';
   });
 
-  return (config.filterEmpty ? values.filter(Boolean) : values).join('\n').toLowerCase();
+  if (config.filterEmtpy) {
+    values = values.filter(Boolean);
+  }
+
+  return values.join('\n').toLowerCase();
 }
 
 export function getSearchLine(cardDetail: CardEntryDetail) {

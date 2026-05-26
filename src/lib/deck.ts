@@ -314,7 +314,7 @@ export async function fetchCardInfo(
     return cache.get(urlString + entry.qty)!;
   }
 
-  let result = fetch(urlString, { cache: 'force-cache' })
+  let result = await fetch(urlString, { cache: 'force-cache' })
     .then(r => r.json())
     .then(r => {
       if (r.status !== 404) return r;
@@ -336,13 +336,20 @@ export async function fetchCardInfo(
 }
 
 export function populateCardInfo(detail: CardEntryDetail, entry?: Card) {
-  return {
+  let fields = {
     id: entry?.id || detail?.id,
     set: entry?.set || detail?.set,
     name: entry?.name || detail.name,
     search: getSearchLine(detail),
     popularity: detail?.popularity ?? detail[cardSystem.popularity],
-    detail,
+  };
+
+  return {
+    ...fields,
+    detail: {
+      ...detail,
+      ...fields,
+    },
   };
 }
 
