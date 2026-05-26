@@ -179,7 +179,7 @@ const TRANSFORMS = {
 };
 
 function buildSearchLine(cardDetail: CardEntryDetail, config) {
-  const values = config.searchFields.flatMap(({ field, transform, recurse }) => {
+  let values = config.searchFields.flatMap(({ field, transform, recurse }) => {
     const val = cardDetail[field];
     if (recurse && Array.isArray(val)) {
       return val.map(child => buildSearchLine(child, config));

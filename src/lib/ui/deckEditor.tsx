@@ -54,6 +54,7 @@ import SubIcon from 'lucide-solid/icons/minus';
 import SearchIcon from 'lucide-solid/icons/search';
 import { useSearchParams } from '@solidjs/router';
 import { trackStore, trackDeep } from '@solid-primitives/deep';
+import DownloadIcon from 'lucide-solid/icons/download';
 import {
   Select,
   SelectContent,
@@ -89,6 +90,8 @@ export const DeckEditor: Component<Props> = props => {
   const [searchResults, setSearchResults] = createSignal();
   const [cardSystemStore, { setCardSystem }] = useCardSystemContext();
   const [isDirty, setIsDirty] = createSignal(false);
+  let formRef: HTMLFormElement;
+
   const [deck, setDeck] = createStore<Deck>(
     props.deck?.name ? unwrap(props.deck) : { cards: {}, inPlay: {} },
   );
@@ -300,9 +303,36 @@ export const DeckEditor: Component<Props> = props => {
     debouncedOnSearch(q, t);
   });
 
+  function onDownloadDeckList() {
+    let params = {
+      name: 'unnamed deck',
+    };
+    if (formRef) {
+      params.name = formRef.elements['name'].value;
+    }
+
+    let cards = Object.values(deck.cards).map(card =>
+      [card.qty, card.name, card.set && `[${card.set}]`].filter(Boolean).join(' '),
+    );
+    let inPlayCards = Object.values(deck.inPlay).map(card =>
+      [card.qty, card.name, card.set && `[${card.set}]`].filter(Boolean).join(' '),
+    );
+
+    let content = [inPlayCards, cards].flat().join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${params.name}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+  }
+
   return (
     <>
-      <form onSubmit={onSaveDeck}>
+      <form ref={formRef} onSubmit={onSaveDeck}>
         <div class={styles.container} onDragOver={e => e.preventDefault()}>
           <div
             style='grid-area: header;'
@@ -477,9 +507,11 @@ export const DeckEditor: Component<Props> = props => {
               </Combobox>
             </div>
             <div class='flex gap-1 justify-end px-4 pb-4'>
+              <Button variant='ghost' size='icon' class='mr-auto' onClick={onDownloadDeckList}>
+                <DownloadIcon />
+              </Button>
               <Show when={isEditing()}>
                 <Button
-                  class='cursor-pointer'
                   variant='ghost'
                   onClick={() => setSearchParams({ dialog: 'editor-confirm-delete' })}>
                   Delete Deck
@@ -568,7 +600,7 @@ export const DeckEditor: Component<Props> = props => {
                             class='dark gap-2 font-bold text-white flex items-center backdrop-blur-xl rounded'
                             style={`background: hsla(var(--background) / .4);`}>
                             <Show
-                              when={!card.detail?.name}
+                              when={!card.detail?.name || !getCardImage(card)}
                               fallback={
                                 <Button
                                   variant='ghost'
