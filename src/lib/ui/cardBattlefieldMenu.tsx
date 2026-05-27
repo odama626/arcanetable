@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Component, createMemo, createSignal, For, Show } from 'solid-js';
 import { Mesh, Raycaster, Vector3 } from 'three';
 import { Button } from '~/components/ui/button';
 import {
@@ -27,6 +27,17 @@ import MoveMenu from './moveMenu';
 import { restackItems, shuffleItems } from '../utils';
 
 const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = props => {
+  const [cardModifiers, setCardModifiers] = createSignal(props.cardMesh?.userData.modifiers ?? {});
+
+  function updateCardModifiers(fn) {
+    const card = cardsById.get(props.cardMesh.userData.id)!;
+    setCardModifiers(prev => {
+      const next = fn(prev);
+      props.playArea.modifyCard(card, modifiers => next);
+      return next;
+    });
+  }
+
   let card = () => cardsById.get(props.cardMesh?.userData.id)!;
   let meshes = () =>
     selection.selectedItems.length > 0 ? selection.selectedItems : [props.cardMesh];
@@ -36,6 +47,15 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
     if (count > 1) return `${count} cards`;
     return `1 card`;
   };
+
+  let cardCounters = createMemo(() => {
+    return counters()
+      .map(counter => ({
+        ...counter,
+        value: cardModifiers()?.counters?.[counter.id],
+      }))
+      .filter(counter => typeof counter.value === 'number');
+  });
 
   return (
     <div class='flex flex-col items-start'>
@@ -104,8 +124,7 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
                             }
                             style='width: 6rem'
                             onChange={value => {
-                              let card = cardsById.get(props.cardMesh?.userData.id)!;
-                              props.playArea.modifyCard(card, modifiers => ({
+                              updateCardModifiers(modifiers => ({
                                 ...modifiers,
                                 counters: {
                                   ...modifiers.counters,
@@ -158,9 +177,51 @@ const CardBattlefieldMenu: Component<{ playArea: PlayArea; cardMesh?: Mesh }> = 
           playArea={props.playArea}
         />
       </Menubar>
+      <div>
+        <CounterRow
+          onChangeCounter={(counterId, fn) => {
+            updateCardModifiers(modifiers => ({
+              ...modifiers,
+              counters: {
+                ...modifiers.counters,
+                [counterId]: fn(modifiers.counters[counterId]),
+              },
+            }));
+          }}
+          counters={cardCounters()}
+        />
+      </div>
     </div>
   );
 };
+
+interface CounterRowProps {
+  counters: { id: string; value: number; color: string }[];
+  onChangeCounter(counterId: string, fn: (x: number) => number): void;
+}
+
+function CounterRow(props: CounterRowProps) {
+  return (
+    <div class='flex gap-2 mt-2'>
+      <For each={props.counters}>
+        {counter => (
+          <Button
+            class='rounded align-middle px-2'
+            style={`color: black; min-width: 2rem; height: 2rem; line-height: 2rem; background-color: ${counter.color}`}
+            onClick={() => {
+              props.onChangeCounter(counter.id, x => x + 1);
+            }}
+            onContextMenu={e => {
+              e.preventDefault();
+              props.onChangeCounter(counter.id, x => x - 1);
+            }}>
+            {counter.value ?? 0}
+          </Button>
+        )}
+      </For>
+    </div>
+  );
+}
 
 const CoreCounters: Component = props => {
   let [power, setPower] = createSignal(props.cardMesh?.userData.modifiers?.power ?? 0);
