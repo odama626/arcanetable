@@ -75,6 +75,8 @@ import { toast } from 'solid-sonner';
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { AlertDialog, AlertDialogContent } from '~/components/ui/alert-dialog';
 import intersectionObserver from '../intersectionObserver';
+import CopyIcon from 'lucide-solid/icons/copy';
+import CheckIcon from 'lucide-solid/icons/check';
 
 interface Props {
   onClose(): void;
@@ -749,6 +751,7 @@ function EmptyGridContainer() {
 
 function ConfirmDeleteDialog(props: { name: string; onClose(): void; onDelete(): void }) {
   let [value, setValue] = createSignal('');
+  const [isCopied, setIsCopied] = createSignal(false);
 
   return (
     <Dialog open onOpenChange={isOpen => !isOpen && props.onClose()}>
@@ -760,7 +763,25 @@ function ConfirmDeleteDialog(props: { name: string; onClose(): void; onDelete():
           Are you sure you want to delete <b>{props.name}</b>
         </p>
         <p>
-          To delete deck <b>{props.name}</b> type it's name and click delete
+          To delete deck
+          <Button
+            style='position: relative;'
+            onClick={() => {
+              navigator.clipboard.writeText(props.name);
+              setIsCopied(true);
+              setTimeout(() => setIsCopied(false), 1250);
+            }}
+            variant='secondary'
+            size='sm'
+            class='flex-inline gap-2 mx-2'>
+            {props.name} <CopyIcon size={14} />
+            <Show when={isCopied()}>
+              <p style='position: absolute; right: 0;' class='pr-3  bg-secondary'>
+                <CheckIcon size={14} />
+              </p>
+            </Show>
+          </Button>
+          type it's name and click delete
         </p>
         <TextField value={value()} onChange={value => setValue(value)}>
           <TextFieldInput required type='text' />

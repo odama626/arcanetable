@@ -1,5 +1,5 @@
 import type { Component, ComponentProps, JSX, ValidComponent } from 'solid-js';
-import { splitProps } from 'solid-js';
+import { Show, splitProps } from 'solid-js';
 
 import * as DialogPrimitive from '@kobalte/core/dialog';
 import type { PolymorphicProps } from '@kobalte/core/polymorphic';
@@ -45,7 +45,7 @@ type DialogContentProps<T extends ValidComponent = 'div'> =
   };
 
 const DialogContentExtended = props => {
-  const [, rest] = splitProps(props as DialogContentProps, ['class', 'children']);
+  const [, rest] = splitProps(props as DialogContentProps, ['class', 'children', 'hideClose']);
   return (
     <DialogPrimitive.Content
       class={cn(
@@ -54,21 +54,23 @@ const DialogContentExtended = props => {
       )}
       {...rest}>
       {props.children}
-      <DialogPrimitive.CloseButton class='cursor-pointer absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[expanded]:bg-accent data-[expanded]:text-muted-foreground'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          stroke-width='2'
-          stroke-linecap='round'
-          stroke-linejoin='round'
-          class='size-4'>
-          <path d='M18 6l-12 12' />
-          <path d='M6 6l12 12' />
-        </svg>
-        <span class='sr-only'>Close</span>
-      </DialogPrimitive.CloseButton>
+      <Show when={!props.hideClose}>
+        <DialogPrimitive.CloseButton class='cursor-pointer absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[expanded]:bg-accent data-[expanded]:text-muted-foreground'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            stroke-width='2'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+            class='size-4'>
+            <path d='M18 6l-12 12' />
+            <path d='M6 6l12 12' />
+          </svg>
+          <span class='sr-only'>Close</span>
+        </DialogPrimitive.CloseButton>
+      </Show>
     </DialogPrimitive.Content>
   );
 };

@@ -107,7 +107,7 @@ export default function DeckPicker(props: Props) {
         )}
       </Show>
       <Dialog open={!editingDeck()}>
-        <DialogContent class='max-w-3xl'>
+        <DialogContent class='max-w-3xl' hideClose>
           <DialogHeader>
             <DialogTitle>Start Session</DialogTitle>
           </DialogHeader>
