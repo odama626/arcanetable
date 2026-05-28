@@ -81,7 +81,7 @@ export const SHORTCUTS = [
   },
   {
     shortcuts: [['E']],
-    action: 'exile selected cards',
+    action: 'remove selected cards from the game',
   },
   {
     shortcuts: [['B']],

@@ -110,7 +110,7 @@ function CardSystems(props: { startUrl: string }) {
         <div class='text-center'>
           <h2 class='text-3xl font-bold text-white'>Pick your game</h2>
           <p class='text-gray-400 mt-3 max-w-xl mx-auto'>
-            MTG, Pokémon, and Yu-Gi-Oh are ready to go. Click one to start a table right now.
+            Arcanetable supports multiple games, pick one below to get started.
           </p>
         </div>
         <div class='grid gap-6 lg:grid-cols-3'>
@@ -198,7 +198,7 @@ function Multiplayer() {
             src='/friend.webp'
             alt='Multiplayer game in progress'
             style='aspect-ratio: 1;'
-            class='mx-auto rounded-lg object-cover min-w-0 max-lg:hidden'
+            class='mx-auto rounded-lg object-cover min-w-0'
           />
           <div class='flex flex-col gap-6 justify-center'>
             <h2 class='text-3xl font-bold'>Grab a friend. Share a link.</h2>
