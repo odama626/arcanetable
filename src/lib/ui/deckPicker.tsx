@@ -43,9 +43,9 @@ export default function DeckPicker(props: Props) {
   const [editingDeck, setEditingDeck] = createSignal<Deck>();
   const [startingLife, setStartingLife] = createSignal(40);
 
-  onMount(() => {
-    setSelectedDeckId(Object.values(deckStore.decks)[0]?.id);
-  });
+  // onMount(() => {
+  //   setSelectedDeckId(Object.values(deckStore.decks)[0]?.id);
+  // });
 
   createEffect(() => {
     const deck = deckStore.decks[selectedDeckId()];
@@ -184,14 +184,12 @@ export default function DeckPicker(props: Props) {
                 onClick={() => setEditingDeck(deckStore.decks[selectedDeckId()])}>
                 Edit Deck
               </Button>
-              <Button
-                variant='outline'
-                type='button'
-                onClick={() => setEditingDeck({})}
-                disabled={!selectedDeckId()}>
+              <Button variant='outline' type='button' onClick={() => setEditingDeck({})}>
                 Create Deck
               </Button>
-              <Button type='submit'>Start Playtest</Button>
+              <Button type='submit' disabled={!selectedDeckId()}>
+                Start Playtest
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
