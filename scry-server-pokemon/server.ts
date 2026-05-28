@@ -305,10 +305,10 @@ app.get('/cards/named', async c => {
   });
 });
 
-// GET /cards/search?q=char&type=fire&supertype=Pokémon&set=base1&rarity=Rare&limit=20&page=1
+// GET /cards/search?q=char&type=fire&type=water&supertype=Pokémon&set=base1&rarity=Rare&limit=20&page=1
 app.get('/cards/search', async c => {
   const q = c.req.query('q');
-  const type = c.req.query('type');
+  const types = c.req.queries('type') ?? [];
   const supertype = c.req.query('supertype');
   const set = c.req.query('set');
   const rarity = c.req.query('rarity');
@@ -317,19 +317,16 @@ app.get('/cards/search', async c => {
   const baseUrl = getBaseUrl(c.req.raw);
 
   const clauses: string[] = [];
-  if (q) clauses.push(`name:"${q}*"`);
-  if (type) clauses.push(`types:${type}`);
+  if (q) clauses.push(`name:${q}*`);
+  if (types.length > 0) clauses.push(types.map(t => `types:${t}`).join(' OR '));
   if (supertype) clauses.push(`supertype:${supertype}`);
   if (set) clauses.push(`set.id:${set}`);
   if (rarity) clauses.push(`rarity:"${rarity}"`);
 
   if (clauses.length === 0) {
     return new Response(
-      JSON.stringify(mapList([], { total: 0, page, query: { q, type, supertype, set, rarity } })),
-      {
-        status: 200,
-        headers: cacheHeaders(),
-      },
+      JSON.stringify(mapList([], { total: 0, page, query: { q, types, supertype, set, rarity } })),
+      { status: 200, headers: cacheHeaders() },
     );
   }
 
@@ -348,7 +345,7 @@ app.get('/cards/search', async c => {
     JSON.stringify(
       mapList(
         list.data.map(card => mapCard(card, baseUrl)),
-        { total: list.totalCount, page: list.page, query: { q, type, supertype, set, rarity } },
+        { total: list.totalCount, page: list.page, query: { q, types, supertype, set, rarity } },
       ),
     ),
     { status: 200, headers: cacheHeaders() },
