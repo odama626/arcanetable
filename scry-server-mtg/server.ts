@@ -342,6 +342,7 @@ async function handleImageRequest(c) {
 
     const headers: Record<string, string> = {
       ...imageCacheHeaders(),
+      Vary: '',
       'Content-Type': contentType,
     };
     const lastModified = res.headers.get('Last-Modified');
