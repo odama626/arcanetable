@@ -179,11 +179,16 @@ export default function DeckPicker(props: Props) {
                 Spectate
               </Button>
               <Button
+                disabled={!selectedDeckId()}
                 variant='ghost'
                 onClick={() => setEditingDeck(deckStore.decks[selectedDeckId()])}>
                 Edit Deck
               </Button>
-              <Button variant='outline' type='button' onClick={() => setEditingDeck({})}>
+              <Button
+                variant='outline'
+                type='button'
+                onClick={() => setEditingDeck({})}
+                disabled={!selectedDeckId()}>
                 Create Deck
               </Button>
               <Button type='submit'>Start Playtest</Button>

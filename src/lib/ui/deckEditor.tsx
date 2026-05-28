@@ -293,7 +293,7 @@ export const DeckEditor: Component<Props> = props => {
     }
     fetchPage(isSearchSame);
   }
-  let debouncedOnSearch = debounce(onSearch, 750, { trailing: true});
+  let debouncedOnSearch = debounce(onSearch, 750, { trailing: true });
 
   createEffect(() => {
     cardSystem.uri;
@@ -405,6 +405,9 @@ export const DeckEditor: Component<Props> = props => {
                 options={FORMATS}
                 onChange={value => updateDeck('tags', value)}
                 value={deck.tags}
+                onsubmit={e => {
+                  e.preventDefault();
+                }}
                 optionValue='name'
                 optionTextValue='name'
                 placeholder='tags'
@@ -433,7 +436,13 @@ export const DeckEditor: Component<Props> = props => {
                           )}
                         </For>
                         <div class={styles.multiSelectInput}>
-                          <ComboboxInput />
+                          <ComboboxInput
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                              }
+                            }}
+                          />
                           <ComboboxTrigger />
                         </div>
                       </div>
@@ -599,7 +608,7 @@ export const DeckEditor: Component<Props> = props => {
                         padding-bottom: 10cqh;
                       `}>
                           <div
-                            class='dark gap-2 font-bold text-white flex items-center backdrop-blur-xl rounded'
+                            class='dark gap-2 font-bold text-white flex items-center rounded'
                             style={`background: hsla(var(--background) / .4);`}>
                             <Show
                               when={!card.detail?.name || !getCardImage(card)}

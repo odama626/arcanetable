@@ -17,7 +17,9 @@ build:
 		-t $(docker_container):$(BUILD_DATE)
 
 push:
-	docker push --all-tags $(docker_container)
+	docker push $(docker_container):latest
+	docker push $(docker_container):$(BUILD_ID)
+	docker push $(docker_container):$(BUILD_DATE)
 
 apply:
 	kubectl apply -f manifest.yaml
