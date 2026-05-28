@@ -8,27 +8,30 @@ import { cardSystem } from './lib/globals';
 import { CardSystemProvider } from './lib/deckStore';
 import { Toaster } from './components/ui/sonner';
 import { getBuildData } from './lib/console-capture';
+import { MetaProvider } from '@solidjs/meta';
 
 const App: Component = () => {
   const storageManager = createLocalStorageManager('vite-ui-theme');
   return (
     <Router
       root={props => (
-        <CardSystemProvider>
-          <AnalyticsContext>
-            <script>
-              {`
+        <MetaProvider>
+          <CardSystemProvider>
+            <AnalyticsContext>
+              <script>
+                {`
                 window.env = ${getBuildData()}
               `}
-            </script>
-            <ColorModeScript storageType={storageManager.type} />
-            <ColorModeProvider storageManager={storageManager}>
-              {/* <Nav /> */}
-              <Suspense>{props.children}</Suspense>
-              <Toaster />
-            </ColorModeProvider>
-          </AnalyticsContext>
-        </CardSystemProvider>
+              </script>
+              <ColorModeScript storageType={storageManager.type} />
+              <ColorModeProvider storageManager={storageManager}>
+                {/* <Nav /> */}
+                <Suspense>{props.children}</Suspense>
+                <Toaster />
+              </ColorModeProvider>
+            </AnalyticsContext>
+          </CardSystemProvider>
+        </MetaProvider>
       )}>
       <Route path='/' component={IndexPage} />
       <Route path='/game/:gameId' component={GamePage} />

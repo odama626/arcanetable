@@ -1,0 +1,21 @@
+{
+	"@context": "https://schema.org",
+	"@type": "Organization",
+	"name": "Arcanetable",
+	"url": "https://arcanetable.app",
+	"logo": "https://arcanetable.app/favicon.png",
+	"description": "The ultimate 3D playtesting platform for Magic: The Gathering and other TCGs. Test your decks, play with friends, and perfect your paper decks — right in your browser.",
+	"parentOrganization": {
+		"@type": "Organization",
+		"name": "Sparkstone",
+		"url": "https://sparkstonepdx.com",
+		"logo": "https://sparkstonepdx.com/meta-image.webp",
+		"description": "We build tools that feel like magic and hold up like stone. A small studio focused on crafting software that's fast, local-first, and human-centered.",
+		"sameAs": [
+			"https://www.youtube.com/@sparkstonepdx",
+			"https://www.linkedin.com/company/sparkstonepdx",
+			"https://bsky.app/profile/sparkstonepdx.com",
+			"https://github.com/Sparkstonepdx/"
+		]
+	}
+}

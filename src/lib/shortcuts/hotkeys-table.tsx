@@ -61,7 +61,7 @@ const ShortcutTable: Component<{ name: string; shortcuts: typeof SHORTCUTS }> = 
   );
 };
 
-const SHORTCUTS = [
+export const SHORTCUTS = [
   { shortcuts: [['shift', 'U']], action: 'Untap all cards' },
   { shortcuts: [['D']], action: 'Draw a card' },
   {
@@ -93,10 +93,10 @@ const SHORTCUTS = [
   },
 ];
 
-const BATTLEFIELD_SHORTCUTS = [
+export const BATTLEFIELD_SHORTCUTS = [
   { shortcuts: [['T']], action: 'tap selected cards' },
   { shortcuts: [['C']], action: 'clone selected cards' },
   { shortcuts: [['F']], action: 'flip selected cards' },
 ];
 
-const OVERLAY_SHORTCUTS = [{ shortcuts: [['esc']], action: 'close overlay' }];
+export const OVERLAY_SHORTCUTS = [{ shortcuts: [['esc']], action: 'close overlay' }];

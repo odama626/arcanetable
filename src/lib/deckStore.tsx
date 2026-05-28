@@ -195,7 +195,7 @@ export function CardSystemProvider(props: ParentProps) {
   }
 
   return (
-    <CardSystemContext.Provider value={[store, { update: updateStore, setCardSystem }]}>
+    <CardSystemContext.Provider value={[store, { update: updateStore, setCardSystem, initCardSystem }]}>
       {props.children}
     </CardSystemContext.Provider>
   );
@@ -211,6 +211,7 @@ type CardSystemStoreContextType = [
   {
     update: SetStoreFunction<CardSystemStore>;
     setCardSystem(name: string): Promise<CardSystem>;
+    initCardSystem(uri: string): Promise<CardSystem>;
   },
 ];
 const CardSystemContext = createContext<CardSystemStoreContextType>();
