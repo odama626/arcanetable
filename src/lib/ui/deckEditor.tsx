@@ -299,7 +299,10 @@ export const DeckEditor: Component<Props> = props => {
     cardSystem.uri;
     const q = unwrap(searchParams.q) ?? '';
     const t = unwrap(searchParams.type);
-    if (!q?.length && !t?.length) return setSearchResults();
+    if (!q?.length && !t?.length) {
+      lastSearchString = '';
+      return setSearchResults();
+    }
     debouncedOnSearch(q, t);
   });
 
@@ -327,7 +330,6 @@ export const DeckEditor: Component<Props> = props => {
     a.download = `${params.name}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-
   }
 
   return (
