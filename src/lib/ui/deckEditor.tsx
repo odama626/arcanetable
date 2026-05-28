@@ -230,8 +230,10 @@ export const DeckEditor: Component<Props> = props => {
   }
 
   let lastSearchString: string | undefined;
+  let cancelSearch = false;
 
   function onSearch(q?: string, t?: string | string[], page?: number) {
+    if (cancelSearch) return;
     const url = new URL(cardSystem.cardSearchEndpoint);
 
     if (q) {
@@ -302,9 +304,11 @@ export const DeckEditor: Component<Props> = props => {
     const q = unwrap(searchParams.q) ?? '';
     const t = unwrap(searchParams.type);
     if (!q?.length && !t?.length) {
+      cancelSearch = true;
       lastSearchString = '';
       return setSearchResults();
     }
+    cancelSearch = false;
     debouncedOnSearch(q, t);
   });
 
