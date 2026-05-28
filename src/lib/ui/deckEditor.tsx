@@ -321,7 +321,7 @@ export const DeckEditor: Component<Props> = props => {
       [card.qty, card.name, card.set && `[${card.set}]`].filter(Boolean).join(' '),
     );
 
-    let content = [inPlayCards, cards].flat().join('\n');
+    let content = [cards].flat().join('\n');
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
