@@ -79,7 +79,7 @@ export default function DeckPicker(props: Props) {
         {deck => (
           <DeckEditor
             onClose={() => setEditingDeck()}
-            deck={deck}
+            deck={structuredClone(unwrap(deck))}
             onChange={updatedDeck => {
               let fromSystem = unwrap(editingDeck()?.system) || 'unsorted';
               let toSystem = updatedDeck.system || 'unsorted';

@@ -293,7 +293,7 @@ export const DeckEditor: Component<Props> = props => {
     }
     fetchPage(isSearchSame);
   }
-  let debouncedOnSearch = debounce(onSearch, 750);
+  let debouncedOnSearch = debounce(onSearch, 750, { trailing: true});
 
   createEffect(() => {
     cardSystem.uri;
@@ -639,17 +639,20 @@ export const DeckEditor: Component<Props> = props => {
                             </Show>
                             <Show when={deckCard()?.qty > 0}>{deckCard()?.qty}</Show>
 
-                            <Button size='icon' variant='ghost' type='button'>
+                            <Button
+                              size='icon'
+                              variant='ghost'
+                              type='button'
+                              onClick={() => {
+                                let id = getCardKey(unwrap(card));
+                                if (deck.cards[id]) {
+                                  return updateDeck('cards', id, 'qty', (qty = 1) => qty + 1);
+                                }
+                                updateDeck('cards', id, { ...unwrap(card), qty: 1 });
+                              }}>
                               <AddIcon
                                 class='text-white'
                                 style='filter: drop-shadow(2px 4px 6px black);'
-                                onClick={() => {
-                                  let id = getCardKey(unwrap(card));
-                                  if (deck.cards[id]) {
-                                    return updateDeck('cards', id, 'qty', (qty = 1) => qty + 1);
-                                  }
-                                  updateDeck('cards', id, { ...unwrap(card), qty: 1 });
-                                }}
                               />
                             </Button>
                           </div>
