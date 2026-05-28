@@ -1,12 +1,12 @@
 docker_container = ghcr.io/odama626/arcanetable
 github_repo = "org.opencontainers.image.source=https://github.com/odama626/arcanetable"
 # ---- build metadata ----
-GIT_SHA        := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
-GIT_SHA_FULL   := $(shell git rev-parse HEAD 2>/dev/null || echo unknown)
-GIT_DIRTY      := $(shell git diff --quiet || echo -dirty)
-BUILD_DATE     := $(shell date -u +"%Y-%m-%dT%H.%M.%SZ")
-BUILD_ID       := $(GIT_SHA)$(GIT_DIRTY)
-BUILD_VERSION  := $(BUILD_DATE)-$(BUILD_ID)
+export GIT_SHA        := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+export GIT_SHA_FULL   := $(shell git rev-parse HEAD 2>/dev/null || echo unknown)
+export GIT_DIRTY      := $(shell git diff --quiet || echo -dirty)
+export BUILD_DATE     := $(shell date -u +"%Y-%m-%dT%H.%M.%SZ")
+export BUILD_ID       := $(GIT_SHA)$(GIT_DIRTY)
+export BUILD_VERSION  := $(BUILD_DATE)-$(BUILD_ID)
 # Vite-exposed env vars
 export VITE_APP_NAME     = Arcanetable
 export VITE_BUILD_ID     = $(BUILD_VERSION)
@@ -25,11 +25,11 @@ build:
 		-t $(docker_container):beta \
 		-t $(docker_container):staging
 		
-	make -C yjs-signaling-server build
-	make -C websocket-server build
-	make -C scry-server-mtg build
-	make -C scry-server-yugioh build
-	make -C scry-server-pokemon build
+	$(make) -C yjs-signaling-server build
+	$(make) -C websocket-server build
+	$(make) -C scry-server-mtg build
+	$(make) -C scry-server-yugioh build
+	$(make) -C scry-server-pokemon build
 	
 push: build
 	docker push $(docker_container):latest
@@ -38,16 +38,16 @@ push: build
 	docker push $(docker_container):beta
 	docker push $(docker_container):staging
 
-	make -C yjs-signaling-server push
-	make -C websocket-server push
-	make -C scry-server-mtg push
-	make -C scry-server-yugioh push
-	make -C scry-server-pokemon push
+	$(make) -C yjs-signaling-server push
+	$(make) -C websocket-server push
+	$(make) -C scry-server-mtg push
+	$(make) -C scry-server-yugioh push
+	$(make) -C scry-server-pokemon push
 
 deploy: build push
-	make -C scry-server-mtg apply
-	make -C scry-server-yugioh apply
-	make -C scry-server-pokemon apply
+	$(make) -C scry-server-mtg apply
+	$(make) -C scry-server-yugioh apply
+	$(make) -C scry-server-pokemon apply
 	kubectl apply -f secrets.yml -f deployment.yml -f staging.yaml
 	kubectl rollout restart deployment -n arcanetable
 	

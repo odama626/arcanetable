@@ -389,7 +389,7 @@ export const DeckEditor: Component<Props> = props => {
             <NumberField
               class='px-4'
               value={deck?.startingLife ?? 40}
-              onChange={value => updateDeck('startingLife', parseInt(value))}>
+              onChange={value => updateDeck('startingLife', parseInt(value) || 0)}>
               <NumberFieldLabel for='startingLife'>Starting Life Total</NumberFieldLabel>
               <div class='relative'>
                 <NumberFieldInput required id='startingLife' name='startingLife' />
