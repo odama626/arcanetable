@@ -77,6 +77,7 @@ import { AlertDialog, AlertDialogContent } from '~/components/ui/alert-dialog';
 import intersectionObserver from '../intersectionObserver';
 import CopyIcon from 'lucide-solid/icons/copy';
 import CheckIcon from 'lucide-solid/icons/check';
+import LoaderIcon from 'lucide-solid/icons/loader-circle';
 
 interface Props {
   onClose(): void;
@@ -678,8 +679,10 @@ export const DeckEditor: Component<Props> = props => {
                 }}
               </For>
               <div use:intersectionObserver={{ onIntersect: loadMoreResults }}>
-                <Show when={searchParams.pages < searchParams.totalPages}>
-                  Loading more results
+                <Show when={searchParams.page < searchParams.totalPages}>
+                  <div class='flex gap-2 justify-center p-6'>
+                    <LoaderIcon class='animate-spin' /> Loading more results
+                  </div>
                 </Show>
               </div>
             </div>
