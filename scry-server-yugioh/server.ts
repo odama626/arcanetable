@@ -257,7 +257,7 @@ app.get('/cards/search', async c => {
     const typeList = types && types.length > 0 ? types : [undefined];
 
     const results = await Promise.all(
-      typeList.map(async (type) => {
+      typeList.map(async type => {
         const params = new URLSearchParams();
         if (q) params.set('fname', q);
         if (type) params.set('type', type);
@@ -269,7 +269,7 @@ app.get('/cards/search', async c => {
         const list = (await res.json()) as YgoList;
         if (!list.data) return [];
         return list.data;
-      })
+      }),
     );
 
     const seen = new Set<number>();
@@ -284,7 +284,7 @@ app.get('/cards/search', async c => {
 
     return new Response(
       JSON.stringify(mapList(page_data, baseUrl, { total, page, query: { q, types } })),
-      { status: 200, headers: cacheHeaders() }
+      { status: 200, headers: cacheHeaders() },
     );
   } catch (e) {
     console.error('/cards/search error:', e);
@@ -334,21 +334,23 @@ async function handleImageRequest(c) {
   try {
     const res = await fetch(uri);
     if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
-    const buffer = await res.arrayBuffer();
-    return new Response(buffer, {
-      status: 200,
-      headers: {
-        ...imageCacheHeaders(),
-        'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream',
-      },
-    });
+
+    const contentType = res.headers.get('Content-Type');
+    if (!contentType) return errorResponse('upstream_error', 'No content type from upstream', 502);
+
+    const headers: Record<string, string> = {
+      ...imageCacheHeaders(),
+      'Content-Type': contentType,
+    };
+    const lastModified = res.headers.get('Last-Modified');
+    if (lastModified) headers['Last-Modified'] = lastModified;
+
+    return new Response(res.body, { status: 200, headers });
   } catch (e) {
     console.error('Image fetch failed:', uri, e);
     return errorResponse('upstream_error', 'Failed to fetch image', 502);
   }
 }
-
-
 
 app.onError((err, c) => {
   console.error(`${c.req.url}:`, err);

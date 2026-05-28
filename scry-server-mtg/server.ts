@@ -240,11 +240,11 @@ app.get('/cards/search', async c => {
   let sfQuery = q;
   let typeQuery = types.map(t => TYPE_ALIASES[t.toLowerCase()] ?? `t:${t}`).join(' or ');
 
-  if (types.length >1) {
-    typeQuery = `(${typeQuery})`
+  if (types.length > 1) {
+    typeQuery = `(${typeQuery})`;
   }
-  sfQuery += ` ${typeQuery}`
-  
+  sfQuery += ` ${typeQuery}`;
+
   sfQuery = sfQuery.trim() || '*';
   const params = new URLSearchParams({ q: sfQuery, order: 'name', page });
   const res = await scryfallFetch(`/cards/search?${params}`);
@@ -333,15 +333,25 @@ async function handleImageRequest(c) {
     return errorResponse('bad_request', 'URI not allowed', 400);
   }
 
-  const res = await scryfallFetch(uri);
-  if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
-  return new Response(res.body, {
-    status: 200,
-    headers: {
+  try {
+    const res = await scryfallFetch(uri);
+    if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
+
+    const contentType = res.headers.get('Content-Type');
+    if (!contentType) return errorResponse('upstream_error', 'No content type from upstream', 502);
+
+    const headers: Record<string, string> = {
       ...imageCacheHeaders(),
-      'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream,',
-    },
-  });
+      'Content-Type': contentType,
+    };
+    const lastModified = res.headers.get('Last-Modified');
+    if (lastModified) headers['Last-Modified'] = lastModified;
+
+    return new Response(res.body, { status: 200, headers });
+  } catch (e) {
+    console.error('Image fetch failed:', uri, e);
+    return errorResponse('upstream_error', 'Failed to fetch image', 502);
+  }
 }
 
 // ── START ─────────────────────────────────────────────────────────────────────

@@ -397,15 +397,24 @@ async function handleImageRequest(c) {
     return errorResponse('bad_request', 'URI not allowed', 400);
   }
 
-  const res = await fetch(uri);
-  if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
-  return new Response(res.body, {
-    status: 200,
-    headers: {
-      ...imageCacheHeaders(),
-      'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream,',
-    },
-  });
-}
+  try {
+    const res = await fetch(uri);
+    if (!res.ok) return errorResponse('not_found', 'Image not found', 404);
 
+    const contentType = res.headers.get('Content-Type');
+    if (!contentType) return errorResponse('upstream_error', 'No content type from upstream', 502);
+
+    const headers: Record<string, string> = {
+      ...imageCacheHeaders(),
+      'Content-Type': contentType,
+    };
+    const lastModified = res.headers.get('Last-Modified');
+    if (lastModified) headers['Last-Modified'] = lastModified;
+
+    return new Response(res.body, { status: 200, headers });
+  } catch (e) {
+    console.error('Image fetch failed:', uri, e);
+    return errorResponse('upstream_error', 'Failed to fetch image', 502);
+  }
+}
 export default app;

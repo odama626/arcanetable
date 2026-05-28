@@ -1,0 +1,33 @@
+---
+target: beta
+title: "Deck Editor Polish and Deck Export Fix"
+keywords:
+  - deck editor
+  - deck export
+  - disabled state
+  - delete dialog
+  - bug fix
+  - staging
+description: "A round of deck editor fixes: correct disabled states, form submission prevention, deck mutation fix, corrected deck export, and small UX improvements to the deck picker and delete dialog."
+version: 97b736d
+changeCount:
+  bugfixes: 7
+  features: 0
+commitRange: https://github.com/odama626/arcanetable/compare/34ef5ca...97b736d
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Fixes
+
+- **Deck export** — exported `.txt` files no longer include cards that are currently in play on the battlefield.
+- **Disabled states** — "Start Playtest" and "Edit Deck" are now correctly disabled when no deck is selected. Previously the wrong buttons were being gated.
+- **Tags field** — pressing Enter in the deck tags field no longer submits the form.
+- **Deck mutation** — the deck is now cloned before being passed into the editor, so edits can't accidentally affect your saved deck data.
+- **Add card button** — the click handler is now on the button element rather than the icon inside it, fixing interaction issues in some browsers.
+- **Starting life total** — clearing the starting life field no longer produces NaN; it falls back to 0.
+- **Deck picker close button** — removed the close button from the session start dialog to prevent accidentally dismissing it.
+
+## Improvements
+
+- The delete deck confirmation dialog now includes a copy button next to the deck name, so you don't have to type it manually.
