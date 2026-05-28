@@ -1,0 +1,26 @@
+---
+target: stable
+title: "Deck Save Fix and Deck Selector Improvements"
+keywords:
+  - deck save
+  - bug fix
+  - deck selector
+  - deck editor
+  - deckId
+description: "Fixes a bug preventing decks from saving and improves the deck selector with deckId migration, system viewer access, and copy-link support."
+version: f7632416
+changeCount:
+  bugfixes: 1
+  features: 3
+---
+
+## Bug Fix
+
+- Fixed a bug that could prevent decks from being saved. If you experienced decks not persisting, this is now resolved.
+
+## Deck Selector & Editor Improvements
+
+- Switched from `deckIndex` to `deckId` for identifying decks — a more reliable foundation for future work.
+- Migrated the deck store from an array to a map for better performance and lookup efficiency.
+- The system viewer is now accessible directly from the deck selector.
+- The copy-link feature now captures the full URL including the `?system=` parameter when one is present.

@@ -1,0 +1,40 @@
+---
+target: beta
+title: "Collapsed Counter Display, Deck Export, and YGO Multi-Type Search"
+keywords:
+  - counters
+  - deck export
+  - Yu-Gi-Oh
+  - multi-type search
+  - card back
+  - sleeve customisation
+  - staging
+description: "Adds a compact always-visible counter row, deck list export to .txt, Yu-Gi-Oh multi-type search, and a card back texture fix that lays the groundwork for sleeve customisation."
+version: 3f721f3
+changeCount:
+  bugfixes: 3
+  features: 3
+commitRange: https://github.com/odama626/arcanetable/compare/5edd756...3f721f3
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Features
+
+### Collapsed Counter Display
+
+Cards with counters now show a compact counter row directly below the card action menu. Left-click to add a counter, right-click to remove one. No more hunting through menus to track counters like Infamy or Population — they're always visible at a glance while a card is selected.
+
+### Download Deck List
+
+You can now download your deck list as a `.txt` file directly from the deck editor — handy for sharing or backing up lists outside the app.
+
+### Yu-Gi-Oh Multi-Type Search
+
+Searching for cards with multiple types in Yu-Gi-Oh (e.g. "Effect Monster" + "Spell") now works correctly. The server fans out requests per type and merges results with proper deduplication and error handling.
+
+## Fixes
+
+- Switching card systems now correctly updates the card back texture on all existing cards in the scene in real time, instead of only newly loaded cards. This lays the groundwork for sleeve customisation — custom card backs per deck could happen if there's enough interest.
+- Fixed a bug where deck search wasn't filtering results correctly due to a typo in the config key.
+- Various stability fixes in the counter and deck search subsystems.

@@ -1,0 +1,49 @@
+---
+target: stable
+title: "Command Palette and Keyboard Shortcuts"
+keywords:
+  - command palette
+  - keyboard shortcuts
+  - dice rolls
+  - deck commands
+  - UX
+description: "Introduces a command palette with deck-specific commands, dice rolls, and global keyboard shortcuts for common battlefield actions."
+version: unknown
+changeCount:
+  bugfixes: 1
+  features: 5
+---
+
+## Features
+
+- Added a command palette for quick actions (`Ctrl+Space` / `Ctrl+K` / `Cmd+K`).
+- Integrated deck-specific commands into the command palette.
+- Enabled logging-only dice rolls via the command palette. (#32)
+- Introduced global keyboard shortcuts for key actions.
+- Card grids now auto-focus the search field when opened.
+
+## Keyboard Shortcuts
+
+| Scope | Key | Action |
+|---|---|---|
+| Battlefield | `C` | Clone |
+| Battlefield | `T` | Tap |
+| Battlefield | `F` | Flip |
+| Global | `D` | Draw |
+| Global | `S` | Search deck |
+| Global | `Shift+U` | Untap all |
+| Global | `Ctrl+Space` | Open command palette |
+| Card (global) | `B` | Send to battlefield |
+| Card (global) | `Ctrl+D` | Destroy |
+| Card (global) | `E` | Exile |
+| Card (global) | `P` | Peek |
+| Card grid | `Esc` | Close menu |
+
+## Fixes
+
+- Properly dispose of cards when closing the token menu.
+
+## Closed Issues
+
+- #21 Basic keyboard shortcut implementation
+- #32 Add dice rolls

@@ -1,0 +1,44 @@
+---
+target: beta
+title: "Deck Editor, Pokémon & Yu-Gi-Oh Support (Staging)"
+keywords:
+  - deck editor
+  - Pokémon
+  - Yu-Gi-Oh
+  - card systems
+  - unknown card image
+  - token routing
+  - staging
+description: "Major staging release: an in-app deck editor, built-in Pokémon and Yu-Gi-Oh card systems, unknown card placeholder, and token caching improvements."
+version: 09b6012
+changeCount:
+  bugfixes: 1
+  features: 5
+commitRange: https://github.com/odama626/arcanetable/compare/8304cc2...09b6012
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/) before it reaches production.
+
+## Features
+
+### Deck Editor
+
+You can now build and edit decks directly inside Arcanetable — no more managing lists outside the app. The editor supports searching for cards and adjusting quantities without leaving the table.
+
+### Pokémon & Yu-Gi-Oh Support
+
+Two new built-in card systems join MTG: Pokémon and Yu-Gi-Oh are supported out of the box. Switch between them in the deck selector and use the system viewer to browse available cards.
+
+Try the new systems by adding `?system=scry-server-[game].arcanetable.app` to the URL — replace `[game]` with `pokemon` or `yugioh`.
+
+### Unknown Card Image
+
+Cards that cannot be loaded now show a proper placeholder instead of a broken state.
+
+### Token Routing
+
+Tokens are now routed through the caching server, improving load times and reducing redundant fetches during play.
+
+## Fixes
+
+- Resolved an issue with card image display (addressed in subsequent staging patches).

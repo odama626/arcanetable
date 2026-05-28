@@ -1,0 +1,34 @@
+---
+target: beta
+title: "Deck Editor Paging and MTG Multi-Type Search Fix (Staging)"
+keywords:
+  - deck editor
+  - paging
+  - performance
+  - MTG
+  - multi-type search
+  - staging
+description: "Fixes a severe deck editor performance issue by paging search results, and corrects MTG multi-type card searches."
+version: e5108d2
+changeCount:
+  bugfixes: 2
+  features: 1
+commitRange: https://github.com/odama626/arcanetable/compare/09b6012...e5108d2
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Features
+
+### Deck Editor Paging
+
+Search results in the deck editor are now paged. Previously, searching "creatures" in MTG triggered 8,800+ requests and transferred nearly 1 GB. Only the current page of results loads now — browsing large sets is dramatically faster.
+
+## Fixes
+
+- Searching for MTG cards with multiple types (e.g. "Artifact Creature") now works correctly.
+- Fixed card image requests being served over HTTP instead of HTTPS (mixed content block). *(See also 2026-05-18 patch.)*
+
+## Credits
+
+Thanks to Zulu in the SolidJS Discord for catching the performance issue and providing the network tab receipts.

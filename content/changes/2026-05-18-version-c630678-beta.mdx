@@ -1,0 +1,24 @@
+---
+target: beta
+title: "HTTPS Card Image Fix (Staging)"
+keywords:
+  - HTTPS
+  - mixed content
+  - card images
+  - Pokémon
+  - Yu-Gi-Oh
+  - MTG
+  - staging
+description: "Fixes card images across all three built-in card systems being served over HTTP, causing mixed-content blocks in the browser."
+version: c630678
+changeCount:
+  bugfixes: 1
+  features: 0
+commitRange: https://github.com/odama626/arcanetable/compare/e5108d2...c630678
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Fixes
+
+- Card images for Pokémon, Yu-Gi-Oh, and MTG were being served over HTTP instead of HTTPS, causing them to be blocked as mixed content in the browser. All three systems now load card images correctly.

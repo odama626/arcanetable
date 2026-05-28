@@ -1,0 +1,34 @@
+---
+target: beta
+title: "Landing Page, Scry Server Caching, and Search Fix"
+keywords:
+  - landing page
+  - stale while revalidate
+  - caching
+  - type filter
+  - mobile
+  - staging
+description: "New landing page draft, stale-while-revalidate caching for slow upstream card servers, and fixes for type toggle search and mobile multiplayer image."
+version: 34ef5ca
+changeCount:
+  bugfixes: 2
+  features: 2
+commitRange: https://github.com/odama626/arcanetable/compare/3f721f3...34ef5ca
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Features
+
+### Landing Page
+
+New draft of the landing page is live with updated copy and layout.
+
+### Scry Server Caching
+
+Card data servers now use a stale-while-revalidate model. Since upstream card servers can be slow, cached responses are served immediately while fresh data loads in the background — less waiting when browsing cards.
+
+## Fixes
+
+- Toggling a card type filter off and back on now correctly triggers a new search.
+- Multiplayer image now displays correctly on mobile.

@@ -1,0 +1,34 @@
+---
+target: stable
+title: "Card Counts, Token Toggle, and Counter Fixes"
+keywords:
+  - card counts
+  - tokens
+  - counters
+  - clone
+  - bug fix
+description: "Adds zone card counts, toggleable token grid, clone-as-token tagging, and several counter bug fixes."
+version: unknown
+changeCount:
+  bugfixes: 3
+  features: 3
+---
+
+## Features
+
+- Display card counts for hand, battlefield, peek zone, token search zone, deck, and card stacks.
+- "Add Tokens" now toggles the token grid instead of opening a separate view.
+- Cloning cards tags clones as tokens automatically.
+
+## Fixes
+
+- Fixed initial counter rendering issues.
+- Fixed counter placement, scaling, and values exceeding 999.
+- Fixed dismissing the token menu when triggered by a remote action.
+- Fixed removing cards from stacks and prevented duplicate additions.
+- Fixed cards being dismissed twice when added.
+- Removed mesh correctly when calling `deck.removeCard`.
+
+## Chore
+
+- Refactored `emitEvent` logic.

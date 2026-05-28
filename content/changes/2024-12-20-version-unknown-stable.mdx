@@ -1,0 +1,65 @@
+---
+target: stable
+title: "Multi-Selection, Enhanced Search, and Performance Improvements"
+keywords:
+  - multi-select
+  - drag select
+  - search
+  - performance
+  - card loading
+  - visual improvements
+description: "Adds multi-card selection with drag, enhanced comma-separated search, worker-threaded image loading, and visual polish across the table."
+version: unknown
+changeCount:
+  bugfixes: 6
+  features: 12
+---
+
+## Features
+
+### Multi-Selection
+
+- Initial support for multi-selection.
+- Drag select with `Ctrl`, `Command`, and `Shift`.
+- `Ctrl`, `Command`, and `Shift` click for multi-selection.
+- Battlefield menu actions now apply to all selected cards.
+- Hotkeys now apply to selected cards.
+
+### Search Enhancements
+
+- Search now includes card faces for more comprehensive results.
+- Multiple search terms can be used, separated by commas.
+
+### Performance
+
+- Card images now load and resize in a worker thread to reduce jank.
+- Added a card loading texture for smoother visual feedback.
+- Cards now stack during drag-and-drop operations.
+- Dragging cards ignores intersections with the items being dragged.
+
+### Visual Improvements
+
+- Updated table colours to be more theme-appropriate.
+- Card loading animations and card backs load earlier for a better first impression.
+
+### Command Palette
+
+- `Ctrl+K` / `Cmd+K` can now be used to toggle the command palette (in addition to `Ctrl+Space`).
+
+## Fixes
+
+- Prevented scroll bounce during gameplay interactions.
+- Fixed card grid filter removal when the last filtered card is removed.
+- Prevented the search field from wiping unexpectedly.
+- Fixed player menus to allow proper expansion.
+- Normalised app name to "Arcanetable."
+- Cleaned up navigation so Back → Start Now works correctly.
+- Locked interactions during bulk transfers to and from grids.
+- Fixed a selection bug where clearing the selection would not work as intended.
+
+## Chore
+
+- Refactored hotkeys into their own file for cleaner code organisation.
+- Updated dependencies.
+- Added analytics to track user engagement.
+- Removed unnecessary console logs.

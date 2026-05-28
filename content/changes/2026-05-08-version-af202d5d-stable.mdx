@@ -1,0 +1,35 @@
+---
+target: stable
+title: "Custom Card Systems and Landing Page Refresh"
+keywords:
+  - custom card systems
+  - JSON endpoint
+  - Pokémon
+  - Yu-Gi-Oh
+  - landing page
+  - system parameter
+description: "Arcanetable can now load any remote card system via the ?system= query parameter, enabling support for custom cubes, proxied MTG decks, and other TCGs."
+version: af202d5d
+changeCount:
+  bugfixes: 0
+  features: 2
+---
+
+## Features
+
+### Custom Card Systems
+
+Arcanetable can now load a remote card system at startup. Point it at your own JSON endpoint via the `?system=` query parameter to bring your own cards — whether that's a custom cube, a proxied MTG deck, or a completely different TCG like Pokémon or Yu-Gi-Oh.
+
+The card system config controls: where card data comes from, how images are structured, how cards are indexed for search, and which field drives popularity sorting.
+
+Two image formats are supported:
+
+- **`standard`** (default) — for systems with multiple printings per card, where each card has a map of print variants.
+- **`scryfall`** — mirrors the Scryfall API format, used by the built-in MTG system.
+
+Full documentation is in the README.
+
+### Landing Page
+
+Refreshed landing page copy and layout to better reflect what Arcanetable actually does.

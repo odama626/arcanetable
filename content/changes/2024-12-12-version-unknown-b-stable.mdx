@@ -1,0 +1,25 @@
+---
+target: stable
+title: "Invite Link Copy, Concede, and Counter Visibility Fixes"
+keywords:
+  - invite link
+  - concede
+  - spectator
+  - counters
+  - bug fix
+description: "Adds copy-invite-link from the deck picker, player concede flow, and fixes counter visibility on card backs."
+version: unknown
+changeCount:
+  bugfixes: 2
+  features: 2
+---
+
+## Features
+
+- Added the ability to copy an invite link directly from the deck picker. (#22)
+- Players can now concede a game. Conceding moves the player to spectator mode; when all but one player has conceded the game transitions to deck selection mode. (#23)
+
+## Fixes
+
+- Fixed counter visibility from the back side of cards.
+- Counters are now properly removed when a card is destroyed.

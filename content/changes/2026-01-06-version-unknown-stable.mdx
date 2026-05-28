@@ -1,0 +1,30 @@
+---
+target: stable
+title: "Stability, Resilience, and Copyable Error Reports"
+keywords:
+  - stability
+  - error reporting
+  - bug fix
+  - long sessions
+  - animation
+description: "Improved stability for long play sessions with copyable error reports, graceful animation degradation, and null-safety fixes."
+version: unknown
+changeCount:
+  bugfixes: 2
+  features: 0
+---
+
+## Improvements
+
+- Added copyable error reports when something goes wrong, making it easy to share useful bug reports without opening DevTools.
+- Improved handling of corrupted or invalid animations — the game now degrades gracefully instead of crashing.
+- Normalised how resting positions are assigned to reduce subtle layout inconsistencies over time.
+
+## Fixes
+
+- Added null checks and refactored user data handling to prevent serialised data from being stored incorrectly.
+- Cleaned up internal formatting and data handling to reduce hard-to-track issues during extended gameplay.
+
+## Community
+
+Special thanks to @Herbert De La Comb Au Loup for reporting a major issue where cards can disappear for a player mid-game. This update includes groundwork to make issues like that easier to track down and fix.

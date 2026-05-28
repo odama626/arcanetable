@@ -1,0 +1,32 @@
+---
+target: stable
+title: "Shuffle Performance, Graveyard Counter, and Token Order Fixes"
+keywords:
+  - shuffle
+  - graveyard
+  - counter
+  - tokens
+  - performance
+  - bug fix
+description: "Performance improvements for shuffling into the deck, graveyard counter decrement fix, and correct token ordering for remote clients."
+version: unknown
+changeCount:
+  bugfixes: 4
+  features: 1
+---
+
+## Features
+
+- Improved performance by reusing `dismissFromZone` for shuffling cards into the deck. (#37)
+
+## Fixes
+
+- Resolved an issue where the graveyard counter did not decrement correctly. (#41)
+- Fixed token order in the "Add Token" menu on remote clients — tokens now sort correctly based on IDs. (#39)
+- Prevented multiple `transferCard` events when dismissing cards from the grid. (#41)
+- Updated `transferCard` to use `setCardData` for improved consistency.
+
+## Improvements
+
+- Optimised shuffle-into-deck by leveraging bulk events. (#37)
+- Added optional chaining to logging for cleaner error handling.
