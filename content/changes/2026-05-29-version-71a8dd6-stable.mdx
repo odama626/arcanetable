@@ -1,0 +1,60 @@
+---
+target: stable
+title: "Deck Editor, Pokémon & Yu-Gi-Oh, New Landing Page, and More"
+keywords:
+  - deck editor
+  - Pokémon
+  - Yu-Gi-Oh
+  - landing page
+  - counters
+  - deck export
+  - caching
+  - community
+description: "The biggest Arcanetable release yet: a built-in deck editor, Pokémon and Yu-Gi-Oh support, a collapsed counter display, deck list export, a new landing page, and a large pile of bug fixes and performance improvements."
+version: 71a8dd6
+changeCount:
+  bugfixes: 12
+  features: 6
+commitRange: https://github.com/odama626/arcanetable/compare/5edd756...71a8dd6
+---
+
+## Features
+
+### In-App Deck Editor
+
+You can now build and edit decks directly inside Arcanetable — no more managing lists outside the app. Search for cards, adjust quantities, paste in a list, or download your deck as a `.txt` file when you're done. Search supports multiple comma-separated terms and searches across card faces, so double-faced and split cards show up when you expect them to.
+
+### Pokémon & Yu-Gi-Oh Support
+
+Two new built-in card systems join MTG: Pokémon and Yu-Gi-Oh are now supported out of the box. Switch between them in the deck selector and use the system viewer to browse available cards. Multi-type search works correctly for both — searching "Fire Water" in Pokémon or "Effect Monster Spell" in Yu-Gi-Oh returns the right results.
+
+### Collapsed Counter Display
+
+Cards with counters now show a compact counter row directly below the card action menu. Left-click to add a counter, right-click to remove one. No more hunting through menus to track Infamy, Population, or any other counter type — they're always visible at a glance while a card is selected.
+
+### New Landing Page
+
+The landing page has been completely redesigned with updated copy, imagery, and layout that better reflects what Arcanetable actually is. Game picker cards now let you jump straight into MTG, Pokémon, or Yu-Gi-Oh with one click. A new Community section links to the Discord and Ko-fi for anyone who wants to follow along or chip in.
+
+### Stale-While-Revalidate Card Server Caching
+
+The card data servers now serve cached responses immediately while refreshing stale data in the background — so browsing large card sets is snappier, especially on repeat visits. Card images also now cache correctly at the Cloudflare edge, which should make a noticeable difference on first load.
+
+### Download Deck List
+
+Export your current deck as a `.txt` file directly from the deck editor — handy for sharing with friends or backing up your lists outside the app.
+
+## Fixes
+
+- **Deck export** — exported lists no longer include cards currently on the battlefield.
+- **Disabled states** — "Start Playtest" and "Edit Deck" now correctly disable when no deck is selected.
+- **Tags field** — pressing Enter in the deck tags field no longer submits the form.
+- **Deck mutation** — the deck is cloned before entering the editor, so unsaved edits can't affect your saved deck data.
+- **Add card button** — click handler moved to the button element, fixing interaction issues in some browsers.
+- **Starting life total** — clearing the field no longer produces NaN; it falls back to 0.
+- **Deck picker close button** — removed from the session start dialog to prevent accidentally dismissing it.
+- **Delete dialog** — the confirmation dialog now includes a copy button next to the deck name so you don't have to retype it manually.
+- **Type filter search** — toggling a card type filter off and back on now correctly triggers a new search.
+- **Search cancel** — clearing the search field cancels any pending debounced search, preventing stale results from flashing in.
+- **Loading spinner** — the "Loading more results" indicator in the deck editor now only appears when a search is actually active.
+- **Mobile** — the multiplayer image now displays correctly on mobile.
