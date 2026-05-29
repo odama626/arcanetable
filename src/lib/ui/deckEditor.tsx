@@ -679,7 +679,11 @@ export const DeckEditor: Component<Props> = props => {
                 }}
               </For>
               <div use:intersectionObserver={{ onIntersect: loadMoreResults }}>
-                <Show when={searchParams.page < searchParams.totalPages}>
+                <Show
+                  when={
+                    (searchParams.q || searchParams.type) &&
+                    searchParams.page < searchParams.totalPages
+                  }>
                   <div class='flex gap-2 justify-center p-6'>
                     <LoaderIcon class='animate-spin' /> Loading more results
                   </div>
