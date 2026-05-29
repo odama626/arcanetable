@@ -580,12 +580,12 @@ export const DeckEditor: Component<Props> = props => {
                       data-index={i()}
                       id={card.id}
                       style={`
-                    position: relative;
-                    --timing: ${random(400, 600)}ms;
-                    --delay: ${random(250, 500)}ms;
-                    --distance: ${random(20, 100)}px;
-                    content-visibility: auto;
-                  `}
+                        position: relative;
+                        --timing: ${random(400, 600)}ms;
+                        --delay: ${random(250, 500)}ms;
+                        --distance: ${random(20, 100)}px;
+                        content-visibility: auto;
+                      `}
                       class='fade-in-from-below'>
                       <img
                         crossOrigin=''
