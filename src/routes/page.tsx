@@ -28,6 +28,7 @@ export default function Page(props) {
         <WhyPosters />
         <FeaturesGrid />
         <KeyboardShortcuts />
+        <Community />
         <GettingStartedVideo />
         <Sparkstone />
         <Footer />
@@ -46,8 +47,8 @@ function Hero(props: { startUrl: string }) {
   return (
     <header
       class='relative bg-cover bg-center bg-gray-800 rounded-lg'
-      style="background-image: url('/hero.jpeg');">
-      <div class='absolute inset-0 bg-black opacity-60'></div>
+      style="background-image: url('/cluster-1.jpeg'); filter: saturate(2.5);">
+      <div class='absolute inset-0 bg-black opacity-30'></div>
       <div class='relative flex items-center justify-between p-6'>
         <div class='flex items-center space-x-4'>
           <img src='/icon.svg' alt='Arcanetable' class='w-12 h-12' />
@@ -87,19 +88,19 @@ function CardSystems(props: { startUrl: string }) {
     {
       name: 'Magic: The Gathering',
       systemUri: `https://scr-server-mtg.arcanetable.app`,
-      image: 'combo.jpeg',
+      image: '/mtg.jpeg',
       label: 'Play MTG',
     },
     {
       name: 'Pokémon',
       systemUri: `https://scry-server-pokemon.arcanetable.app`,
-      image: 'anyone.jpeg',
+      image: '/poke.jpeg',
       label: 'Play Pokémon',
     },
     {
       name: 'Yu-Gi-Oh',
       systemUri: `https://scry-server-yugioh.arcanetable.app`,
-      image: 'own-cards.jpeg',
+      image: '/yugi-3.jpeg',
       label: 'Play Yu-Gi-Oh',
     },
   ];
@@ -137,7 +138,7 @@ function CardSystems(props: { startUrl: string }) {
             target='_blank'
             href='https://github.com/odama626/arcanetable#-custom-card-systems'
             class='group relative rounded-xl overflow-hidden flex flex-col justify-end'
-            style={`${posterStyle} aspect-ratio: initial; --image: url('${'own-cards.jpeg'}'); grid-column: 1/-1; min-height: 200px;`}>
+            style={`${posterStyle} aspect-ratio: initial; --image: url('/byob-2.jpeg'); grid-column: 1/-1; min-height: 275px;`}>
             <div class='absolute inset-0 bg-black opacity-30 group-hover:opacity-20 transition' />
             <div class='relative py-6 px-3 flex items-end justify-between'>
               <h3 class='text-2xl font-bold text-white'>Bring your own game</h3>
@@ -179,7 +180,7 @@ function TheTable(props: { startUrl: string }) {
           </div>
           <img
             src='/table.webp'
-            alt='Arcanetable 3D card table'
+            alt='A digital tabletop card game interface shown from an angled top-down perspective. A large dark-purple game board fills the scene against a black background. Two players’ card decks sit on opposite sides of the table with outlined zones nearby. Several cards are placed on the battlefield, and one player’s hand of cards is visible along the bottom edge of the screen. A small floating game interface panel appears in the distance above the table.'
             style='aspect-ratio: 1;'
             class='mx-auto rounded-lg object-cover min-w-0'
           />
@@ -196,7 +197,7 @@ function Multiplayer() {
         <div class='flex gap-12 max-lg:flex-col'>
           <img
             src='/friend.webp'
-            alt='Multiplayer game in progress'
+            alt='An angled 3D view of a digital tabletop card game set against a black background. A rectangular dark-purple game board is divided into two player areas with outlined card zones and deck piles at opposite ends. Several cards are placed on the board, while one player’s hand of cards floats along the left edge. A small floating interface panel appears in the upper-right area of the scene'
             style='aspect-ratio: 1;'
             class='mx-auto rounded-lg object-cover min-w-0'
           />
@@ -236,7 +237,7 @@ function DeckEditor() {
           </div>
           <img
             src='/deck-builder.webp'
-            alt='Deck editor'
+            alt='A dark-themed deck-building interface for a digital trading card game. A sidebar on the left shows deck settings, including the deck name ‘Propaganda,’ card system selection, starting life total, and categorized deck counts for Structure, Policy, Order, and Plot cards. The main area displays a grid of illustrated cards with titles such as ‘City,’ ‘Park,’ ‘Barracks,’ ‘Farm,’ ‘Condemn,’ ‘Propaganda Office,’ ‘Church,’ ‘World Court,’ and ‘Town Square.’ Each card includes artwork, resource costs, and gameplay text, with plus and minus controls for adjusting quantities in the deck.'
             style='aspect-ratio: 1;'
             class='mx-auto rounded-lg object-cover min-w-0'
           />
@@ -476,6 +477,36 @@ function Sparkstone() {
             rel='noopener noreferrer'
             class='inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-xl border border-gray-700 hover:bg-gray-700 transition'>
             GitHub →
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Community() {
+  return (
+    <section class='py-20 bg-gray-950 border-t border-gray-800'>
+      <div class='max-w-4xl mx-auto px-6 text-center flex flex-col gap-6'>
+        <h2 class='text-3xl font-bold text-white'>Support the Project</h2>
+        <p class='text-gray-400 max-w-2xl mx-auto'>
+          Arcanetable is free, open source, and built in spare time. The best ways to help: hang out
+          in the Discord, share it with your playgroup, or buy us a coffee if it's been worth it.
+        </p>
+        <div class='flex justify-center gap-4 flex-wrap'>
+          <a
+            href='https://discord.gg/wzdj2W9vvf'
+            target='_blank'
+            rel='noopener noreferrer'
+            class='inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-xl border border-gray-700 hover:bg-gray-700 transition'>
+            Join the Discord
+          </a>
+          <a
+            href='https://ko-fi.com/sparkstonepdx'
+            target='_blank'
+            rel='noopener noreferrer'
+            class='inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-xl border border-gray-700 hover:bg-gray-700 transition'>
+            Buy us a coffee →
           </a>
         </div>
       </div>

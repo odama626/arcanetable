@@ -1,0 +1,29 @@
+---
+target: beta
+title: "Card Image Caching, Search Cancel Fix, and Loading Spinner"
+keywords:
+  - caching
+  - cloudflare
+  - edge caching
+  - search
+  - loading spinner
+  - deck editor
+  - staging
+description: "Improves card image caching for edge delivery, fixes a stale debounced search firing after clearing filters, and polishes the deck editor loading state."
+version: df5debf
+changeCount:
+  bugfixes: 2
+  features: 0
+commitRange: https://github.com/odama626/arcanetable/compare/97b736d...df5debf
+---
+
+> **Staging release** — try it at [staging.arcanetable.app](https://staging.arcanetable.app/).
+
+## Fixes
+
+- **Search cancel** — clearing the search field or deselecting all type filters now cancels any pending debounced search, so stale results no longer flash in after you've already cleared the input.
+- **Card image edge caching** — removed the `Vary` header from image responses on the MTG scry server, which was preventing Cloudflare from caching card images at the edge. Card images should now cache and load significantly faster.
+
+## Improvements
+
+- The "Loading more results" indicator in the deck editor is now a proper animated spinner instead of plain text, and uses the correct `page` field to determine when more results are available.
